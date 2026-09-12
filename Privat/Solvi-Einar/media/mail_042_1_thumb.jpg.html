@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mail_042_1_thumb.jpg</title>
+<style>
+:root {
+  --bg: #eef2ff; --bg-card: #f8f9ff; --text: #111; --text-muted: #5a5f73;
+  --accent: #0044aa; --accent-strong:#00298f; --border: #d7dbee; --radius: 16px;
+}
+[data-theme="dark"] {
+  --bg: #0f172a; --bg-card: #1b2436; --text: #e7e9f0; --text-muted: #98a0b8;
+  --accent: #7fb1ff; --accent-strong:#a9cbff; --border: #2c3752;
+}
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  background: var(--bg); color: var(--text); margin: 0; padding: 16px;
+  line-height: 1.45; -webkit-text-size-adjust: 100%;
+}
+.container { max-width: 1100px; margin: auto; background: var(--bg-card);
+  padding: 20px; border-radius: var(--radius); box-shadow: 0 0 30px rgba(0,0,0,0.10); }
+h1 { font-size: clamp(22px, 5vw, 30px); margin: 6px 0 8px; }
+h3 { font-size: 17px; margin: 22px 0 8px; }
+a { color: var(--accent); text-decoration: none; word-break: break-word; }
+a:hover { text-decoration: underline; }
+.topbar { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom: 6px;}
+.home-link { font-weight:600; font-size:15px; }
+.theme-toggle button, .btn {
+  padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border);
+  background: transparent; color: var(--text); cursor: pointer; font-size: 13px;
+}
+.breadcrumb { font-size: 13px; color: var(--text-muted); margin: 6px 0 16px; line-height:1.8; }
+.breadcrumb a { margin-right:2px; }
+.search-wrap { margin: 14px 0 20px; position: relative; }
+.search-wrap input {
+  width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
+  font-size: 16px; background: var(--bg); color: var(--text);
+}
+#searchResults { margin-top: 8px; border-radius: 12px; overflow: hidden; }
+#searchResults .res { display:block; padding: 10px 12px; border-bottom: 1px solid var(--border); background: var(--bg); }
+#searchResults .res small { display:block; color: var(--text-muted); }
+ul.filelist { list-style: none; padding: 0; margin: 6px 0 0; }
+ul.filelist li { display:flex; align-items:center; gap:8px; padding: 9px 4px; border-bottom: 1px solid var(--border); flex-wrap: wrap;}
+ul.filelist li .name { flex: 1 1 auto; min-width: 140px; }
+.dl-btn { flex: 0 0 auto; font-size: 12px; padding: 5px 10px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); }
+.dl-btn:hover { color: var(--accent); border-color: var(--accent); text-decoration:none; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; margin-top: 14px; }
+.card { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
+.card-title { font-size: 17px; font-weight: 600; margin-bottom: 4px; display:flex; align-items:center; gap:6px;}
+.card-meta { font-size: 12px; color: var(--text-muted); }
+.recent-list { list-style:none; padding:0; margin: 8px 0 0; }
+.recent-list li { padding: 8px 0; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;}
+.recent-list .date { color: var(--text-muted); font-size: 13px; }
+.footer { margin-top: 26px; font-size: 12px; color: var(--text-muted); text-align:center; }
+.locked-badge { font-size:12px; color:var(--text-muted); }
+@media (max-width: 600px) {
+  body { padding: 8px; }
+  .container { padding: 14px; border-radius: 12px; }
+  ul.filelist li { font-size: 15px; }
+  .grid { grid-template-columns: 1fr; }
+}
+
+.gate-box{max-width:380px;margin:60px auto;text-align:center;}
+.gate-box input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);font-size:16px;margin-bottom:10px;background:var(--bg);color:var(--text);}
+.gate-box button{width:100%;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:15px;cursor:pointer;}
+.gate-err{color:#c0392b;font-size:13px;margin-top:8px;min-height:18px;}
+#gateContent{display:none;}
+iframe.gate-frame{width:100%;height:80vh;border:0;border-radius:12px;background:#fff;}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="theme-toggle"><button onclick="toggleTheme()">☀️/🌙</button></div>
+<div id="gateBox" class="gate-box">
+  <h1>🔒 Beskyttet innhold</h1>
+  <p style="color:var(--text-muted);font-size:14px;">Denne mappen krever passord.</p>
+  <input type="password" id="gatePw" placeholder="Passord" autofocus>
+  <button id="gateGo">Lås opp</button>
+  <div class="gate-err" id="gateErr"></div>
+</div>
+<div id="gateContent"></div>
+</div>
+<script>
+const PAYLOAD = {"salt": "NiHK7a8q9zn9SJcvAdydbQ==", "iv": "KL0W1hcbrtSnZyVrfkQzuw==", "iterations": 210000, "ciphertext": "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"};
+const META = {"filename": "mail_042_1_thumb.jpg", "mime": "application/octet-stream"};
+
+function b64ToBytes(b64){const bin=atob(b64);const a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a;}
+async function derivePrivatKey(pw, saltB64, iterations){
+  const salt = b64ToBytes(saltB64);
+  const enc = new TextEncoder();
+  const baseKey = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations, hash:'SHA-256'}, baseKey, {name:'AES-CBC', length:256}, false, ['decrypt']);
+}
+async function decryptPrivatPayload(payload, pw){
+  const key = await derivePrivatKey(pw, payload.salt, payload.iterations);
+  const iv = b64ToBytes(payload.iv);
+  const ct = b64ToBytes(payload.ciphertext);
+  const buf = await crypto.subtle.decrypt({name:'AES-CBC', iv}, key, ct);
+  return new Uint8Array(buf);
+}
+function pwStorageKey(){ return 'privatPw'; }
+async function attemptUnlock(pw, onSuccess, onError){
+  try{
+    const bytes = await decryptPrivatPayload(PAYLOAD, pw);
+    sessionStorage.setItem(pwStorageKey(), pw);
+    onSuccess(bytes, pw);
+  }catch(e){ onError(); }
+}
+document.addEventListener('DOMContentLoaded', function(){
+  const saved = sessionStorage.getItem(pwStorageKey());
+  const goBtn = document.getElementById('gateGo');
+  const pwInput = document.getElementById('gatePw');
+  const err = document.getElementById('gateErr');
+  function tryWith(pw){
+    attemptUnlock(pw, renderUnlocked, function(){
+      if (err) err.textContent = 'Feil passord.';
+      sessionStorage.removeItem(pwStorageKey());
+    });
+  }
+  if (saved) tryWith(saved);
+  if (goBtn) goBtn.addEventListener('click', ()=> tryWith(pwInput.value));
+  if (pwInput) pwInput.addEventListener('keydown', e=>{ if(e.key==='Enter') tryWith(pwInput.value); });
+});
+
+
+function renderUnlocked(bytes){
+  document.getElementById('gateBox').style.display='none';
+  const c = document.getElementById('gateContent');
+  c.style.display='block';
+  const blob = new Blob([bytes], {type: META.mime || 'application/octet-stream'});
+  const url = URL.createObjectURL(blob);
+  c.innerHTML = '<p style="text-align:center;padding:40px 0;">✅ Opplåst.<br><a class="btn" style="display:inline-block;margin-top:14px;" href="'+url+'" download="'+META.filename+'">⬇ Last ned '+META.filename+'</a></p>';
+}
+
+</script>
+</body>
+</html>

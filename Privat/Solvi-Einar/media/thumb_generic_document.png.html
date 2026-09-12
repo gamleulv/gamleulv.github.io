@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>thumb_generic_document.png</title>
+<style>
+:root {
+  --bg: #eef2ff; --bg-card: #f8f9ff; --text: #111; --text-muted: #5a5f73;
+  --accent: #0044aa; --accent-strong:#00298f; --border: #d7dbee; --radius: 16px;
+}
+[data-theme="dark"] {
+  --bg: #0f172a; --bg-card: #1b2436; --text: #e7e9f0; --text-muted: #98a0b8;
+  --accent: #7fb1ff; --accent-strong:#a9cbff; --border: #2c3752;
+}
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  background: var(--bg); color: var(--text); margin: 0; padding: 16px;
+  line-height: 1.45; -webkit-text-size-adjust: 100%;
+}
+.container { max-width: 1100px; margin: auto; background: var(--bg-card);
+  padding: 20px; border-radius: var(--radius); box-shadow: 0 0 30px rgba(0,0,0,0.10); }
+h1 { font-size: clamp(22px, 5vw, 30px); margin: 6px 0 8px; }
+h3 { font-size: 17px; margin: 22px 0 8px; }
+a { color: var(--accent); text-decoration: none; word-break: break-word; }
+a:hover { text-decoration: underline; }
+.topbar { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom: 6px;}
+.home-link { font-weight:600; font-size:15px; }
+.theme-toggle button, .btn {
+  padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border);
+  background: transparent; color: var(--text); cursor: pointer; font-size: 13px;
+}
+.breadcrumb { font-size: 13px; color: var(--text-muted); margin: 6px 0 16px; line-height:1.8; }
+.breadcrumb a { margin-right:2px; }
+.search-wrap { margin: 14px 0 20px; position: relative; }
+.search-wrap input {
+  width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
+  font-size: 16px; background: var(--bg); color: var(--text);
+}
+#searchResults { margin-top: 8px; border-radius: 12px; overflow: hidden; }
+#searchResults .res { display:block; padding: 10px 12px; border-bottom: 1px solid var(--border); background: var(--bg); }
+#searchResults .res small { display:block; color: var(--text-muted); }
+ul.filelist { list-style: none; padding: 0; margin: 6px 0 0; }
+ul.filelist li { display:flex; align-items:center; gap:8px; padding: 9px 4px; border-bottom: 1px solid var(--border); flex-wrap: wrap;}
+ul.filelist li .name { flex: 1 1 auto; min-width: 140px; }
+.dl-btn { flex: 0 0 auto; font-size: 12px; padding: 5px 10px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); }
+.dl-btn:hover { color: var(--accent); border-color: var(--accent); text-decoration:none; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; margin-top: 14px; }
+.card { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
+.card-title { font-size: 17px; font-weight: 600; margin-bottom: 4px; display:flex; align-items:center; gap:6px;}
+.card-meta { font-size: 12px; color: var(--text-muted); }
+.recent-list { list-style:none; padding:0; margin: 8px 0 0; }
+.recent-list li { padding: 8px 0; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;}
+.recent-list .date { color: var(--text-muted); font-size: 13px; }
+.footer { margin-top: 26px; font-size: 12px; color: var(--text-muted); text-align:center; }
+.locked-badge { font-size:12px; color:var(--text-muted); }
+@media (max-width: 600px) {
+  body { padding: 8px; }
+  .container { padding: 14px; border-radius: 12px; }
+  ul.filelist li { font-size: 15px; }
+  .grid { grid-template-columns: 1fr; }
+}
+
+.gate-box{max-width:380px;margin:60px auto;text-align:center;}
+.gate-box input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);font-size:16px;margin-bottom:10px;background:var(--bg);color:var(--text);}
+.gate-box button{width:100%;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:15px;cursor:pointer;}
+.gate-err{color:#c0392b;font-size:13px;margin-top:8px;min-height:18px;}
+#gateContent{display:none;}
+iframe.gate-frame{width:100%;height:80vh;border:0;border-radius:12px;background:#fff;}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="theme-toggle"><button onclick="toggleTheme()">☀️/🌙</button></div>
+<div id="gateBox" class="gate-box">
+  <h1>🔒 Beskyttet innhold</h1>
+  <p style="color:var(--text-muted);font-size:14px;">Denne mappen krever passord.</p>
+  <input type="password" id="gatePw" placeholder="Passord" autofocus>
+  <button id="gateGo">Lås opp</button>
+  <div class="gate-err" id="gateErr"></div>
+</div>
+<div id="gateContent"></div>
+</div>
+<script>
+const PAYLOAD = {"salt": "liOL7RYesvqCzDTAvpm8nw==", "iv": "8MQsAfiS4wE5HaIcmaRSRg==", "iterations": 210000, "ciphertext": "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"};
+const META = {"filename": "thumb_generic_document.png", "mime": "application/octet-stream"};
+
+function b64ToBytes(b64){const bin=atob(b64);const a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a;}
+async function derivePrivatKey(pw, saltB64, iterations){
+  const salt = b64ToBytes(saltB64);
+  const enc = new TextEncoder();
+  const baseKey = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations, hash:'SHA-256'}, baseKey, {name:'AES-CBC', length:256}, false, ['decrypt']);
+}
+async function decryptPrivatPayload(payload, pw){
+  const key = await derivePrivatKey(pw, payload.salt, payload.iterations);
+  const iv = b64ToBytes(payload.iv);
+  const ct = b64ToBytes(payload.ciphertext);
+  const buf = await crypto.subtle.decrypt({name:'AES-CBC', iv}, key, ct);
+  return new Uint8Array(buf);
+}
+function pwStorageKey(){ return 'privatPw'; }
+async function attemptUnlock(pw, onSuccess, onError){
+  try{
+    const bytes = await decryptPrivatPayload(PAYLOAD, pw);
+    sessionStorage.setItem(pwStorageKey(), pw);
+    onSuccess(bytes, pw);
+  }catch(e){ onError(); }
+}
+document.addEventListener('DOMContentLoaded', function(){
+  const saved = sessionStorage.getItem(pwStorageKey());
+  const goBtn = document.getElementById('gateGo');
+  const pwInput = document.getElementById('gatePw');
+  const err = document.getElementById('gateErr');
+  function tryWith(pw){
+    attemptUnlock(pw, renderUnlocked, function(){
+      if (err) err.textContent = 'Feil passord.';
+      sessionStorage.removeItem(pwStorageKey());
+    });
+  }
+  if (saved) tryWith(saved);
+  if (goBtn) goBtn.addEventListener('click', ()=> tryWith(pwInput.value));
+  if (pwInput) pwInput.addEventListener('keydown', e=>{ if(e.key==='Enter') tryWith(pwInput.value); });
+});
+
+
+function renderUnlocked(bytes){
+  document.getElementById('gateBox').style.display='none';
+  const c = document.getElementById('gateContent');
+  c.style.display='block';
+  const blob = new Blob([bytes], {type: META.mime || 'application/octet-stream'});
+  const url = URL.createObjectURL(blob);
+  c.innerHTML = '<p style="text-align:center;padding:40px 0;">✅ Opplåst.<br><a class="btn" style="display:inline-block;margin-top:14px;" href="'+url+'" download="'+META.filename+'">⬇ Last ned '+META.filename+'</a></p>';
+}
+
+</script>
+</body>
+</html>
