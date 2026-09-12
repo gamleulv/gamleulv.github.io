@@ -87,6 +87,11 @@ iframe.gate-frame{width:100%;height:80vh;border:0;border-radius:12px;background:
 const PAYLOAD = {"salt": "Fhb7Iui0qTXrcn5GofN5Dw==", "iv": "c/RJtWZcmLkDlgt9/A0GHQ==", "iterations": 210000, "ciphertext": "JiOaoTcNKb/crsN9JSeaPs4dgml46/7cHi6y8K7YyVMffFOrLzpYzxKQAg0RJnCVp7CkFU0M0awqrflxtm6QJCxejF41ATXaoT7/Wulw8SniWgXF8nPrBqQPKmmDNuJBs07yAb7dfafR6zH6xURgYdaXF6FQjTSHQaTYz2xgMiWchUzshKNch8ZkupA2eqXsuTmv3nXBJykBPzLFuhMb1ExV9cRR8Aw5i5pp5vuDiGVWRVnXpLFXUQeHRiOlbsEnxRD7O905seJPFwZ3EL/6kQJ4FuBaGYwP7pGPh+MMiEnf7Prk22JjZIfwKwt5AGZTPp3e7liSTAILHqNvWJbHFY3IS8dW8PUThVZv0evxnAHeyTWLZ7UjdorRHYdTKKp+fdI2E0DDmHjFVEy97RktJjptKtkIpjClzBN403KfA73RaxK11Ftcpw+f70juVwPWrfYTBebuuebkV4dx6i5gbXev4t+/zhEW42WyPcs37l42kWyOZtbxdQqBgB78cYf6UDy+rbOjxod+jPxnvUqDMbKaayDFPgy2PLEJv3FybZXepSu+bdvUvIymC+WcHDuPKAN4rNTL3nSvWhUC8nczVlKtAOdjp4yVRdO2l7F1/jUEJqq3FCG0Xc3lu0u3fWzof2sHQfCdFjsjiAS2qikkqw/UTK3CqvSqGjmlVh/hXj9JB517c4WrirrJ9PdWbeBKi+Fua+4+An9GU1wUyzzp4aLy/E6w2as6oMq26i54hxN3MRlZDmyBXF8/7rxH6K9iLp+eW03CzrBSx5ulAiGnQB13ImS0W1HA2yjNzu9pwkDvwfGqCVxoJdofphcsARY/"};
 const META = {"filename": "favicon-16.png", "mime": "application/octet-stream"};
 
+function setTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('site-theme',t);}
+function toggleTheme(){const c=document.documentElement.getAttribute('data-theme')||'light';setTheme(c==='light'?'dark':'light');}
+function readStoredTheme(){return localStorage.getItem('site-theme')||'light';}
+document.addEventListener('DOMContentLoaded',function(){setTheme(readStoredTheme());});
+
 function b64ToBytes(b64){const bin=atob(b64);const a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a;}
 async function derivePrivatKey(pw, saltB64, iterations){
   const salt = b64ToBytes(saltB64);

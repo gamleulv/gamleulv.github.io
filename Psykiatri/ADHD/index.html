@@ -72,12 +72,15 @@ ul.filelist li .name { flex: 1 1 auto; min-width: 140px; }
 <div class="breadcrumb"><a href="/index.html">🏠 Hjem</a> / <a href="/Psykiatri/index.html">Psykiatri</a> / <a href="/Psykiatri/ADHD/index.html">ADHD</a></div>
 <div class="search-wrap"><input id="searchInput" type="text" placeholder="🔎 Søk i hele nettstedet – mappe, fil eller innhold…" autocomplete="off"><div id="searchResults"></div></div>
 <p style="margin-top:26px;"><a href="/Psykiatri/index.html">⬅ Tilbake</a></p>
-<div class="footer">Sist oppdatert: 2026-09-12 03:02</div>
+<div class="footer">Sist oppdatert: 2026-09-12 09:19</div>
 </div>
 <script>
 function setTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('site-theme',t);}
 function toggleTheme(){const c=document.documentElement.getAttribute('data-theme')||'light';setTheme(c==='light'?'dark':'light');}
-document.addEventListener('DOMContentLoaded',function(){setTheme(localStorage.getItem('site-theme')||'light');initSearch();});
+function readStoredTheme(){return localStorage.getItem('site-theme')||'light';}
+document.addEventListener('DOMContentLoaded',function(){setTheme(readStoredTheme());});
+
+document.addEventListener('DOMContentLoaded',function(){initSearch();});
 
 let SEARCH_INDEX = null;
 async function loadSearchIndex(){

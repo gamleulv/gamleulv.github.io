@@ -87,6 +87,11 @@ iframe.gate-frame{width:100%;height:80vh;border:0;border-radius:12px;background:
 const PAYLOAD = {"salt": "r3EKW2go1PbJx/RGLt4cfw==", "iv": "dKB2BRKcIrc0f/4oYlvIEw==", "iterations": 210000, "ciphertext": "oLFE3XXXsuhaNQajQJntqrl1ezz1UgNHB/xhVU9lbteDIYZ4EMZuZCG5HJean2lY2qRUifNt/9b0PfTbTfkqldr8JSwwMhgVueD9ddz7+ijqbTVgSNX87EWfq3LbWpukntGN4yua1rus3k699fXk2dUvMo1d6miJtqGc7JaCZKRPS55XJZ+76mS7fXDex3+4"};
 const META = {"filename": "imessage_1782632077000_1_2026-06-28-09-34-37.pluginPayloadAttachment", "mime": "application/octet-stream"};
 
+function setTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('site-theme',t);}
+function toggleTheme(){const c=document.documentElement.getAttribute('data-theme')||'light';setTheme(c==='light'?'dark':'light');}
+function readStoredTheme(){return localStorage.getItem('site-theme')||'light';}
+document.addEventListener('DOMContentLoaded',function(){setTheme(readStoredTheme());});
+
 function b64ToBytes(b64){const bin=atob(b64);const a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a;}
 async function derivePrivatKey(pw, saltB64, iterations){
   const salt = b64ToBytes(saltB64);

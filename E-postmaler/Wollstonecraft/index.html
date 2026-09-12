@@ -75,12 +75,15 @@ ul.filelist li .name { flex: 1 1 auto; min-width: 140px; }
 <li><span class="name">📄 <a href="/E-postmaler/Wollstonecraft/MW.html">Mary Wollstonecraft og sølvskatten i Norge</a></span><a class="dl-btn" href="/E-postmaler/Wollstonecraft/MW.html" download="MW.html">⬇ Last ned</a></li>
 </ul>
 <p style="margin-top:26px;"><a href="/E-postmaler/index.html">⬅ Tilbake</a></p>
-<div class="footer">Sist oppdatert: 2026-09-12 03:02</div>
+<div class="footer">Sist oppdatert: 2026-09-12 09:19</div>
 </div>
 <script>
 function setTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('site-theme',t);}
 function toggleTheme(){const c=document.documentElement.getAttribute('data-theme')||'light';setTheme(c==='light'?'dark':'light');}
-document.addEventListener('DOMContentLoaded',function(){setTheme(localStorage.getItem('site-theme')||'light');initSearch();});
+function readStoredTheme(){return localStorage.getItem('site-theme')||'light';}
+document.addEventListener('DOMContentLoaded',function(){setTheme(readStoredTheme());});
+
+document.addEventListener('DOMContentLoaded',function(){initSearch();});
 
 let SEARCH_INDEX = null;
 async function loadSearchIndex(){

@@ -85,12 +85,15 @@ ul.filelist li .name { flex: 1 1 auto; min-width: 140px; }
 <div class="card"><div class="card-title">📁 <a href="/E-postmaler/%E2%9D%A4%EF%B8%8F/index.html">❤️</a></div><div class="card-meta">6 fil(er)</div></div>
 </div>
 <p style="margin-top:26px;"><a href="/index.html">⬅ Tilbake</a></p>
-<div class="footer">Sist oppdatert: 2026-09-12 03:02</div>
+<div class="footer">Sist oppdatert: 2026-09-12 09:19</div>
 </div>
 <script>
 function setTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('site-theme',t);}
 function toggleTheme(){const c=document.documentElement.getAttribute('data-theme')||'light';setTheme(c==='light'?'dark':'light');}
-document.addEventListener('DOMContentLoaded',function(){setTheme(localStorage.getItem('site-theme')||'light');initSearch();});
+function readStoredTheme(){return localStorage.getItem('site-theme')||'light';}
+document.addEventListener('DOMContentLoaded',function(){setTheme(readStoredTheme());});
+
+document.addEventListener('DOMContentLoaded',function(){initSearch();});
 
 let SEARCH_INDEX = null;
 async function loadSearchIndex(){

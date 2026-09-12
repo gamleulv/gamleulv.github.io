@@ -87,6 +87,11 @@ iframe.gate-frame{width:100%;height:80vh;border:0;border-radius:12px;background:
 const PAYLOAD = {"salt": "X327yr/GvWl4FkEa+6rZDg==", "iv": "I5t7+YFEFH6ZFBsfFNTozA==", "iterations": 210000, "ciphertext": "S4BzY32FnwtRGvN6xXtOBt8ySp9S2zK+fldNlVm68eMB0YYukzzSkHPn+DUF/d96RhKTXuAVOa/Wyz3VcsHa2urvxpyrAKs4q52QykOXS8XxXCzX6Ja4ZZAMKJ0F3yVJMACWwocIdBoymiTfWz9qN6+6DifWs6r7vKyf7dMFiuxP3SS/+pVZo7+PlJEb/owcujwKCsk0L9viGSanpYf7gEpw0KU9xEyBTlD5pDwPAY8VzGl8djxvzMo/63Q1dc351BUAHFPVCgRQhmLGWl7SAom9zaPxTiULwrL1Fo7LGMXWWFNg8betI/TK8sFCp0GVEVShgkB+FHUpjPVuUY6FlYP/kAnniP/1WD+ctFfRxEqsx+V4dg0IJwScuHeTe1VeDFURVCg3ff5Od/VGtHqeL+PFnl2e9LzTrrpX6BcnQKBsX3in9h28Hw00DaMcIi/H13UVUJ4OoKXs66lCrJDgin5gJQ2hGwUMMzvSA8CNEAxk/XCntxAnBwpPj7ykGi9WrAudMTaXTlBo968PsIcbOdDqPftthArp43WlNurUw9x1wUblBALYZYESdmiZc9GDt9uzqbKSfb2ew0WZZAU6g6ZTsjZggvXxYvuBcA8291KEvujtpo+q4MfbRwJiTd8m5H9UMc9XXAS7ISOqcyNx8tHHX3wsbNLleib0cmsFmijJdMLoYbo3FXFYxQRugqE19OmzIJcl1eZTW2wWOPlBfA=="};
 const META = {"filename": "mail_060_1.png", "mime": "application/octet-stream"};
 
+function setTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('site-theme',t);}
+function toggleTheme(){const c=document.documentElement.getAttribute('data-theme')||'light';setTheme(c==='light'?'dark':'light');}
+function readStoredTheme(){return localStorage.getItem('site-theme')||'light';}
+document.addEventListener('DOMContentLoaded',function(){setTheme(readStoredTheme());});
+
 function b64ToBytes(b64){const bin=atob(b64);const a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a;}
 async function derivePrivatKey(pw, saltB64, iterations){
   const salt = b64ToBytes(saltB64);

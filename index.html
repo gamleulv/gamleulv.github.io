@@ -79,12 +79,15 @@ ul.filelist li .name { flex: 1 1 auto; min-width: 140px; }
 <div class="card"><div class="card-title">📁 <a href="/Psykometri/index.html">Psykometri</a></div><div class="card-meta">1 fil(er), 10 undermappe(r)</div></div>
 <div class="card"><div class="card-title">📁 <a href="/S%C3%B8vn/index.html">Søvn</a></div><div class="card-meta">4 fil(er)</div></div>
 </div>
-<div class="footer">Sist oppdatert: 2026-09-12 03:02</div>
+<div class="footer">Sist oppdatert: 2026-09-12 09:19</div>
 </div>
 <script>
 function setTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('site-theme',t);}
 function toggleTheme(){const c=document.documentElement.getAttribute('data-theme')||'light';setTheme(c==='light'?'dark':'light');}
-document.addEventListener('DOMContentLoaded',function(){setTheme(localStorage.getItem('site-theme')||'light');initSearch();});
+function readStoredTheme(){return localStorage.getItem('site-theme')||'light';}
+document.addEventListener('DOMContentLoaded',function(){setTheme(readStoredTheme());});
+
+document.addEventListener('DOMContentLoaded',function(){initSearch();});
 
 let SEARCH_INDEX = null;
 async function loadSearchIndex(){

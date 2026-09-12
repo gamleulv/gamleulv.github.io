@@ -87,6 +87,11 @@ iframe.gate-frame{width:100%;height:80vh;border:0;border-radius:12px;background:
 const PAYLOAD = {"salt": "LgkvlpQsfXOprwlpyHpl5Q==", "iv": "i46iBzMb2SvuYSrQjkzPSw==", "iterations": 210000, "ciphertext": "NS7sZMMqv4RuGvEF42pk54qmgc6RMGZ/+wR8bDF7XXk+QAawVIcRyWMkJIwoAy1eHAd3izyX0oclR8/2gx5RMFxdNLOVo1spOVZWi0unrAQiLuBNIcOZXfetTxOeGcQ4u4CT/0kkDhHJtXX/+PRUuNDPlcnlGlSvXJxzJndwKX3gkOe8HB+k9KGpgfiSeJHPYWe59hE3Q5/Yw1f3nr9UZdmS82/WO9gVnna2OGx3Mg8N8KzLgA5ZMQSClFPyWL9Gj1QbCwFHhGUdhcB5xHqvzjlBj9dVMLV0SvVhdYiJvfn6C5jnZiW5dwt7lG2GmV189Uo8Iyex2QUG9FKQFgZQhzIDdOAz+MgF9VVeirFw3BXiso2Ra3zPTlEB474MtUvAbZU35Q9VUAYaXRVInB9gy9XmmAR0cEcgMxwMcAZrEo93nEckeZujJynyChjE5yInyXFiBHfcwvEjF4RNPULx30RIN2MWwq2ncCVob3N0K+CfvHxNcaZuyHL35ON07gBbA/w50DkNmLx1Efy2jiyiODcGhTVh7LNMQT4H7lru799Yy3j5ImzOhZF+rVLW7cruraH6Z/CbdV9pBfLf3XoOSboFwiV49DF/8/Rp702IzZD+vHfq9Bl8rst7AwJViVvjEO72w3hjFIZgvPu/HsilFgtOD7LOulBJPoRHRHarIrQLnuIMYvCTc+hlnTGK5CBwd2NyJguVcdT/9am9zFcXGU+QbvKAzV4srLbYer7GNQf54EfcpOvg1DP7N62ohBMKEg4+MbFPIRn8hspgYLUZs5aSiSRnwt8b/K7yGrJcw7zvrFb2ObmThT/3cD4/M+qCayIp3QNjLCLDV1Yb8+Qp/JiI6AE/Y9qzlm46dTXIx1vejgUMd6ayJ5ZZwh0wITwe87TdlMdJgLvaxmR1AM4Y9o2GVwduvapJ7FE5ZFgLDNUthF3OvcZUYXasSTVkN6BXid08S1lkkWAmYhycMSLn9w8cWwvPzYPm8rwxqn8fpoF+eJixsUWDnyUR3pCG6DrAcNX6oDbt/DhBptUWJ2k3JYpfxHrGBTcuYoznl294l1GF0al/V7LA00k/w5mxQTXXNBMi8xbwNYz///H/d7i0gS3OAVfjwPwNVQqml1Ab0HuwHR3z8mCcKao3leLFTm/ZtgA45LSqnLYiiCm0xCnxSxDmGCXmEUEdMzE7lT0naDKdud6voMF1yEidjIisHEPgQO/VrFj4l64ws0l582j7rqoO9Ij0KWP+CaE74XP0ZdPFfOadcavhDVtKXoAXZPq18T5NApbPmGNR8VxlPO0QdMuxJpWx/kiCxNYbl5gEWcPSPXJTybTq71Mdut66P00pukt2ql+TrpBhLB19d9ozZEiIcFWlAg6tiew6waPA75uIn6bR+VQIzGy2T3mRFPwP"};
 const META = {};
 
+function setTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('site-theme',t);}
+function toggleTheme(){const c=document.documentElement.getAttribute('data-theme')||'light';setTheme(c==='light'?'dark':'light');}
+function readStoredTheme(){return localStorage.getItem('site-theme')||'light';}
+document.addEventListener('DOMContentLoaded',function(){setTheme(readStoredTheme());});
+
 function b64ToBytes(b64){const bin=atob(b64);const a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a;}
 async function derivePrivatKey(pw, saltB64, iterations){
   const salt = b64ToBytes(saltB64);
@@ -206,14 +211,30 @@ async function renderUnlocked(bytes, pw){
     }
     styleEl.textContent = css;
   }));
+  // Page-to-page navigation links (another gate page in its own right, e.g.
+  // a link to a subfolder or sibling page) must escape this iframe instead
+  // of navigating inside it. This content is rendered into an <iframe> below
+  // via srcdoc, so a plain relative click here would normally navigate just
+  // that iframe - stacking a second gate+iframe inside the first, and a
+  // third inside that on the next click, and so on ("ramme i ramme").
+  // target="_top" makes the browser navigate the whole tab instead, which is
+  // also what lets the top-level gate page's cached sessionStorage password
+  // auto-unlock the next page seamlessly.
+  const navLinks = Array.from(doc.querySelectorAll('a[href]'));
+  navLinks.forEach((a) => {
+    const href = a.getAttribute('href');
+    if (href && !isExternalSrc(href) && /\.html?(#.*)?$/i.test(href)) {
+      a.setAttribute('target', '_top');
+    }
+  });
   // Attachment links (PDFs, Office docs, GIFs referenced by href, plugin
   // attachments, etc.) - the encrypted gate page for a non-html file `foo.ext`
   // is stored as `foo.ext.html`, so a plain `<a href="media/foo.ext">` copied
   // verbatim from the source page would 404. Decrypt it here too and turn the
   // link into a direct one-click blob download - reusing the same password,
   // no second gate page / prompt needed. Links that already end in `.html`
-  // are ordinary page-to-page navigation (they point at another gate page in
-  // their own right) and must be left alone.
+  // are ordinary page-to-page navigation (handled just above) and must be
+  // left alone here.
   const attachLinks = Array.from(doc.querySelectorAll('a[href]'));
   await Promise.all(attachLinks.map(async (a) => {
     const href = a.getAttribute('href');
