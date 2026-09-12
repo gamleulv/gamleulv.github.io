@@ -31,8 +31,10 @@ a:hover { text-decoration: underline; }
   padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border);
   background: transparent; color: var(--text); cursor: pointer; font-size: 13px;
 }
-.breadcrumb { font-size: 13px; color: var(--text-muted); margin: 6px 0 16px; line-height:1.8; }
+.breadcrumb { font-size: 13px; color: var(--text-muted); margin: 6px 0 16px; line-height:1.8; display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
 .breadcrumb a { margin-right:2px; }
+.breadcrumb .back-link { margin-left:auto; padding:5px 12px; border:1px solid var(--border); border-radius:999px; background:transparent; color:var(--text); text-decoration:none; font-weight:600; cursor:pointer; }
+.breadcrumb .back-link:hover { border-color: var(--primary); color: var(--primary); }
 .search-wrap { margin: 14px 0 20px; position: relative; }
 .search-wrap input {
   width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
@@ -88,18 +90,18 @@ ul.filelist li .name { flex: 1 1 auto; min-width: 140px; }
 <li><span class="name">📄 <a href="/E-postmaler/SSHF/PTSD-behandlere-pil-riklenke.html">PTSD - riklenke under pil</a></span><a class="dl-btn" href="/E-postmaler/SSHF/PTSD-behandlere-pil-riklenke.html" download="PTSD-behandlere-pil-riklenke.html">⬇ Last ned</a></li>
 <li><span class="name">📄 <a href="/E-postmaler/SSHF/PTSD-pasienter-pil-riklenke.html">Om PTSD for pasienter - riklenke under pil</a></span><a class="dl-btn" href="/E-postmaler/SSHF/PTSD-pasienter-pil-riklenke.html" download="PTSD-pasienter-pil-riklenke.html">⬇ Last ned</a></li>
 <li><span class="name">📄 <a href="/E-postmaler/SSHF/PTSD-pasienter-pil.html">Om PTSD: For pasienter og pårørende</a></span><a class="dl-btn" href="/E-postmaler/SSHF/PTSD-pasienter-pil.html" download="PTSD-pasienter-pil.html">⬇ Last ned</a></li>
-<li><span class="name">📄 <a href="/E-postmaler/SSHF/S%C3%B8vn-behandlere-skj%C3%A6rga%CC%8Ardsnatt-lenker-gyngende-ma%CC%8Ane.html">Søvn - lenker - gyngende måne - nattbakgrunn</a></span><a class="dl-btn" href="/E-postmaler/SSHF/S%C3%B8vn-behandlere-skj%C3%A6rga%CC%8Ardsnatt-lenker-gyngende-ma%CC%8Ane.html" download="Søvn-behandlere-skjærgårdsnatt-lenker-gyngende-måne.html">⬇ Last ned</a></li>
-<li><span class="name">📄 <a href="/E-postmaler/SSHF/S%C3%B8vn-behandlere-skj%C3%A6rga%CC%8Ardsnatt-lenker.html">Søvnlenker på nattbakgrunn</a></span><a class="dl-btn" href="/E-postmaler/SSHF/S%C3%B8vn-behandlere-skj%C3%A6rga%CC%8Ardsnatt-lenker.html" download="Søvn-behandlere-skjærgårdsnatt-lenker.html">⬇ Last ned</a></li>
-<li><span class="name">📄 <a href="/E-postmaler/SSHF/S%C3%B8vn-behandlere-skj%C3%A6rga%CC%8Ardsnatt-riklenke.html">Søvn - riklenke på nattbakgrunn</a></span><a class="dl-btn" href="/E-postmaler/SSHF/S%C3%B8vn-behandlere-skj%C3%A6rga%CC%8Ardsnatt-riklenke.html" download="Søvn-behandlere-skjærgårdsnatt-riklenke.html">⬇ Last ned</a></li>
-<li><span class="name">📄 <a href="/E-postmaler/SSHF/S%C3%B8vn-behandlere-skj%C3%A6rga%CC%8Ardsnatt.html">Om søvn og behandling av søvnforstyrrelser</a></span><a class="dl-btn" href="/E-postmaler/SSHF/S%C3%B8vn-behandlere-skj%C3%A6rga%CC%8Ardsnatt.html" download="Søvn-behandlere-skjærgårdsnatt.html">⬇ Last ned</a></li>
-<li><span class="name">📄 <a href="/E-postmaler/SSHF/S%C3%B8vn-behandling-s%C3%B8vnforstyrrelser.html">Behandling av søvnforstyrrelser</a></span><a class="dl-btn" href="/E-postmaler/SSHF/S%C3%B8vn-behandling-s%C3%B8vnforstyrrelser.html" download="Søvn-behandling-søvnforstyrrelser.html">⬇ Last ned</a></li>
-<li><span class="name">📄 <a href="/E-postmaler/SSHF/S%C3%B8vn-pasienter-skj%C3%A6rga%CC%8Ardsnatt-riklenke.html">Om søvn for pasienter - riklenke på nattbakgrunn</a></span><a class="dl-btn" href="/E-postmaler/SSHF/S%C3%B8vn-pasienter-skj%C3%A6rga%CC%8Ardsnatt-riklenke.html" download="Søvn-pasienter-skjærgårdsnatt-riklenke.html">⬇ Last ned</a></li>
-<li><span class="name">📄 <a href="/E-postmaler/SSHF/S%C3%B8vn-pasienter-skj%C3%A6rga%CC%8Ardsnatt.html">Om søvn og behandling av søvnforstyrrelser</a></span><a class="dl-btn" href="/E-postmaler/SSHF/S%C3%B8vn-pasienter-skj%C3%A6rga%CC%8Ardsnatt.html" download="Søvn-pasienter-skjærgårdsnatt.html">⬇ Last ned</a></li>
-<li><span class="name">📄 <a href="/E-postmaler/SSHF/S%C3%B8vn-sidelenker-1nattebakgrunn.html">Søvn - lenker på 1 bakgrunn</a></span><a class="dl-btn" href="/E-postmaler/SSHF/S%C3%B8vn-sidelenker-1nattebakgrunn.html" download="Søvn-sidelenker-1nattebakgrunn.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/Sovn-behandlere-skaergaardsnatt-lenker.html">Søvnlenker på nattbakgrunn</a></span><a class="dl-btn" href="/E-postmaler/SSHF/Sovn-behandlere-skaergaardsnatt-lenker.html" download="Sovn-behandlere-skaergaardsnatt-lenker.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/Sovn-behandlere-skjaergaardsnatt-lenker-gyngende-ma%CC%8Ane.html">Søvn - lenker - gyngende måne - nattbakgrunn</a></span><a class="dl-btn" href="/E-postmaler/SSHF/Sovn-behandlere-skjaergaardsnatt-lenker-gyngende-ma%CC%8Ane.html" download="Sovn-behandlere-skjaergaardsnatt-lenker-gyngende-måne.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/Sovn-behandlere-skjaergaardsnatt-riklenke.html">Søvn - riklenke på nattbakgrunn</a></span><a class="dl-btn" href="/E-postmaler/SSHF/Sovn-behandlere-skjaergaardsnatt-riklenke.html" download="Sovn-behandlere-skjaergaardsnatt-riklenke.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/Sovn-behandlere-skjaergaardsnatt.html">Alt om søvn for behandlere (skjærgårdsnatt)</a></span><a class="dl-btn" href="/E-postmaler/SSHF/Sovn-behandlere-skjaergaardsnatt.html" download="Sovn-behandlere-skjaergaardsnatt.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/Sovn-behandling-sovnforstyrrelser.html">Behandling av søvnforstyrrelser</a></span><a class="dl-btn" href="/E-postmaler/SSHF/Sovn-behandling-sovnforstyrrelser.html" download="Sovn-behandling-sovnforstyrrelser.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/Sovn-pasienter-skjaeraardsnatt-riklenke.html">Om søvn for pasienter - riklenke på nattbakgrunn</a></span><a class="dl-btn" href="/E-postmaler/SSHF/Sovn-pasienter-skjaeraardsnatt-riklenke.html" download="Sovn-pasienter-skjaeraardsnatt-riklenke.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/Sovn-pasienter-skjaergaardsnatt.html">Alt om søvn for pasienter (skjærgårdsnatt)</a></span><a class="dl-btn" href="/E-postmaler/SSHF/Sovn-pasienter-skjaergaardsnatt.html" download="Sovn-pasienter-skjaergaardsnatt.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/Sovn-sidelenker-1nattebakgrunn.html">Søvn - lenker på 1 bakgrunn</a></span><a class="dl-btn" href="/E-postmaler/SSHF/Sovn-sidelenker-1nattebakgrunn.html" download="Sovn-sidelenker-1nattebakgrunn.html">⬇ Last ned</a></li>
 <li><span class="name">📄 <a href="/E-postmaler/SSHF/Trening-lenke.html">Fysisk trening og psykisk helse - riklenke</a></span><a class="dl-btn" href="/E-postmaler/SSHF/Trening-lenke.html" download="Trening-lenke.html">⬇ Last ned</a></li>
 </ul>
 <p style="margin-top:26px;"><a href="/E-postmaler/index.html">⬅ Tilbake</a></p>
-<div class="footer">Sist oppdatert: 2026-09-12 09:19</div>
+<div class="footer">Sist oppdatert: 2026-09-12 17:50</div>
 </div>
 <script>
 function setTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('site-theme',t);}
