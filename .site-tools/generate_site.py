@@ -802,6 +802,25 @@ function renderUnlocked(bytes){
 }
 """
 
+# Same unlock flow as RENDER_JS_DOWNLOAD, but for PDFs: browsers can render a
+# PDF blob natively (Chrome/Edge/Firefox/Safari all ship a built-in PDF
+# viewer), so instead of only offering a download link, embed the decrypted
+# blob directly in an <iframe> for in-page reading - the download button
+# stays available right above it for anyone who still wants the file itself.
+RENDER_JS_PDF = """
+function renderUnlocked(bytes){
+  document.getElementById('gateBox').style.display='none';
+  const c = document.getElementById('gateContent');
+  c.style.display='block';
+  const blob = new Blob([bytes], {type: META.mime || 'application/pdf'});
+  const url = URL.createObjectURL(blob);
+  const bar = '<div style="text-align:center;padding:10px 0 14px;">'
+    + '<a class="btn" style="display:inline-block;" href="'+url+'" download="'+META.filename+'">⬇ Last ned '+META.filename+'</a>'
+    + '</div>';
+  c.innerHTML = bar + '<iframe class="gate-frame" src="'+url+'" title="'+META.filename+'"></iframe>';
+}
+"""
+
 RENDER_JS_LISTING = """
 function renderUnlocked(bytes){
   document.getElementById('gateBox').style.display='none';
@@ -926,7 +945,10 @@ def encrypt_privat(repo: Path, password: str):
                         ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
                     }.get(entry.suffix.lower(), "application/octet-stream")
                     meta = {"filename": entry.name, "mime": mime}
-                    page = gate_page_shell(entry.name, payload, "download", meta, RENDER_JS_DOWNLOAD)
+                    if mime == "application/pdf":
+                        page = gate_page_shell(entry.name, payload, "pdf", meta, RENDER_JS_PDF)
+                    else:
+                        page = gate_page_shell(entry.name, payload, "download", meta, RENDER_JS_DOWNLOAD)
                 (out_dir / gate_name).write_text(page, encoding="utf-8")
                 manifest.append({"name": entry.name, "isDir": False, "href": gate_name, "icon": icon_for(entry.name)})
 

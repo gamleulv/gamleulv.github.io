@@ -137,9 +137,12 @@ function renderUnlocked(bytes){
   document.getElementById('gateBox').style.display='none';
   const c = document.getElementById('gateContent');
   c.style.display='block';
-  const blob = new Blob([bytes], {type: META.mime || 'application/octet-stream'});
+  const blob = new Blob([bytes], {type: META.mime || 'application/pdf'});
   const url = URL.createObjectURL(blob);
-  c.innerHTML = '<p style="text-align:center;padding:40px 0;">✅ Opplåst.<br><a class="btn" style="display:inline-block;margin-top:14px;" href="'+url+'" download="'+META.filename+'">⬇ Last ned '+META.filename+'</a></p>';
+  const bar = '<div style="text-align:center;padding:10px 0 14px;">'
+    + '<a class="btn" style="display:inline-block;" href="'+url+'" download="'+META.filename+'">⬇ Last ned '+META.filename+'</a>'
+    + '</div>';
+  c.innerHTML = bar + '<iframe class="gate-frame" src="'+url+'" title="'+META.filename+'"></iframe>';
 }
 
 </script>
