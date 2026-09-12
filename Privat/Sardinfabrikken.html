@@ -31,8 +31,10 @@ a:hover { text-decoration: underline; }
   padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border);
   background: transparent; color: var(--text); cursor: pointer; font-size: 13px;
 }
-.breadcrumb { font-size: 13px; color: var(--text-muted); margin: 6px 0 16px; line-height:1.8; }
+.breadcrumb { font-size: 13px; color: var(--text-muted); margin: 6px 0 16px; line-height:1.8; display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
 .breadcrumb a { margin-right:2px; }
+.breadcrumb .back-link { margin-left:auto; padding:5px 12px; border:1px solid var(--border); border-radius:999px; background:transparent; color:var(--text); text-decoration:none; font-weight:600; cursor:pointer; }
+.breadcrumb .back-link:hover { border-color: var(--primary); color: var(--primary); }
 .search-wrap { margin: 14px 0 20px; position: relative; }
 .search-wrap input {
   width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
@@ -84,7 +86,7 @@ iframe.gate-frame{width:100%;height:80vh;border:0;border-radius:12px;background:
 <div id="gateContent"></div>
 </div>
 <script>
-const PAYLOAD = {"salt": "MmLFEl2zqSYziOfGA9D4yw==", "iv": "jvoqCm+cD0mzevSjES8m6w==", "iterations": 210000, "ciphertext": "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"};
+const PAYLOAD = {"salt": "17EVmd6cZkn55sj32xeDJg==", "iv": "YVyOqfp2neWGLLL12aF+1A==", "iterations": 210000, "ciphertext": "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"};
 const META = {};
 
 function setTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('site-theme',t);}
@@ -154,6 +156,69 @@ async function inlineDecryptImage(src, pw){
   const mime = (extMatch && MIME_BY_EXT[extMatch[1].toLowerCase()]) || 'application/octet-stream';
   return URL.createObjectURL(new Blob([imgBytes], {type: mime}));
 }
+const LAZY_IMG_PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/%3E";
+// Inline photos are decrypted eagerly, in parallel, the moment the page
+// unlocks - fine for a handful of images, but a message page can carry over
+// a hundred of them, and EACH decrypt re-runs a full 210000-round PBKDF2 key
+// derivation (every file's key-derivation salt is content-derived, so it is
+// intentionally different per file - see aes.py). A hundred-plus PBKDF2 runs
+// back-to-back on page load is the main reason some pages feel slow to open.
+// Fix: only decrypt photos as they actually scroll into view, via a small
+// self-contained script injected into the iframe (it cannot share the outer
+// page's JS scope, only sessionStorage, since it is a separate document).
+const LAZY_IMAGE_SCRIPT_BODY = `
+(function(){
+  function b64ToBytes(b64){const bin=atob(b64);const a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a;}
+  async function derivePrivatKey(pw, saltB64, iterations){
+    const salt = b64ToBytes(saltB64);
+    const enc = new TextEncoder();
+    const baseKey = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations, hash:'SHA-256'}, baseKey, {name:'AES-CBC', length:256}, false, ['decrypt']);
+  }
+  async function decryptPrivatPayload(payload, pw){
+    const key = await derivePrivatKey(pw, payload.salt, payload.iterations);
+    const iv = b64ToBytes(payload.iv);
+    const ct = b64ToBytes(payload.ciphertext);
+    const buf = await crypto.subtle.decrypt({name:'AES-CBC', iv}, key, ct);
+    return new Uint8Array(buf);
+  }
+  const MIME_BY_EXT = {
+    jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', gif:'image/gif', webp:'image/webp', heic:'image/heic'
+  };
+  async function decryptLazyImage(img){
+    const src = img.getAttribute('data-privat-src');
+    const pw = sessionStorage.getItem('privatPw');
+    if (!src || !pw) return;
+    try{
+      const resp = await fetch(src + '.html');
+      if (!resp.ok) return;
+      const html = await resp.text();
+      const m = html.match(/const PAYLOAD = (\{[\s\S]*?\});/);
+      if (!m) return;
+      const payload = JSON.parse(m[1]);
+      const bytes = await decryptPrivatPayload(payload, pw);
+      const extMatch = src.match(/\.([a-zA-Z0-9]+)$/);
+      const mime = (extMatch && MIME_BY_EXT[extMatch[1].toLowerCase()]) || 'application/octet-stream';
+      img.setAttribute('src', URL.createObjectURL(new Blob([bytes], {type: mime})));
+      img.removeAttribute('data-privat-src');
+      img.classList.remove('privat-lazy');
+    }catch(e){ /* leave the placeholder if decryption fails */ }
+  }
+  function initLazyImages(){
+    const pending = Array.from(document.querySelectorAll('img[data-privat-src]'));
+    if (!pending.length) return;
+    if (!('IntersectionObserver' in window)) { pending.forEach(decryptLazyImage); return; }
+    const io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting) { io.unobserve(entry.target); decryptLazyImage(entry.target); }
+      });
+    }, {rootMargin: '800px 0px'});
+    pending.forEach(function(img){ io.observe(img); });
+  }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initLazyImages); }
+  else { initLazyImages(); }
+})();
+`;
 async function renderUnlocked(bytes, pw){
   document.getElementById('gateBox').style.display='none';
   const c = document.getElementById('gateContent');
@@ -161,14 +226,16 @@ async function renderUnlocked(bytes, pw){
   const text = new TextDecoder('utf-8').decode(bytes);
   const doc = new DOMParser().parseFromString(text, 'text/html');
   const imgs = Array.from(doc.querySelectorAll('img[src]'));
-  await Promise.all(imgs.map(async (img) => {
+  imgs.forEach((img) => {
     const src = img.getAttribute('src');
     if (!src || isExternalSrc(src)) return;
-    try {
-      const blobUrl = await inlineDecryptImage(src, pw);
-      if (blobUrl) img.setAttribute('src', blobUrl);
-    } catch (e) { /* leave the original (broken) src if decryption fails */ }
-  }));
+    img.setAttribute('data-privat-src', src);
+    img.setAttribute('src', LAZY_IMG_PLACEHOLDER);
+    img.classList.add('privat-lazy');
+  });
+  const lazyStyle = doc.createElement('style');
+  lazyStyle.textContent = 'img.privat-lazy{background:#e4e4e0;min-height:48px;}';
+  doc.head.appendChild(lazyStyle);
   const iconLinks = Array.from(doc.querySelectorAll('link[rel~="icon"][href], link[rel="apple-touch-icon"][href]'));
   await Promise.all(iconLinks.map(async (link) => {
     const src = link.getAttribute('href');
@@ -253,6 +320,11 @@ async function renderUnlocked(bytes, pw){
   const frame = document.createElement('iframe');
   frame.className = 'gate-frame';
   c.appendChild(frame);
+  if (imgs.length) {
+    const lazyScript = doc.createElement('script');
+    lazyScript.textContent = LAZY_IMAGE_SCRIPT_BODY;
+    doc.body.appendChild(lazyScript);
+  }
   frame.srcdoc = '<!DOCTYPE html>' + doc.documentElement.outerHTML;
 }
 
