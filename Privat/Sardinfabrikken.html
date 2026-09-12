@@ -193,11 +193,11 @@ const LAZY_IMAGE_SCRIPT_BODY = `
       const resp = await fetch(src + '.html');
       if (!resp.ok) return;
       const html = await resp.text();
-      const m = html.match(/const PAYLOAD = (\{[\s\S]*?\});/);
+      const m = html.match(/const PAYLOAD = (\\{[\\s\\S]*?\\});/);
       if (!m) return;
       const payload = JSON.parse(m[1]);
       const bytes = await decryptPrivatPayload(payload, pw);
-      const extMatch = src.match(/\.([a-zA-Z0-9]+)$/);
+      const extMatch = src.match(/\\.([a-zA-Z0-9]+)$/);
       const mime = (extMatch && MIME_BY_EXT[extMatch[1].toLowerCase()]) || 'application/octet-stream';
       img.setAttribute('src', URL.createObjectURL(new Blob([bytes], {type: mime})));
       img.removeAttribute('data-privat-src');

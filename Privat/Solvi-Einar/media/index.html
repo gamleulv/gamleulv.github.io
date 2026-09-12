@@ -31,8 +31,10 @@ a:hover { text-decoration: underline; }
   padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border);
   background: transparent; color: var(--text); cursor: pointer; font-size: 13px;
 }
-.breadcrumb { font-size: 13px; color: var(--text-muted); margin: 6px 0 16px; line-height:1.8; }
+.breadcrumb { font-size: 13px; color: var(--text-muted); margin: 6px 0 16px; line-height:1.8; display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
 .breadcrumb a { margin-right:2px; }
+.breadcrumb .back-link { margin-left:auto; padding:5px 12px; border:1px solid var(--border); border-radius:999px; background:transparent; color:var(--text); text-decoration:none; font-weight:600; cursor:pointer; }
+.breadcrumb .back-link:hover { border-color: var(--primary); color: var(--primary); }
 .search-wrap { margin: 14px 0 20px; position: relative; }
 .search-wrap input {
   width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
@@ -137,7 +139,7 @@ function renderUnlocked(bytes){
   c.style.display='block';
   const manifest = JSON.parse(new TextDecoder('utf-8').decode(bytes));
   let out = '<h1>🔓 ' + (META.title||'Privat') + '</h1>';
-  out += '<div class="breadcrumb">' + (META.breadcrumb||'') + '</div>';
+  out += '<div class="breadcrumb"><a href="/index.html">🏠 Hjem</a>' + (META.breadcrumb ? ' / ' + META.breadcrumb : '') + '<a href="#" class="back-link" onclick="history.back();return false;">⬅ Tilbake</a></div>';
   if (manifest.length === 0) { out += '<p style="color:var(--text-muted);">Ingen filer ennå.</p>'; }
   out += '<ul class="filelist">';
   manifest.forEach(item=>{

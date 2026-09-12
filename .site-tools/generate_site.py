@@ -227,8 +227,10 @@ a:hover { text-decoration: underline; }
   padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border);
   background: transparent; color: var(--text); cursor: pointer; font-size: 13px;
 }
-.breadcrumb { font-size: 13px; color: var(--text-muted); margin: 6px 0 16px; line-height:1.8; }
+.breadcrumb { font-size: 13px; color: var(--text-muted); margin: 6px 0 16px; line-height:1.8; display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
 .breadcrumb a { margin-right:2px; }
+.breadcrumb .back-link { margin-left:auto; padding:5px 12px; border:1px solid var(--border); border-radius:999px; background:transparent; color:var(--text); text-decoration:none; font-weight:600; cursor:pointer; }
+.breadcrumb .back-link:hover { border-color: var(--primary); color: var(--primary); }
 .search-wrap { margin: 14px 0 20px; position: relative; }
 .search-wrap input {
   width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
@@ -260,10 +262,23 @@ ul.filelist li .name { flex: 1 1 auto; min-width: 140px; }
 }
 """
 
-BASE_JS = """
+# Shared light/dark theme logic. Previously this only lived inside BASE_JS,
+# which is included on regular pages via page_shell() but NOT on password
+# gate pages (gate_page_shell() has its own, separate <script> block). That
+# left every gate page rendering a theme-toggle button whose onclick handler
+# called a toggleTheme() function that was never defined there, so clicking
+# it did nothing (silently threw a ReferenceError) on every Privat page.
+# Defining it once here and including it in BOTH shells fixes that for all
+# pages, gated or not.
+THEME_JS = """
 function setTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('site-theme',t);}
 function toggleTheme(){const c=document.documentElement.getAttribute('data-theme')||'light';setTheme(c==='light'?'dark':'light');}
-document.addEventListener('DOMContentLoaded',function(){setTheme(localStorage.getItem('site-theme')||'light');initSearch();});
+function readStoredTheme(){return localStorage.getItem('site-theme')||'light';}
+document.addEventListener('DOMContentLoaded',function(){setTheme(readStoredTheme());});
+"""
+
+BASE_JS = THEME_JS + """
+document.addEventListener('DOMContentLoaded',function(){initSearch();});
 
 let SEARCH_INDEX = null;
 async function loadSearchIndex(){
@@ -507,7 +522,7 @@ GATE_CSS = BASE_CSS + """
 iframe.gate-frame{width:100%;height:80vh;border:0;border-radius:12px;background:#fff;}
 """
 
-GATE_JS_LIB = """
+GATE_JS_LIB = THEME_JS + """
 function b64ToBytes(b64){const bin=atob(b64);const a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a;}
 async function derivePrivatKey(pw, saltB64, iterations){
   const salt = b64ToBytes(saltB64);
@@ -603,6 +618,69 @@ async function inlineDecryptImage(src, pw){
   const mime = (extMatch && MIME_BY_EXT[extMatch[1].toLowerCase()]) || 'application/octet-stream';
   return URL.createObjectURL(new Blob([imgBytes], {type: mime}));
 }
+const LAZY_IMG_PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/%3E";
+// Inline photos are decrypted eagerly, in parallel, the moment the page
+// unlocks - fine for a handful of images, but a message page can carry over
+// a hundred of them, and EACH decrypt re-runs a full 210000-round PBKDF2 key
+// derivation (every file's key-derivation salt is content-derived, so it is
+// intentionally different per file - see aes.py). A hundred-plus PBKDF2 runs
+// back-to-back on page load is the main reason some pages feel slow to open.
+// Fix: only decrypt photos as they actually scroll into view, via a small
+// self-contained script injected into the iframe (it cannot share the outer
+// page's JS scope, only sessionStorage, since it is a separate document).
+const LAZY_IMAGE_SCRIPT_BODY = `
+(function(){
+  function b64ToBytes(b64){const bin=atob(b64);const a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a;}
+  async function derivePrivatKey(pw, saltB64, iterations){
+    const salt = b64ToBytes(saltB64);
+    const enc = new TextEncoder();
+    const baseKey = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations, hash:'SHA-256'}, baseKey, {name:'AES-CBC', length:256}, false, ['decrypt']);
+  }
+  async function decryptPrivatPayload(payload, pw){
+    const key = await derivePrivatKey(pw, payload.salt, payload.iterations);
+    const iv = b64ToBytes(payload.iv);
+    const ct = b64ToBytes(payload.ciphertext);
+    const buf = await crypto.subtle.decrypt({name:'AES-CBC', iv}, key, ct);
+    return new Uint8Array(buf);
+  }
+  const MIME_BY_EXT = {
+    jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', gif:'image/gif', webp:'image/webp', heic:'image/heic'
+  };
+  async function decryptLazyImage(img){
+    const src = img.getAttribute('data-privat-src');
+    const pw = sessionStorage.getItem('privatPw');
+    if (!src || !pw) return;
+    try{
+      const resp = await fetch(src + '.html');
+      if (!resp.ok) return;
+      const html = await resp.text();
+      const m = html.match(/const PAYLOAD = (\\{[\\s\\S]*?\\});/);
+      if (!m) return;
+      const payload = JSON.parse(m[1]);
+      const bytes = await decryptPrivatPayload(payload, pw);
+      const extMatch = src.match(/\\.([a-zA-Z0-9]+)$/);
+      const mime = (extMatch && MIME_BY_EXT[extMatch[1].toLowerCase()]) || 'application/octet-stream';
+      img.setAttribute('src', URL.createObjectURL(new Blob([bytes], {type: mime})));
+      img.removeAttribute('data-privat-src');
+      img.classList.remove('privat-lazy');
+    }catch(e){ /* leave the placeholder if decryption fails */ }
+  }
+  function initLazyImages(){
+    const pending = Array.from(document.querySelectorAll('img[data-privat-src]'));
+    if (!pending.length) return;
+    if (!('IntersectionObserver' in window)) { pending.forEach(decryptLazyImage); return; }
+    const io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting) { io.unobserve(entry.target); decryptLazyImage(entry.target); }
+      });
+    }, {rootMargin: '800px 0px'});
+    pending.forEach(function(img){ io.observe(img); });
+  }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initLazyImages); }
+  else { initLazyImages(); }
+})();
+`;
 async function renderUnlocked(bytes, pw){
   document.getElementById('gateBox').style.display='none';
   const c = document.getElementById('gateContent');
@@ -610,14 +688,16 @@ async function renderUnlocked(bytes, pw){
   const text = new TextDecoder('utf-8').decode(bytes);
   const doc = new DOMParser().parseFromString(text, 'text/html');
   const imgs = Array.from(doc.querySelectorAll('img[src]'));
-  await Promise.all(imgs.map(async (img) => {
+  imgs.forEach((img) => {
     const src = img.getAttribute('src');
     if (!src || isExternalSrc(src)) return;
-    try {
-      const blobUrl = await inlineDecryptImage(src, pw);
-      if (blobUrl) img.setAttribute('src', blobUrl);
-    } catch (e) { /* leave the original (broken) src if decryption fails */ }
-  }));
+    img.setAttribute('data-privat-src', src);
+    img.setAttribute('src', LAZY_IMG_PLACEHOLDER);
+    img.classList.add('privat-lazy');
+  });
+  const lazyStyle = doc.createElement('style');
+  lazyStyle.textContent = 'img.privat-lazy{background:#e4e4e0;min-height:48px;}';
+  doc.head.appendChild(lazyStyle);
   const iconLinks = Array.from(doc.querySelectorAll('link[rel~="icon"][href], link[rel="apple-touch-icon"][href]'));
   await Promise.all(iconLinks.map(async (link) => {
     const src = link.getAttribute('href');
@@ -660,14 +740,30 @@ async function renderUnlocked(bytes, pw){
     }
     styleEl.textContent = css;
   }));
+  // Page-to-page navigation links (another gate page in its own right, e.g.
+  // a link to a subfolder or sibling page) must escape this iframe instead
+  // of navigating inside it. This content is rendered into an <iframe> below
+  // via srcdoc, so a plain relative click here would normally navigate just
+  // that iframe - stacking a second gate+iframe inside the first, and a
+  // third inside that on the next click, and so on ("ramme i ramme").
+  // target="_top" makes the browser navigate the whole tab instead, which is
+  // also what lets the top-level gate page's cached sessionStorage password
+  // auto-unlock the next page seamlessly.
+  const navLinks = Array.from(doc.querySelectorAll('a[href]'));
+  navLinks.forEach((a) => {
+    const href = a.getAttribute('href');
+    if (href && !isExternalSrc(href) && /\.html?(#.*)?$/i.test(href)) {
+      a.setAttribute('target', '_top');
+    }
+  });
   // Attachment links (PDFs, Office docs, GIFs referenced by href, plugin
   // attachments, etc.) - the encrypted gate page for a non-html file `foo.ext`
   // is stored as `foo.ext.html`, so a plain `<a href="media/foo.ext">` copied
   // verbatim from the source page would 404. Decrypt it here too and turn the
   // link into a direct one-click blob download - reusing the same password,
   // no second gate page / prompt needed. Links that already end in `.html`
-  // are ordinary page-to-page navigation (they point at another gate page in
-  // their own right) and must be left alone.
+  // are ordinary page-to-page navigation (handled just above) and must be
+  // left alone here.
   const attachLinks = Array.from(doc.querySelectorAll('a[href]'));
   await Promise.all(attachLinks.map(async (a) => {
     const href = a.getAttribute('href');
@@ -686,6 +782,11 @@ async function renderUnlocked(bytes, pw){
   const frame = document.createElement('iframe');
   frame.className = 'gate-frame';
   c.appendChild(frame);
+  if (imgs.length) {
+    const lazyScript = doc.createElement('script');
+    lazyScript.textContent = LAZY_IMAGE_SCRIPT_BODY;
+    doc.body.appendChild(lazyScript);
+  }
   frame.srcdoc = '<!DOCTYPE html>' + doc.documentElement.outerHTML;
 }
 """
@@ -708,7 +809,7 @@ function renderUnlocked(bytes){
   c.style.display='block';
   const manifest = JSON.parse(new TextDecoder('utf-8').decode(bytes));
   let out = '<h1>🔓 ' + (META.title||'Privat') + '</h1>';
-  out += '<div class="breadcrumb">' + (META.breadcrumb||'') + '</div>';
+  out += '<div class="breadcrumb"><a href="/index.html">🏠 Hjem</a>' + (META.breadcrumb ? ' / ' + META.breadcrumb : '') + '<a href="#" class="back-link" onclick="history.back();return false;">⬅ Tilbake</a></div>';
   if (manifest.length === 0) { out += '<p style="color:var(--text-muted);">Ingen filer ennå.</p>'; }
   out += '<ul class="filelist">';
   manifest.forEach(item=>{
@@ -838,7 +939,7 @@ def encrypt_privat(repo: Path, password: str):
         breadcrumb_html = " / ".join(
             [f'<a href="/{PRIVAT_DIR_NAME}/index.html">{PRIVAT_DIR_NAME}</a>'] +
             [html.escape(p) for p in breadcrumb_parts]
-        )
+        ) if breadcrumb_parts else f'<a href="/{PRIVAT_DIR_NAME}/index.html">{PRIVAT_DIR_NAME}</a>'
         manifest_bytes = json.dumps(manifest, ensure_ascii=False).encode("utf-8")
         payload = aes.encrypt_for_browser(manifest_bytes, password)
         title = breadcrumb_parts[-1] if breadcrumb_parts else PRIVAT_DIR_NAME
