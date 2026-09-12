@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BDI-II - Klinisk Skjema</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #c0392b;
+            --bg-color: #f4f7f6;
+            --panel-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #cbd5e0;
+            --success-color: #27ae60;
+            --highlight-bg: #e8f4fc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: var(--panel-bg);
+            padding: 50px;
+            border-radius: 8px;
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e1e4e8;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 2.2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #636e72;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+            font-weight: 300;
+        }
+
+        .meta-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 1em;
+            font-family: inherit;
+        }
+
+        .instruction {
+            background-color: #e3f2fd;
+            border-left: 5px solid var(--secondary-color);
+            padding: 15px 20px;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+            color: #2c3e50;
+        }
+
+        .question-block {
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+            background: white;
+            page-break-inside: avoid;
+        }
+
+        .question-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            font-size: 1.05em;
+            font-weight: 600;
+        }
+
+        .options-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .options-table tr {
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.1s;
+        }
+        
+        .options-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .options-table tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .options-table tr.selected {
+            background-color: var(--highlight-bg);
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .options-table td {
+            padding: 12px 15px;
+            vertical-align: top;
+        }
+
+        .col-radio { width: 40px; text-align: center; vertical-align: middle !important;}
+        .col-val { width: 30px; font-weight: bold; color: var(--secondary-color); text-align: center; vertical-align: top; padding-top:14px;}
+        .col-text { font-size: 0.95em; }
+
+        input[type="radio"] {
+            transform: scale(1.3);
+            cursor: pointer;
+            accent-color: var(--primary-color);
+        }
+
+        /* Resultatboks styles */
+        #results {
+            margin-top: 40px;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            display: none;
+            overflow: hidden;
+            background-color: #fff;
+        }
+
+        .result-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .result-body {
+            padding: 20px;
+        }
+
+        .score-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .score-row:last-of-type {
+            border-bottom: none;
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 2px solid #eee;
+        }
+
+        .score-label { font-weight: 600; color: #555; }
+        .score-value { font-weight: bold; font-size: 1.1em; }
+        
+        .total-row .score-label { font-size: 1.2em; color: var(--primary-color); }
+        .total-row .score-value { font-size: 1.4em; color: var(--primary-color); }
+
+        .severity-badge {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            display: block;
+        }
+
+        /* Fargekoder for alvorlighetsgrad */
+        .sev-min { background-color: #27ae60; } /* 0-13 */
+        .sev-mild { background-color: #f1c40f; color: #333; } /* 14-19 */
+        .sev-mod { background-color: #e67e22; } /* 20-28 */
+        .sev-sev { background-color: #c0392b; } /* 29-63 */
+
+        .controls {
+            margin-top: 50px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            color: white;
+        }
+
+        button:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+        .btn-calc { background-color: var(--success-color); }
+        .btn-word { background-color: #2b579a; }
+        .btn-reset { background-color: #7f8c8d; }
+
+    </style>
+</head>
+<body>
+
+<div class="container" id="main-content">
+    <h1>BDI-II</h1>
+    <div class="subtitle">Beck Depression Inventory - Second Edition</div>
+
+    <div class="meta-info">
+        <div class="form-group">
+            <label for="patientName">Pasientnavn / ID:</label>
+            <input type="text" id="patientName" placeholder="Navn...">
+        </div>
+        <div class="form-group">
+            <label for="assessmentDate">Dato:</label>
+            <input type="date" id="assessmentDate">
+        </div>
+    </div>
+
+    <div class="instruction">
+        <strong>Instruksjon:</strong> Nedenfor finner du grupper med utsagn. Vennligst les hver gruppe nøye. Velg det utsagnet i hver gruppe som best beskriver hvordan du har følt deg <strong>de siste to ukene, inkludert i dag</strong>.
+    </div>
+
+    <form id="bdiForm">
+        
+        <!-- S 1 -->
+        <div class="question-block" id="q1_block">
+            <div class="question-header">1. Tristhet</div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q1', 0, this)"><td class="col-radio"><input type="radio" name="q1" value="0"></td><td class="col-val">0</td><td class="col-text">Jeg føler meg ikke trist.</td></tr>
+                <tr onclick="selectRadio('q1', 1, this)"><td class="col-radio"><input type="radio" name="q1" value="1"></td><td class="col-val">1</td><td class="col-text">Jeg føler meg trist store deler av tiden.</td></tr>
+                <tr onclick="selectRadio('q1', 2, this)"><td class="col-radio"><input type="radio" name="q1" value="2"></td><td class="col-val">2</td><td class="col-text">Jeg er trist hele tiden.</td></tr>
+                <tr onclick="selectRadio('q1', 3, this)"><td class="col-radio"><input type="radio" name="q1" value="3"></td><td class="col-val">3</td><td class="col-text">Jeg er så trist eller ulykkelig at jeg ikke holder det ut.</td></tr>
+            </table>
+        </div>
+
+        <!-- S 2 -->
+        <div class="question-block" id="q2_block">
+            <div class="question-header">2. Pessimisme</div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q2', 0, this)"><td class="col-radio"><input type="radio" name="q2" value="0"></td><td class="col-val">0</td><td class="col-text">Jeg ser ikke mørkt på fremtiden.</td></tr>
+                <tr onclick="selectRadio('q2', 1, this)"><td class="col-radio"><input type="radio" name="q2" value="1"></td><td class="col-val">1</td><td class="col-text">Jeg ser mer mørkt på fremtiden enn jeg pleide å gjøre.</td></tr>
+                <tr onclick="selectRadio('q2', 2, this)"><td class="col-radio"><input type="radio" name="q2" value="2"></td><td class="col-val">2</td><td class="col-text">Jeg forventer ikke at ting skal gå bra for meg.</td></tr>
+                <tr onclick="selectRadio('q2', 3, this)"><td class="col-radio"><input type="radio" name="q2" value="3"></td><td class="col-val">3</td><td class="col-text">Jeg føler at fremtiden er håpløs og at ting bare vil bli verre.</td></tr>
+            </table>
+        </div>
+
+        <!-- S 3 -->
+        <div class="question-block" id="q3_block">
+            <div class="question-header">3. Mislykkethet</div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q3', 0, this)"><td class="col-radio"><input type="radio" name="q3" value="0"></td><td class="col-val">0</td><td class="col-text">Jeg føler meg ikke mislykket.</td></tr>
+                <tr onclick="selectRadio('q3', 1, this)"><td class="col-radio"><input type="radio" name="q3" value="1"></td><td class="col-val">1</td><td class="col-text">Jeg har mislykkes mer enn jeg burde.</td></tr>
+                <tr onclick="selectRadio('q3', 2, this)"><td class="col-radio"><input type="radio" name="q3" value="2"></td><td class="col-val">2</td><td class="col-text">Når jeg ser tilbake, ser jeg mange mislykkede ting.</td></tr>
+                <tr onclick="selectRadio('q3', 3, this)"><td class="col-radio"><input type="radio" name="q3" value="3"></td><td class="col-val">3</td><td class="col-text">Jeg føler meg totalt mislykket som person.</td></tr>
+            </table>
+        </div>
+
+        <!-- S 4 -->
+        <div class="question-block" id="q4_block">
+            <div class="question-header">4. Tap av glede</div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q4', 0, this)"><td class="col-radio"><input type="radio" name="q4" value="0"></td><td class="col-val">0</td><td class="col-text">Jeg får like mye glede ut av ting som før.</td></tr>
+                <tr onclick="selectRadio('q4', 1, this)"><td class="col-radio"><input type="radio" name="q4" value="1"></td><td class="col-val">1</td><td class="col-text">Jeg nyter ikke ting på samme måte som før.</td></tr>
+                <tr onclick="selectRadio('q4', 2, this)"><td class="col-radio"><input type="radio" name="q4" value="2"></td><td class="col-val">2</td><td class="col-text">Jeg får veldig lite glede ut av ting jeg pleide å like.</td></tr>
+                <tr onclick="selectRadio('q4', 3, this)"><td class="col-radio"><input type="radio" name="q4" value="3"></td><td class="col-val">3</td><td class="col-text">Jeg får ikke glede ut av noe som helst lenger.</td></tr>
+            </table>
+        </div>
+
+        <!-- S 5 -->
+        <div class="question-block" id="q5_block">
+            <div class="question-header">5. Skyldfølelse</div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q5', 0, this)"><td class="col-radio"><input type="radio" name="q5" value="0"></td><td class="col-val">0</td><td class="col-text">Jeg føler meg ikke særlig skyldbetynget.</td></tr>
+                <tr onclick="selectRadio('q5', 1, this)"><td class="col-radio"><input type="radio" name="q5" value="1"></td><td class="col-val">1</td><td class="col-text">Jeg føler skyld over mange ting jeg har gjort eller burde gjort.</td></tr>
+                <tr onclick="selectRadio('q5', 2, this)"><td class="col-radio"><input type="radio" name="q5" value="2"></td><td class="col-val">2</td><td class="col-text">Jeg føler meg skyldbetynget mesteparten av tiden.</td></tr>
+                <tr onclick="selectRadio('q5', 3, this)"><td class="col-radio"><input type="radio" name="q5" value="3"></td><td class="col-val">3</td><td class="col-text">Jeg føler meg skyldbetynget hele tiden.</td></tr>
+            </table>
+        </div>
+
+        <!-- S 6 -->
+        <div class="question-block" id="q6_block">
+            <div class="question-header">6. Straffefølelse</div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q6', 0, this)"><td class="col-radio"><input type="radio" name="q6" value="0"></td><td class="col-val">0</td><td class="col-text">Jeg føler ikke at jeg blir straffet.</td></tr>
+                <tr onclick="selectRadio('q6', 1, this)"><td class="col-radio"><input type="radio" name="q6" value="1"></td><td class="col-val">1</td><td class="col-text">Jeg føler at jeg kanskje blir straffet.</td></tr>
+                <tr onclick="selectRadio('q6', 2, this)"><td class="col-radio"><input type="radio" name="q6" value="2"></td><td class="col-val">2</td><td class="col-text">Jeg forventer å bli straffet.</td></tr>
+                <tr onclick="selectRadio('q6', 3, this)"><td class="col-radio"><input type="radio" name="q6" value="3"></td><td class="col-val">3</td><td class="col-text">Jeg føler at jeg blir straffet.</td></tr>
+            </table>
+        </div>
+
+        <!-- S 7 -->
+        <div class="question-block" id="q7_block">
+            <div class="question-header">7. Selvforakt</div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q7', 0, this)"><td class="col-radio"><input type="radio" name="q7" value="0"></td><td class="col-val">0</td><td class="col-text">Jeg føler det samme om meg selv som før.</td></tr>
+                <tr onclick="selectRadio('q7', 1, this)"><td class="col-radio"><input type="radio" name="q7" value="1"></td><td class="col-val">1</td><td class="col-text">Jeg har mistet tilliten til meg selv.</td></tr>
+                <tr onclick="selectRadio('q7', 2, this)"><td class="col-radio"><input type="radio" name="q7" value="2"></td><td class="col-val">2</td><td class="col-text">Jeg er skuffet over meg selv.</td></tr>
+                <tr onclick="selectRadio('q7', 3, this)"><td class="col-radio"><input type="radio" name="q7" value="3"></td><td class="col-val">3</td><td class="col-text">Jeg misliker meg selv.</td></tr>
+            </table>
+        </div>
+
+        <!-- S 8 -->
+        <div class="question-block" id="q8_block">
+            <div class="question-header">8. Selvkritikk</div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q8', 0, this)"><td class="col-radio"><input type="radio" name="q8" value="0"></td><td class="col-val">0</td><td class="col-text">Jeg kritiserer eller klandrer ikke meg selv mer enn vanlig.</td></tr>
+                <tr onclick="selectRadio('q8', 1, this)"><td class="col-radio"><input type="radio" name="q8" value="1"></td><td class="col-val">1</td><td class="col-text">Jeg er mer kritisk til meg selv enn jeg pleide å være.</td></tr>
+                <tr onclick="selectRadio('q8', 2, this)"><td class="col-radio"><input type="radio" name="q8" value="2"></td><td class="col-val">2</td><td class="col-text">Jeg kritiserer meg selv for alle mine feil.</td></tr>
+                <tr onclick="selectRadio('q8', 3, this)"><td class="col-radio"><input type="radio" name="q8" value="3"></td><td class="col-val">3</td><td class="col-text">Jeg klandrer meg selv for alt vondt som skjer.</td></tr>
+            </table>
+        </div>
+
+        <!-- S 9 -->
+        <div class="question-block" id="q9_block">
+            <div class="question-header">9. Selvmordstanker</div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q9', 0, this)"><td class="col-radio"><input type="radio" name="q9" value="0"></td><td class="col-val">0</td><td class="col-text">Jeg har ingen tanker om å ta livet mitt.</td></tr>
+                <tr onclick="selectRadio('q9', 1, this)"><td class="col-radio"><input type="radio" name="q9" value="1"></td><td class="col-val">1</td><td class="col-text">Jeg har tanker om å ta livet mitt, men jeg vil ikke gjøre det.</td></tr>
+                <tr onclick="selectRadio('q9', 2, this)"><td class="col-radio"><input type="radio" name="q9" value="2"></td><td class="col-val">2</td><td class="col-text">Jeg ville like å ta livet mitt.</td></tr>
+                <tr onclick="selectRadio('q9', 3, this)"><td class="col-radio"><input type="radio" name="q9" value="3"></td><td class="col-val">3</td><td class="col-text">Jeg ville ta livet mitt hvis jeg hadde sjansen.</td></tr>
+            </table>
+        </div>
+
+        <!-- S 10 -->
+        <div class="question-block" id="q10_block">
+            <div class="question-header">10. Gråt</div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q10', 0, this)"><td class="col-radio"><input type="radio" name="q10" value="0"></td><td class="col-val">0</td><td class="col-text">Jeg gråter ikke mer enn jeg pleide.</td></tr>
+                <tr onclick="selectRadio('q10', 1, this)"><td class="col-radio"><input type="radio" name="q10" value="1"></td><td class="col-val">1</td><td class="col-text">Jeg gråter mer enn jeg pleide.</td></tr>
+                <tr onclick="selectRadio('q10', 2, this)"><td class="col-radio"><input type="radio" name="q10" value="2"></td><td class="col-val">2</td><td class="col-text">Jeg gråter over hver minste ting.</td></tr>
+                <tr onclick="selectRadio('q10', 3, this)"><td class="col-radio"><input type="radio" name="q10" value="3"></td><td class="col-val">3</td><td class="col-text">Jeg har lyst til å gråte, men får det ikke til.</td></tr>
+            </table>
+        </div>
+
+        <!-- S 11 -->
+        <div class="question-block" id="q11_block">
+            <div class="question-header">11. Uro</div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q11', 0, this)"><td class="col-radio"><input type="radio" name="q11" value="0"></td><td class="col-val">0</td><td class="col-text">Jeg er ikke mer urolig eller rastløs enn vanlig.</td></tr>
+                <tr onclick="selectRadio('q11', 1, this)"><td class="col-radio"><input type="radio" name="q11" value="1"></td><td class="col-val">1</td><td class="col-text">Jeg føler meg mer urolig eller rastløs enn vanlig.</td></tr>
+                <tr onclick="selectRadio('q11', 2, this)"><td class="col-radio"><input type="radio" name="q11" value="2"></td><td class="col-val">2</td><td class="col-text">Jeg er så urolig eller oppspilt at det er vanskelig å være i ro.</td></tr>
+                <tr onclick="selectRadio('q11', 3, this)"><td class="col-radio"><input type="radio" name="q11" value="3"></td><td class="col-val">3</td><td class="col-text">Jeg er så urolig eller oppspilt at jeg må bevege meg eller gjøre noe hele tiden.</td></tr>
+            </table>
+        </div>
+
+        <!-- S 12 -->
+        <div class="question-block" id="q12_block">
+            <div class="question-header">12. Interesse for andre</div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q12', 0, this)"><td class="col-radio"><input type="radio" name="q12" value="0"></td><td class="col-val">0</td><td class="col-text">Jeg har ikke mistet interessen for andre mennesker eller aktiviteter.</td></tr>
+                <tr onclick="selectRadio('q12', 1, this)"><td class="col-radio"><input type="radio" name="q12" value="1"></td><td class="col-val">1</td><td class="col-text">Jeg er mindre interessert i andre mennesker eller ting enn før.</td></tr>
+                <tr onclick="selectRadio('q12', 2, this)"><td class="col-radio"><input type="radio" name="q12" value="2"></td><td class="col-val">2</td><td class="col-text">Jeg har mistet mesteparten av interessen for andre mennesker eller ting.</td></tr>
+                <tr onclick="selectRadio('q12', 3, this)"><td class="col-radio"><input type="radio" name="q12" value="3"></td><td class="col-val">3</td><td class="col-text">Det er vanskelig å bli interessert i noe som helst.</td></tr>
+            </table>
+        </div>
+
+        <!-- S 13 -->
+        <div class="question-block" id="q13_block">
+            <div class="question-header">13. Ubesluttsomhet</div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q13', 0, this)"><td class="col-radio"><input type="radio" name="q13" value="0"></td><td class="col-val">0</td><td class="col-text">Jeg tar avgjørelser like lett som før.</td></tr>
+                <tr onclick="selectRadio('q13', 1, this)"><td class="col-radio"><input type="radio" name="q13" value="1"></td><td class="col-val">1</td><td class="col-text">Jeg synes det er vanskeligere å ta avgjørelser enn før.</td></tr>
+                <tr onclick="selectRadio('q13', 2, this)"><td class="col-radio"><input type="radio" name="q13" value="2"></td><td class="col-val">2</td><td class="col-text">Jeg har mye større problemer med å ta avgjørelser enn før.</td></tr>
+                <tr onclick="selectRadio('q13', 3, this)"><td class="col-radio"><input type="radio" name="q13" value="3"></td><td class="col-val">3</td><td class="col-text">Jeg har problemer med å ta enhver avgjørelse.</td></tr>
+            </table>
+        </div>
+
+        <!-- S 14 -->
+        <div class="question-block" id="q14_block">
+            <div class="question-header">14. Verdiløshet</div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q14', 0, this)"><td class="col-radio"><input type="radio" name="q14" value="0"></td><td class="col-val">0</td><td class="col-text">Jeg føler meg ikke verdiløs.</td></tr>
+                <tr onclick="selectRadio('q14', 1, this)"><td class="col-radio"><input type="radio" name="q14" value="1"></td><td class="col-val">1</td><td class="col-text">Jeg føler meg ikke like mye verdt og nyttig som før.</td></tr>
+                <tr onclick="selectRadio('q14', 2, this)"><td class="col-radio"><input type="radio" name="q14" value="2"></td><td class="col-val">2</td><td class="col-text">Jeg føler meg mindre verdifull enn andre mennesker.</td></tr>
+                <tr onclick="selectRadio('q14', 3, this)"><td class="col-radio"><input type="radio" name="q14" value="3"></td><td class="col-val">3</td><td class="col-text">Jeg føler meg fullstendig verdiløs.</td></tr>
+            </table>
+        </div>
+
+        <!-- S 15 -->
+        <div class="question-block" id="q15_block">
+            <div class="question-header">15. Energitap</div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q15', 0, this)"><td class="col-radio"><input type="radio" name="q15" value="0"></td><td class="col-val">0</td><td class="col-text">Jeg har like mye energi som før.</td></tr>
+                <tr onclick="selectRadio('q15', 1, this)"><td class="col-radio"><input type="radio" name="q15" value="1"></td><td class="col-val">1</td><td class="col-text">Jeg har mindre energi enn jeg pleide å ha.</td></tr>
+                <tr onclick="selectRadio('q15', 2, this)"><td class="col-radio"><input type="radio" name="q15" value="2"></td><td class="col-val">2</td><td class="col-text">Jeg har ikke nok energi til å gjøre særlig mye.</td></tr>
+                <tr onclick="selectRadio('q15', 3, this)"><td class="col-radio"><input type="radio" name="q15" value="3"></td><td class="col-val">3</td><td class="col-text">Jeg har ikke energi til å gjøre noe som helst.</td></tr>
+            </table>
+        </div>
+
+        <!-- S 16 -->
+        <div class="question-block" id="q16_block">
+            <div class="question-header">16. Søvnmønster</div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q16', 0, this)"><td class="col-radio"><input type="radio" name="q16" value="0"></td><td class="col-val">0</td><td class="col-text">Jeg har ikke opplevd noen forandring i søvnmønsteret mitt.</td></tr>
+                <tr onclick="selectRadio('q16', 1, this)"><td class="col-radio"><input type="radio" name="q16" value="1"></td><td class="col-val">1a</td><td class="col-text">Jeg sover litt mer enn vanlig.</td></tr>
+                <tr onclick="selectRadio('q16', 1, this)"><td class="col-radio"><input type="radio" name="q16" value="1"></td><td class="col-val">1b</td><td class="col-text">Jeg sover litt mindre enn vanlig.</td></tr>
+                <tr onclick="selectRadio('q16', 2, this)"><td class="col-radio"><input type="radio" name="q16" value="2"></td><td class="col-val">2a</td><td class="col-text">Jeg sover mye mer enn vanlig.</td></tr>
+                <tr onclick="selectRadio('q16', 2, this)"><td class="col-radio"><input type="radio" name="q16" value="2"></td><td class="col-val">2b</td><td class="col-text">Jeg sover mye mindre enn vanlig.</td></tr>
+                <tr onclick="selectRadio('q16', 3, this)"><td class="col-radio"><input type="radio" name="q16" value="3"></td><td class="col-val">3a</td><td class="col-text">Jeg sover nesten hele døgnet.</td></tr>
+                <tr onclick="selectRadio('q16', 3, this)"><td class="col-radio"><input type="radio" name="q16" value="3"></td><td class="col-val">3b</td><td class="col-text">Jeg våkner 1–2 timer for tidlig og får ikke sove igjen.</td></tr>
+            </table>
+        </div>
+
+        <!-- S 17 -->
+        <div class="question-block" id="q17_block">
+            <div class="question-header">17. Irritabilitet</div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q17', 0, this)"><td class="col-radio"><input type="radio" name="q17" value="0"></td><td class="col-val">0</td><td class="col-text">Jeg er ikke mer irritabel enn vanlig.</td></tr>
+                <tr onclick="selectRadio('q17', 1, this)"><td class="col-radio"><input type="radio" name="q17" value="1"></td><td class="col-val">1</td><td class="col-text">Jeg er mer irritabel enn vanlig.</td></tr>
+                <tr onclick="selectRadio('q17', 2, this)"><td class="col-radio"><input type="radio" name="q17" value="2"></td><td class="col-val">2</td><td class="col-text">Jeg er mye mer irritabel enn vanlig.</td></tr>
+                <tr onclick="selectRadio('q17', 3, this)"><td class="col-radio"><input type="radio" name="q17" value="3"></td><td class="col-val">3</td><td class="col-text">Jeg er irritabel hele tiden.</td></tr>
+            </table>
+        </div>
+
+        <!-- S 18 -->
+        <div class="question-block" id="q18_block">
+            <div class="question-header">18. Appetitt</div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q18', 0, this)"><td class="col-radio"><input type="radio" name="q18" value="0"></td><td class="col-val">0</td><td class="col-text">Jeg har ikke opplevd noen forandring i appetitten min.</td></tr>
+                <tr onclick="selectRadio('q18', 1, this)"><td class="col-radio"><input type="radio" name="q18" value="1"></td><td class="col-val">1a</td><td class="col-text">Appetitten min er litt dårligere enn vanlig.</td></tr>
+                <tr onclick="selectRadio('q18', 1, this)"><td class="col-radio"><input type="radio" name="q18" value="1"></td><td class="col-val">1b</td><td class="col-text">Appetitten min er litt bedre enn vanlig.</td></tr>
+                <tr onclick="selectRadio('q18', 2, this)"><td class="col-radio"><input type="radio" name="q18" value="2"></td><td class="col-val">2a</td><td class="col-text">Appetitten min er mye dårligere enn vanlig.</td></tr>
+                <tr onclick="selectRadio('q18', 2, this)"><td class="col-radio"><input type="radio" name="q18" value="2"></td><td class="col-val">2b</td><td class="col-text">Appetitten min er mye bedre enn vanlig.</td></tr>
+                <tr onclick="selectRadio('q18', 3, this)"><td class="col-radio"><input type="radio" name="q18" value="3"></td><td class="col-val">3a</td><td class="col-text">Jeg har ikke lyst på mat i det hele tatt.</td></tr>
+                <tr onclick="selectRadio('q18', 3, this)"><td class="col-radio"><input type="radio" name="q18" value="3"></td><td class="col-val">3b</td><td class="col-text">Jeg har lyst på mat hele tiden.</td></tr>
+            </table>
+        </div>
+
+        <!-- S 19 -->
+        <div class="question-block" id="q19_block">
+            <div class="question-header">19. Konsentrasjon</div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q19', 0, this)"><td class="col-radio"><input type="radio" name="q19" value="0"></td><td class="col-val">0</td><td class="col-text">Jeg kan konsentrere meg like godt som før.</td></tr>
+                <tr onclick="selectRadio('q19', 1, this)"><td class="col-radio"><input type="radio" name="q19" value="1"></td><td class="col-val">1</td><td class="col-text">Jeg kan ikke konsentrere meg like godt som vanlig.</td></tr>
+                <tr onclick="selectRadio('q19', 2, this)"><td class="col-radio"><input type="radio" name="q19" value="2"></td><td class="col-val">2</td><td class="col-text">Det er vanskelig å holde tankene samlet om noe i lang tid.</td></tr>
+                <tr onclick="selectRadio('q19', 3, this)"><td class="col-radio"><input type="radio" name="q19" value="3"></td><td class="col-val">3</td><td class="col-text">Jeg klarer ikke å konsentrere meg om noe som helst.</td></tr>
+            </table>
+        </div>
+
+        <!-- S 20 -->
+        <div class="question-block" id="q20_block">
+            <div class="question-header">20. Tretthet</div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q20', 0, this)"><td class="col-radio"><input type="radio" name="q20" value="0"></td><td class="col-val">0</td><td class="col-text">Jeg er ikke mer trett eller sliten enn vanlig.</td></tr>
+                <tr onclick="selectRadio('q20', 1, this)"><td class="col-radio"><input type="radio" name="q20" value="1"></td><td class="col-val">1</td><td class="col-text">Jeg blir fortere trett eller sliten enn vanlig.</td></tr>
+                <tr onclick="selectRadio('q20', 2, this)"><td class="col-radio"><input type="radio" name="q20" value="2"></td><td class="col-val">2</td><td class="col-text">Jeg er for trett eller sliten til å gjøre mange av de tingene jeg pleide å gjøre.</td></tr>
+                <tr onclick="selectRadio('q20', 3, this)"><td class="col-radio"><input type="radio" name="q20" value="3"></td><td class="col-val">3</td><td class="col-text">Jeg er for trett eller sliten til å gjøre nesten noe som helst.</td></tr>
+            </table>
+        </div>
+
+        <!-- S 21 -->
+        <div class="question-block" id="q21_block">
+            <div class="question-header">21. Tap av interesse for sex</div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q21', 0, this)"><td class="col-radio"><input type="radio" name="q21" value="0"></td><td class="col-val">0</td><td class="col-text">Jeg har ikke merket noen forandring i min interesse for sex i det siste.</td></tr>
+                <tr onclick="selectRadio('q21', 1, this)"><td class="col-radio"><input type="radio" name="q21" value="1"></td><td class="col-val">1</td><td class="col-text">Jeg er mindre interessert i sex enn jeg pleide å være.</td></tr>
+                <tr onclick="selectRadio('q21', 2, this)"><td class="col-radio"><input type="radio" name="q21" value="2"></td><td class="col-val">2</td><td class="col-text">Jeg er mye mindre interessert i sex nå.</td></tr>
+                <tr onclick="selectRadio('q21', 3, this)"><td class="col-radio"><input type="radio" name="q21" value="3"></td><td class="col-val">3</td><td class="col-text">Jeg har mistet interessen for sex fullstendig.</td></tr>
+            </table>
+        </div>
+
+        <div id="results">
+            <div class="result-header">Resultater</div>
+            <div class="result-body">
+                <div class="score-row">
+                    <span class="score-label">Kognitiv delskår (spm 1-13):</span>
+                    <span class="score-value" id="cognitiveScore">0</span>
+                </div>
+                <div class="score-row">
+                    <span class="score-label">Somatisk delskår (spm 14-21):</span>
+                    <span class="score-value" id="somaticScore">0</span>
+                </div>
+                <div class="score-row total-row">
+                    <span class="score-label">TOTAL SKÅR:</span>
+                    <span class="score-value" id="totalScore">0</span>
+                </div>
+                <div class="severity-badge" id="severityBadge">Venter på utfylling...</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button type="button" class="btn-calc" onclick="calculateScore()">Beregn Score</button>
+            <button type="button" class="btn-word" onclick="exportToWord()">Last ned Word</button>
+            <button type="button" class="btn-reset" onclick="location.reload()">Nullstill</button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+    // Set today's date
+    document.getElementById('assessmentDate').valueAsDate = new Date();
+
+    function selectRadio(name, value, row) {
+        // Finn radio-knappen i den valgte raden og sett den til checked
+        const radio = row.querySelector(`input[type="radio"]`);
+        if (radio) {
+            radio.checked = true;
+            radio.value = value; // Sikre at verdien er satt
+        }
+
+        // Fjern 'selected' klasse fra alle rader i tabellen
+        const table = row.closest('table');
+        table.querySelectorAll('tr').forEach(tr => tr.classList.remove('selected'));
+
+        // Legg til 'selected' klasse på den valgte raden
+        row.classList.add('selected');
+    }
+
+    function calculateScore() {
+        let totalScore = 0;
+        let cognitiveScore = 0;
+        let somaticScore = 0;
+        let allAnswered = true;
+
+        // Loop through questions 1 to 21
+        for (let i = 1; i <= 21; i++) {
+            const radios = document.getElementsByName('q' + i);
+            let val = null;
+            for (const radio of radios) {
+                if (radio.checked) {
+                    val = parseInt(radio.value);
+                    break;
+                }
+            }
+
+            if (val !== null) {
+                totalScore += val;
+                
+                // Kognitiv: 1-13, Somatisk: 14-21 (BDI-II standard faktorer)
+                if (i <= 13) {
+                    cognitiveScore += val;
+                } else {
+                    somaticScore += val;
+                }
+            } else {
+                // Ikke besvart
+                // allAnswered = false; // Kan aktiveres om man vil tvinge svar
+            }
+        }
+
+        // Vis resultater
+        document.getElementById('totalScore').innerText = totalScore;
+        document.getElementById('cognitiveScore').innerText = cognitiveScore;
+        document.getElementById('somaticScore').innerText = somaticScore;
+
+        const badge = document.getElementById('severityBadge');
+        let severity = "";
+        let cssClass = "";
+
+        if (totalScore <= 13) {
+            severity = "Minimal depresjon (0-13)";
+            cssClass = "sev-min";
+        } else if (totalScore <= 19) {
+            severity = "Mild depresjon (14-19)";
+            cssClass = "sev-mild";
+        } else if (totalScore <= 28) {
+            severity = "Moderat depresjon (20-28)";
+            cssClass = "sev-mod";
+        } else {
+            severity = "Alvorlig depresjon (29-63)";
+            cssClass = "sev-sev";
+        }
+
+        badge.innerText = severity;
+        badge.className = "severity-badge " + cssClass;
+
+        document.getElementById('results').style.display = 'block';
+        
+        // Scroll til resultat
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function exportToWord() {
+        calculateScore(); // Sikre oppdaterte tall
+
+        const name = document.getElementById('patientName').value || "Ukjent";
+        const date = document.getElementById('assessmentDate').value || new Date().toLocaleDateString();
+        
+        const cognitive = document.getElementById('cognitiveScore').innerText;
+        const somatic = document.getElementById('somaticScore').innerText;
+        const total = document.getElementById('totalScore').innerText;
+        const severity = document.getElementById('severityBadge').innerText;
+
+        let content = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>BDI-II Resultat</title>
+            <style>
+                body { font-family: Arial, sans-serif; font-size: 11pt; }
+                h1 { color: #2c3e50; font-size: 16pt; margin-bottom: 10px; }
+                .meta { margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+                .q-block { margin-bottom: 15px; border: 1px solid #eee; padding: 10px; page-break-inside: avoid; }
+                .q-title { background-color: #2c3e50; color: white; padding: 5px; font-weight: bold; }
+                .opt { padding: 3px 0; }
+                .sel { background-color: #e8f4fc; font-weight: bold; border-left: 3px solid #3498db; padding-left: 5px; }
+                .results { margin-top: 30px; border: 2px solid #2c3e50; padding: 15px; background: #f9f9f9; page-break-inside: avoid; }
+            </style>
+            </head><body>
+            <h1>BDI-II Resultat</h1>
+            <div class="meta">
+                <strong>Pasient:</strong> ${name} <br>
+                <strong>Dato:</strong> ${date}
+            </div>
+        `;
+
+        // Gå gjennom alle spørsmål og generer HTML for Word
+        for (let i = 1; i <= 21; i++) {
+            // Finn overskrift
+            let headerText = "Spørsmål " + i;
+            const block = document.getElementById('q' + i + '_block');
+            if(block) {
+                headerText = block.querySelector('.question-header').innerText;
+            }
+
+            content += `<div class='q-block'><div class='q-title'>${headerText}</div>`;
+            
+            // Alternativer
+            const radios = document.getElementsByName('q' + i);
+            for (let j = 0; j < radios.length; j++) {
+                const radio = radios[j];
+                const tr = radio.closest('tr');
+                const text = tr.querySelector('.col-text').innerText;
+                const valStr = tr.querySelector('.col-val').innerText;
+                
+                // HER ER FIXEN: Bruk harde mellomrom (non-breaking spaces) i klammene
+                let checkMark = radio.checked ? "[&#160;X&#160;]" : "[&#160;&#160;&#160;]"; 
+                let styleClass = radio.checked ? "opt sel" : "opt";
+                
+                content += `<div class='${styleClass}'>${checkMark} <strong>${valStr}</strong>: ${text}</div>`;
+            }
+            content += `</div>`;
+        }
+
+        // Resultatseksjon
+        content += `
+            <div class="results">
+                <h2>Resultatoppsummering</h2>
+                <p><strong>Kognitiv delskår:</strong> ${cognitive}</p>
+                <p><strong>Somatisk delskår:</strong> ${somatic}</p>
+                <p style="font-size: 14pt; color: #2c3e50;"><strong>TOTAL SKÅR: ${total}</strong></p>
+                <p><strong>Vurdering:</strong> ${severity}</p>
+            </div>
+            </body></html>
+        `;
+
+        const blob = new Blob(['\ufeff', content], {
+            type: 'application/msword'
+        });
+        
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `BDI-II_${name}_${date}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</body>
+</html>

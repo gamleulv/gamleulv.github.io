@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DES-II - Dissociative Experiences Scale</title>
+    
+    <!-- PDF & Word Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --bg: #f4f7f6;
+            --paper: #ffffff;
+            --border: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 30px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background-color: var(--paper);
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-radius: 8px;
+        }
+
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-weight: 300; }
+
+        .instructions {
+            background: #e8f4fd;
+            padding: 15px;
+            border-left: 4px solid var(--secondary);
+            margin-bottom: 30px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* Meta Info */
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .form-group label { display: block; font-size: 12px; font-weight: bold; color: #7f8c8d; margin-bottom: 4px; }
+        .form-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+
+        /* Question Blocks */
+        .question-box {
+            margin-bottom: 25px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        .q-text {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        /* Percentage Scale */
+        .scale-container {
+            display: flex;
+            justify-content: space-between;
+            background: #fdfdfd;
+            border: 1px solid #ddd;
+            border-radius: 50px;
+            padding: 5px;
+            margin-top: 10px;
+            position: relative;
+        }
+
+        .scale-option {
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .scale-option input { display: none; }
+        
+        .scale-circle {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            font-size: 12px;
+            color: #777;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .scale-option:hover .scale-circle {
+            background-color: #eee;
+            color: #333;
+        }
+
+        .scale-option input:checked + .scale-circle {
+            background-color: var(--secondary);
+            color: white;
+            font-weight: bold;
+            transform: scale(1.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .scale-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #888;
+            padding: 0 10px;
+            margin-top: 5px;
+        }
+
+        /* Results */
+        .results-section {
+            margin-top: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+
+        .total-score { font-size: 42px; font-weight: bold; color: var(--secondary); margin: 10px 0; }
+        
+        .result-bar-bg {
+            background: #e0e0e0;
+            height: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .result-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #e74c3c);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 1s ease-in-out;
+        }
+
+        .cutoff-line {
+            position: absolute;
+            left: 30%;
+            top: -5px;
+            bottom: -5px;
+            width: 2px;
+            background: #333;
+            z-index: 5;
+        }
+        
+        .cutoff-label {
+            position: absolute;
+            left: 30%;
+            top: -25px;
+            transform: translateX(-50%);
+            font-size: 11px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            transition: transform 0.1s;
+            font-size: 14px;
+        }
+        button:hover { transform: translateY(-2px); }
+        .btn-calc { background-color: var(--secondary); }
+        .btn-word { background-color: #2980b9; }
+        .btn-pdf { background-color: #c0392b; }
+        .btn-reset { background-color: #95a5a6; }
+
+        @media print {
+            .controls { display: none; }
+            .container { box-shadow: none; margin: 0; padding: 0; width: 100%; }
+            body { background: white; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="doc-content">
+    <h1>DES-II</h1>
+    <div class="subtitle">Dissociative Experiences Scale (Bernstein & Putnam, 1986)</div>
+
+    <div class="meta-grid">
+        <div class="form-group">
+            <label>Navn</label>
+            <input type="text" id="pName" placeholder="Navn...">
+        </div>
+        <div class="form-group">
+            <label>Dato</label>
+            <input type="date" id="pDate">
+        </div>
+    </div>
+
+    <div class="instructions">
+        <strong>Instruksjon:</strong> Dette spørreskjemaet består av 28 spørsmål om opplevelser du kan ha i dagliglivet. 
+        Angi hvor ofte du har disse opplevelsene når du <strong>ikke</strong> er påvirket av alkohol eller rusmidler.
+        Angi hvor stor prosentandel av tiden dette skjer (0% = Aldri, 100% = Alltid).
+    </div>
+
+    <div id="questions-container">
+        <!-- Spørsmål genereres her -->
+    </div>
+
+    <div class="results-section" id="results">
+        <h3>Resultat</h3>
+        <div>Gjennomsnittlig DES-skåre (0-100):</div>
+        <div class="total-score" id="scoreDisplay">-</div>
+        
+        <div style="position: relative; max-width: 400px; margin: 0 auto;">
+            <div class="cutoff-label">Cut-off (30)</div>
+            <div class="result-bar-bg">
+                <div class="cutoff-line"></div>
+                <div class="result-bar-fill" id="scoreBar"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 10px; color: #666;">
+                <span>0</span>
+                <span>50</span>
+                <span>100</span>
+            </div>
+        </div>
+
+        <div style="margin-top: 20px; font-size: 13px; color: #555; max-width: 600px; margin-left: auto; margin-right: auto;">
+            <strong>Tolkning:</strong> En gjennomsnittlig skåre over <strong>30</strong> er ofte assosiert med dissosiative lidelser (som PTSD eller DID) og bør følges opp klinisk. Skårer under 30 kan reflektere normale dissosiative opplevelser eller stress.
+        </div>
+    </div>
+
+</div>
+
+<div class="controls">
+    <button class="btn-calc" onclick="calculateScore()">📊 Beregn Skåre</button>
+    <button class="btn-word" onclick="exportWord()">💾 Lagre til Word</button>
+    <button class="btn-pdf" onclick="exportPDF()" id="pdfBtn">📄 Lagre til PDF</button>
+    <button class="btn-reset" onclick="resetForm()">🔄 Nullstill</button>
+</div>
+
+<script>
+    document.getElementById('pDate').valueAsDate = new Date();
+
+    const questions = [
+        "Noen opplever at når de kjører bil, kan de plutselig oppdage at de ikke husker hva som har skjedd på hele eller deler av turen.",
+        "Noen opplever at når de lytter til noen som snakker, kan de plutselig oppdage at de ikke fikk med seg hele eller deler av det som ble sagt.",
+        "Noen opplever at de plutselig befinner seg på et sted uten å ane hvordan de kom dit.",
+        "Noen opplever at de plutselig oppdager at de har på seg klær de ikke kan huske å ha tatt på seg.",
+        "Noen opplever at de finner nye ting blant eiendelene sine som de ikke kan huske å ha kjøpt.",
+        "Noen opplever at fremmede mennesker kommer bort til dem og kaller dem ved et annet navn eller insisterer på at de har møtt dem før.",
+        "Noen opplever følelsen av å stå ved siden av seg selv eller se seg selv gjøre noe, som om de så på en annen person.",
+        "Noen får høre at de av og til ikke kjenner igjen venner eller familiemedlemmer.",
+        "Noen opplever at de ikke husker viktige hendelser i livet sitt (for eksempel bryllup eller vitnemålsutdeling).",
+        "Noen opplever å bli beskyldt for å lyve når de selv mener at de ikke har løyet.",
+        "Noen opplever at de ser seg i speilet og ikke kjenner seg igjen.",
+        "Noen opplever av og til at andre mennesker, gjenstander eller verden rundt dem ikke virker virkelige.",
+        "Noen opplever av og til at kroppen deres ikke føles som om den tilhører dem.",
+        "Noen opplever av og til at de husker en tidligere hendelse så levende at det føles som om de opplever den på nytt.",
+        "Noen opplever at de er usikre på om ting de husker faktisk har skjedd, eller om de bare har drømt det.",
+        "Noen opplever at de er på et kjent sted, men likevel synes det virker fremmed og ukjent.",
+        "Noen opplever at når de ser på TV eller film, blir de så oppslukt av handlingen at de ikke merker hva som skjer rundt dem.",
+        "Noen opplever at de blir så oppslukt av en fantasi eller dagdrøm at det føles som om det virkelig skjer.",
+        "Noen opplever at de av og til er i stand til å ignorere smerte.",
+        "Noen opplever at de kan bli sittende og stirre ut i luften uten å tenke på noe, og uten å merke at tiden går.",
+        "Noen opplever at de snakker høyt til seg selv når de er alene.",
+        "Noen opplever at de oppfører seg så forskjellig i ulike situasjoner at de nesten føler seg som to forskjellige personer.",
+        "Noen opplever at de i visse situasjoner kan gjøre ting med en letthet og spontanitet som ellers ville vært vanskelig for dem (f.eks. sport, arbeid, sosiale situasjoner).",
+        "Noen opplever av og til at de ikke husker om de faktisk har gjort noe eller bare tenkt på å gjøre det (f.eks. om de har postet et brev eller bare tenkt på å gjøre det).",
+        "Noen finner bevis på at de har gjort ting de ikke kan huske å ha gjort.",
+        "Noen finner notater, tegninger eller skriblerier blant tingene sine som de må ha laget selv, men som de ikke kan huske å ha laget.",
+        "Noen opplever av og til at de hører stemmer inne i hodet som forteller dem hva de skal gjøre eller kommenterer det de gjør.",
+        "Noen opplever av og til at de ser på verden gjennom en tåke, slik at mennesker og gjenstander virker fjerne eller utydelige."
+    ];
+
+    const container = document.getElementById('questions-container');
+    
+    // EDGE FIX: Clear container
+    container.innerHTML = '';
+
+    questions.forEach((q, index) => {
+        const i = index + 1;
+        const div = document.createElement('div');
+        div.className = 'question-box';
+        
+        let scaleHTML = '<div class="scale-container">';
+        for (let pct = 0; pct <= 100; pct += 10) {
+            scaleHTML += `
+                <label class="scale-option">
+                    <input type="radio" name="q${i}" value="${pct}">
+                    <div class="scale-circle">${pct}</div>
+                </label>
+            `;
+        }
+        scaleHTML += '</div>';
+
+        div.innerHTML = `
+            <div class="q-text">${i}. ${q}</div>
+            ${scaleHTML}
+            <div class="scale-labels">
+                <span>0% (Aldri)</span>
+                <span>100% (Alltid)</span>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+
+    function calculateScore() {
+        let sum = 0;
+        let answered = 0;
+
+        for (let i = 1; i <= 28; i++) {
+            const selected = document.querySelector(`input[name="q${i}"]:checked`);
+            if (selected) {
+                sum += parseInt(selected.value);
+                answered++;
+            }
+        }
+
+        if (answered === 0) {
+            alert("Du har ikke svart på noen spørsmål.");
+            return;
+        }
+
+        // DES-II score is the average of all items (sum / 28)
+        // If some are unanswered, usually one calculates average of answered, but strict scoring requires all.
+        // We will calculate average of answered for usability.
+        const avg = (sum / answered).toFixed(1);
+
+        document.getElementById('scoreDisplay').innerText = avg;
+        document.getElementById('scoreBar').style.width = Math.min(avg, 100) + "%";
+        
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+
+        if (answered < 28) {
+            alert(`Obs: Du har kun svart på ${answered} av 28 spørsmål. Resultatet kan være unøyaktig.`);
+        }
+    }
+
+    function resetForm() {
+        if(confirm("Vil du slette alle svar?")) location.reload();
+    }
+
+    async function exportPDF() {
+        const btn = document.getElementById('pdfBtn');
+        btn.innerText = "Genererer...";
+        btn.disabled = true;
+
+        const element = document.getElementById('doc-content');
+        const name = document.getElementById('pName').value || "Ukjent";
+
+        try {
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            const imgWidth = 190;
+            const pageHeight = 295;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 10;
+
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pageHeight - 20);
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight + 10;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - 20);
+            }
+
+            pdf.save(`DES-II_${name}.pdf`);
+        } catch(e) {
+            alert("Feil ved PDF generering");
+        } finally {
+            btn.innerText = "📄 Lagre til PDF";
+            btn.disabled = false;
+        }
+    }
+
+    function exportWord() {
+        const name = document.getElementById('pName').value || "Ukjent";
+        const content = document.getElementById('doc-content').cloneNode(true);
+        
+        // Transform inputs
+        content.querySelectorAll('input[type="text"], input[type="date"]').forEach(inp => {
+            const span = document.createElement('span');
+            span.innerHTML = inp.value ? `<b>${inp.value}</b>` : "______";
+            inp.parentNode.replaceChild(span, inp);
+        });
+
+        // Replace radio buttons with text score
+        for (let i = 1; i <= 28; i++) {
+            const qBox = content.getElementsByClassName('question-box')[i-1];
+            const selected = document.querySelector(`input[name="q${i}"]:checked`);
+            
+            const scaleDiv = qBox.querySelector('.scale-container');
+            const labelsDiv = qBox.querySelector('.scale-labels');
+            
+            const resultDiv = document.createElement('div');
+            resultDiv.style.fontWeight = 'bold';
+            resultDiv.style.color = '#2980b9';
+            resultDiv.style.marginTop = '5px';
+            
+            if (selected) {
+                resultDiv.innerText = `Svar: ${selected.value}%`;
+            } else {
+                resultDiv.innerText = `Svar: [Ikke besvart]`;
+            }
+            
+            scaleDiv.parentNode.replaceChild(resultDiv, scaleDiv);
+            if(labelsDiv) labelsDiv.remove();
+        }
+
+        // Remove charts / bars
+        const resBar = content.querySelector('.result-bar-bg');
+        if(resBar) resBar.remove();
+
+        const header = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>DES-II Resultat</title>
+            <style>
+                body { font-family: Arial; }
+                .question-box { border-bottom: 1px solid #ccc; margin-bottom: 10px; padding-bottom: 5px; }
+                .q-text { font-weight: bold; }
+                .total-score { font-size: 20px; font-weight: bold; color: #333; }
+            </style>
+            </head><body>
+        `;
+        const footer = "</body></html>";
+        const html = header + content.innerHTML + footer;
+
+        const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `DES-II_${name}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</body>
+</html>

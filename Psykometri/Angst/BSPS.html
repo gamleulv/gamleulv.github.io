@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BSPS - Brief Social Phobia Scale</title>
+    
+    <!-- PDF & Word Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --bg: #f4f7f6;
+            --paper: #ffffff;
+            --border: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 30px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background-color: var(--paper);
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-radius: 8px;
+        }
+
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-weight: 300; }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .form-group label { display: block; font-size: 12px; font-weight: bold; color: #7f8c8d; margin-bottom: 4px; }
+        .form-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+
+        /* Grid for Sections */
+        .section-box {
+            margin-bottom: 30px;
+        }
+
+        .section-header {
+            background: var(--primary);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .instructions {
+            font-style: italic;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 15px;
+            padding-left: 10px;
+            border-left: 3px solid #ddd;
+        }
+
+        /* Question Rows */
+        .q-row {
+            display: grid;
+            grid-template-columns: 3fr 4fr; /* Text, Scale */
+            gap: 15px;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px dotted #eee;
+        }
+
+        .q-text { font-weight: 500; }
+
+        /* Scales */
+        .scale-container {
+            display: flex;
+            gap: 2px;
+        }
+        
+        .scale-opt {
+            flex: 1;
+            text-align: center;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            padding: 8px 0;
+            font-size: 14px;
+            border-radius: 3px;
+        }
+        
+        .scale-opt:hover { background-color: #f0f0f0; }
+        .scale-opt.selected { background-color: var(--secondary); color: white; border-color: var(--secondary); }
+
+        /* Results */
+        .results-section {
+            margin-top: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            display: none;
+        }
+
+        .score-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .score-val { font-weight: bold; font-size: 18px; color: var(--secondary); }
+        .total-val { font-weight: bold; font-size: 24px; color: var(--accent); }
+
+        /* Controls */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            transition: transform 0.1s;
+            font-size: 14px;
+        }
+        button:hover { transform: translateY(-2px); }
+        .btn-calc { background-color: var(--secondary); }
+        .btn-word { background-color: #2980b9; }
+        .btn-pdf { background-color: #c0392b; }
+        .btn-reset { background-color: #95a5a6; }
+
+        @media print {
+            .controls { display: none; }
+            .container { box-shadow: none; margin: 0; padding: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="doc-content">
+    <h1>BSPS</h1>
+    <div class="subtitle">Brief Social Phobia Scale (Davidson et al., 1991)</div>
+
+    <div class="meta-grid">
+        <div class="form-group">
+            <label>Navn</label>
+            <input type="text" id="pName" placeholder="Navn...">
+        </div>
+        <div class="form-group">
+            <label>Dato</label>
+            <input type="date" id="pDate">
+        </div>
+    </div>
+
+    <!-- DEL 1: FRYKT -->
+    <div class="section-box">
+        <div class="section-header">1. Frykt</div>
+        <div class="instructions">
+            Angi hvor mye <strong>frykt</strong> du ville følt i følgende situasjoner (siste uke):<br>
+            0 = Ingen frykt | 1 = Litt frykt | 2 = Moderat frykt | 3 = Mye frykt | 4 = Ekstrem frykt
+        </div>
+        <div id="fear-container"></div>
+    </div>
+
+    <!-- DEL 2: UNNGÅELSE -->
+    <div class="section-box">
+        <div class="section-header">2. Unngåelse</div>
+        <div class="instructions">
+            Angi hvor ofte du har <strong>unngått</strong> disse situasjonene (siste uke):<br>
+            0 = Aldri (0%) | 1 = Sjelden (<25%) | 2 = Av og til (25-50%) | 3 = Ofte (50-75%) | 4 = Alltid (>75%)
+        </div>
+        <div id="avoid-container"></div>
+    </div>
+
+    <!-- DEL 3: FYSIOLOGISKE SYMPTOMER -->
+    <div class="section-box">
+        <div class="section-header">3. Fysiologiske symptomer</div>
+        <div class="instructions">
+            Angi alvorlighetsgraden av følgende symptomer når du har vært i sosiale situasjoner (siste uke):<br>
+            0 = Ingen | 1 = Litt | 2 = Moderat | 3 = Mye | 4 = Ekstremt
+        </div>
+        <div id="physio-container"></div>
+    </div>
+
+
+    <div class="results-section" id="results">
+        <h3>Resultater</h3>
+        
+        <div class="score-row">
+            <span>Frykt (Maks 28):</span>
+            <span class="score-val" id="res-fear">-</span>
+        </div>
+        <div class="score-row">
+            <span>Unngåelse (Maks 28):</span>
+            <span class="score-val" id="res-avoid">-</span>
+        </div>
+        <div class="score-row">
+            <span>Fysiologisk (Maks 16):</span>
+            <span class="score-val" id="res-physio">-</span>
+        </div>
+        <div class="score-row" style="border-bottom: 2px solid var(--primary); margin-top:10px;">
+            <span><strong>TOTAL BSPS SKÅRE</strong> (Maks 72):</span>
+            <span class="total-val" id="res-total">-</span>
+        </div>
+
+        <div style="font-size:13px; color:#555; margin-top:15px;">
+            <strong>Tolkning (Kliniske studier):</strong><br>
+            20-30: Mild sosial fobi<br>
+            30-40: Moderat sosial fobi<br>
+            40-50: Alvorlig sosial fobi<br>
+            > 50: Svært alvorlig
+        </div>
+    </div>
+
+</div>
+
+<div class="controls">
+    <button class="btn-calc" onclick="calculateScore()">📊 Beregn</button>
+    <button class="btn-word" onclick="exportWord()">💾 Lagre til Word</button>
+    <button class="btn-pdf" onclick="exportPDF()" id="pdfBtn">📄 Lagre til PDF</button>
+    <button class="btn-reset" onclick="resetForm()">🔄 Nullstill</button>
+</div>
+
+<script>
+    document.getElementById('pDate').valueAsDate = new Date();
+
+    const situations = [
+        "1. Å snakke med fremmede",
+        "2. Å snakke i en gruppe",
+        "3. Å spise/drikke offentlig",
+        "4. Å skrive mens andre ser på",
+        "5. Å bruke offentlig toalett",
+        "6. Å holde tale / presentasjon",
+        "7. Å gå inn i et rom der andre sitter"
+    ];
+
+    const physiological = [
+        "1. Rødming",
+        "2. Hjertebank",
+        "3. Skjelving",
+        "4. Svetting"
+    ];
+
+    // Helper to create rows
+    function createRow(text, prefix, index) {
+        let scale = `<div class="scale-container">`;
+        for(let i=0; i<=4; i++) {
+            scale += `<div class="scale-opt" onclick="selectOpt('${prefix}-${index}', ${i}, this)">${i}</div>`;
+        }
+        scale += `</div><input type="hidden" id="${prefix}-${index}" value="">`;
+
+        return `
+            <div class="q-row">
+                <div class="q-text">${text}</div>
+                <div>${scale}</div>
+            </div>
+        `;
+    }
+
+    // Render Section 1 (Fear)
+    const fearCont = document.getElementById('fear-container');
+    fearCont.innerHTML = '';
+    situations.forEach((s, i) => {
+        fearCont.innerHTML += createRow(s, 'fear', i);
+    });
+
+    // Render Section 2 (Avoidance)
+    const avoidCont = document.getElementById('avoid-container');
+    avoidCont.innerHTML = '';
+    situations.forEach((s, i) => {
+        avoidCont.innerHTML += createRow(s, 'avoid', i);
+    });
+
+    // Render Section 3 (Physio)
+    const physCont = document.getElementById('physio-container');
+    physCont.innerHTML = '';
+    physiological.forEach((s, i) => {
+        physCont.innerHTML += createRow(s, 'phys', i);
+    });
+
+    // Global selector
+    window.selectOpt = function(id, val, el) {
+        const parent = el.parentElement;
+        parent.querySelectorAll('.scale-opt').forEach(d => d.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById(id).value = val;
+    };
+
+    function calculateScore() {
+        let fearSum = 0, avoidSum = 0, physSum = 0;
+        let missing = 0;
+
+        // Fear
+        for(let i=0; i<7; i++) {
+            const val = document.getElementById(`fear-${i}`).value;
+            if(val) fearSum += parseInt(val);
+            else missing++;
+        }
+
+        // Avoid
+        for(let i=0; i<7; i++) {
+            const val = document.getElementById(`avoid-${i}`).value;
+            if(val) avoidSum += parseInt(val);
+            else missing++;
+        }
+
+        // Phys
+        for(let i=0; i<4; i++) {
+            const val = document.getElementById(`phys-${i}`).value;
+            if(val) physSum += parseInt(val);
+            else missing++;
+        }
+
+        document.getElementById('res-fear').innerText = fearSum;
+        document.getElementById('res-avoid').innerText = avoidSum;
+        document.getElementById('res-physio').innerText = physSum;
+        document.getElementById('res-total').innerText = fearSum + avoidSum + physSum;
+
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+
+        if(missing > 0) alert(`Obs: Du har ikke besvart ${missing} spørsmål.`);
+    }
+
+    function resetForm() {
+        if(confirm("Slette data?")) location.reload();
+    }
+
+    async function exportPDF() {
+        const btn = document.getElementById('pdfBtn');
+        btn.innerText = "Genererer...";
+        btn.disabled = true;
+
+        const element = document.getElementById('doc-content');
+        const name = document.getElementById('pName').value || "Ukjent";
+
+        try {
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            const imgWidth = 190;
+            const pageHeight = 295;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 10;
+
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pageHeight - 20);
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight + 10;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - 20);
+            }
+
+            pdf.save(`BSPS_${name}.pdf`);
+        } catch(e) {
+            alert("Feil ved PDF");
+        } finally {
+            btn.innerText = "📄 Lagre til PDF";
+            btn.disabled = false;
+        }
+    }
+
+    function exportWord() {
+        const name = document.getElementById('pName').value || "Ukjent";
+        const content = document.getElementById('doc-content').cloneNode(true);
+        
+        // Transform inputs
+        content.querySelectorAll('input[type="text"], input[type="date"]').forEach(inp => {
+            const span = document.createElement('span');
+            span.innerHTML = inp.value ? `<b>${inp.value}</b>` : "______";
+            inp.parentNode.replaceChild(span, inp);
+        });
+
+        // Transform Scale Rows
+        const rows = content.querySelectorAll('.q-row');
+        rows.forEach(row => {
+            const hidden = row.querySelector('input[type="hidden"]');
+            const val = hidden ? hidden.value : "-";
+            
+            // Get text
+            const textDiv = row.querySelector('.q-text');
+            const text = textDiv ? textDiv.innerText : "";
+            
+            row.innerHTML = `<div style="padding:5px; border-bottom:1px solid #eee;">
+                ${text}: <b>${val}</b>
+            </div>`;
+        });
+
+        const header = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>BSPS Resultat</title>
+            <style>
+                body { font-family: Arial; }
+                .section-header { background: #eee; font-weight: bold; margin-top: 10px; padding: 5px; }
+            </style>
+            </head><body>
+        `;
+        const footer = "</body></html>";
+        const html = header + content.innerHTML + footer;
+
+        const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `BSPS_${name}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</body>
+</html>

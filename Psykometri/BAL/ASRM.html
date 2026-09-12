@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Altman selvevalueringsskala for mani (ASRM)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .instructions {
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #f0f4f8;
+            border-left: 4px solid #3498db;
+            border-radius: 4px;
+        }
+        .intro-bottom {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 0.95em;
+        }
+        h2 {
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 10px;
+            margin-top: 30px;
+            color: #2c3e50;
+        }
+        .question-group {
+            margin-bottom: 25px;
+            background: #fff;
+            padding: 15px;
+            border: 1px solid #e1e1e1;
+            border-radius: 6px;
+        }
+        .question-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+            color: #2980b9;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        label:hover {
+            background-color: #f5f5f5;
+        }
+        input[type="radio"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        #result-section {
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #e8f6f3;
+            border: 1px solid #d4efdf;
+            border-radius: 8px;
+            text-align: center;
+            display: none; 
+        }
+        .score-display {
+            font-size: 2em;
+            font-weight: bold;
+            color: #27ae60;
+        }
+        .interpretation {
+            margin-top: 10px;
+            font-weight: 500;
+        }
+        .warning {
+            color: #c0392b;
+        }
+        
+        /* Knapper */
+        .action-buttons {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background 0.3s;
+            text-decoration: none;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+        }
+        .btn-pdf { background-color: #e74c3c; }
+        .btn-pdf:hover { background-color: #c0392b; }
+        
+        .btn-html { background-color: #3498db; }
+        .btn-html:hover { background-color: #2980b9; }
+        
+        .btn-email { background-color: #f39c12; }
+        .btn-email:hover { background-color: #d35400; }
+
+        footer {
+            margin-top: 50px;
+            font-size: 0.8em;
+            text-align: center;
+            color: #7f8c8d;
+        }
+
+        /* Skjul knapper ved utskrift/PDF */
+        @media print {
+            .action-buttons, .intro-bottom, footer {
+                display: none;
+            }
+            body { background-color: white; }
+            .container { box-shadow: none; border: none; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>ASRM</h1>
+    <p style="text-align: center; color: #7f8c8d;">Altman Self-Rating Mania Scale (Norsk oversettelse)</p>
+
+    <div class="instructions">
+        <h3>Instruksjoner</h3>
+        <p>Det er 5 grupper med utsagn i dette spørreskjemaet. Les hver gruppe nøye. Velg det utsagnet i hver gruppe som best beskriver hvordan du har følt deg <strong>den siste uken</strong>.</p>
+        <p><em>Vennligst merk:</em> Ordet «av og til» betyr en eller to ganger; «ofte» betyr flere ganger eller mer, og «hyppig» betyr mesteparten av tiden.</p>
+    </div>
+
+    <form id="asrmForm">
+        <!-- Spørsmål 1 -->
+        <div class="question-group" id="q1-group">
+            <span class="question-title">1. Stemningsleie</span>
+            <label><input type="radio" name="q1" value="0" data-text="Jeg føler meg ikke lykkeligere eller blidere enn vanlig."> 0 – Jeg føler meg ikke lykkeligere eller blidere enn vanlig.</label>
+            <label><input type="radio" name="q1" value="1" data-text="Jeg føler meg av og til lykkeligere eller blidere enn vanlig."> 1 – Jeg føler meg av og til lykkeligere eller blidere enn vanlig.</label>
+            <label><input type="radio" name="q1" value="2" data-text="Jeg føler meg ofte lykkeligere eller blidere enn vanlig."> 2 – Jeg føler meg ofte lykkeligere eller blidere enn vanlig.</label>
+            <label><input type="radio" name="q1" value="3" data-text="Jeg føler meg lykkeligere eller blidere enn vanlig mesteparten av tiden."> 3 – Jeg føler meg lykkeligere eller blidere enn vanlig mesteparten av tiden.</label>
+            <label><input type="radio" name="q1" value="4" data-text="Jeg føler meg lykkeligere eller blidere enn vanlig hele tiden."> 4 – Jeg føler meg lykkeligere eller blidere enn vanlig hele tiden.</label>
+        </div>
+
+        <!-- Spørsmål 2 -->
+        <div class="question-group" id="q2-group">
+            <span class="question-title">2. Selvtillit</span>
+            <label><input type="radio" name="q2" value="0" data-text="Jeg føler meg ikke mer selvsikker enn vanlig."> 0 – Jeg føler meg ikke mer selvsikker enn vanlig.</label>
+            <label><input type="radio" name="q2" value="1" data-text="Jeg føler meg av og til mer selvsikker enn vanlig."> 1 – Jeg føler meg av og til mer selvsikker enn vanlig.</label>
+            <label><input type="radio" name="q2" value="2" data-text="Jeg føler meg ofte mer selvsikker enn vanlig."> 2 – Jeg føler meg ofte mer selvsikker enn vanlig.</label>
+            <label><input type="radio" name="q2" value="3" data-text="Jeg føler meg mer selvsikker enn vanlig mesteparten av tiden."> 3 – Jeg føler meg mer selvsikker enn vanlig mesteparten av tiden.</label>
+            <label><input type="radio" name="q2" value="4" data-text="Jeg føler meg mer selvsikker enn vanlig hele tiden."> 4 – Jeg føler meg mer selvsikker enn vanlig hele tiden.</label>
+        </div>
+
+        <!-- Spørsmål 3 -->
+        <div class="question-group" id="q3-group">
+            <span class="question-title">3. Søvnbehov</span>
+            <label><input type="radio" name="q3" value="0" data-text="Jeg trenger ikke mindre søvn enn vanlig."> 0 – Jeg trenger ikke mindre søvn enn vanlig.</label>
+            <label><input type="radio" name="q3" value="1" data-text="Jeg trenger av og til mindre søvn enn vanlig."> 1 – Jeg trenger av og til mindre søvn enn vanlig.</label>
+            <label><input type="radio" name="q3" value="2" data-text="Jeg trenger ofte mindre søvn enn vanlig."> 2 – Jeg trenger ofte mindre søvn enn vanlig.</label>
+            <label><input type="radio" name="q3" value="3" data-text="Jeg klarer meg med mindre søvn enn vanlig mesteparten av tiden."> 3 – Jeg klarer meg med mindre søvn enn vanlig mesteparten av tiden.</label>
+            <label><input type="radio" name="q3" value="4" data-text="Jeg kan gå hele dagen og natten uten søvn og ikke føle meg trøtt."> 4 – Jeg kan gå hele dagen og natten uten søvn og ikke føle meg trøtt.</label>
+        </div>
+
+        <!-- Spørsmål 4 -->
+        <div class="question-group" id="q4-group">
+            <span class="question-title">4. Taletrang</span>
+            <label><input type="radio" name="q4" value="0" data-text="Jeg snakker ikke mer enn vanlig."> 0 – Jeg snakker ikke mer enn vanlig.</label>
+            <label><input type="radio" name="q4" value="1" data-text="Jeg snakker av og til mer enn vanlig."> 1 – Jeg snakker av og til mer enn vanlig.</label>
+            <label><input type="radio" name="q4" value="2" data-text="Jeg snakker ofte mer enn vanlig."> 2 – Jeg snakker ofte mer enn vanlig.</label>
+            <label><input type="radio" name="q4" value="3" data-text="Jeg snakker mer enn vanlig mesteparten av tiden."> 3 – Jeg snakker mer enn vanlig mesteparten av tiden.</label>
+            <label><input type="radio" name="q4" value="4" data-text="Jeg snakker konstant og kan ikke avbrytes."> 4 – Jeg snakker konstant og kan ikke avbrytes.</label>
+        </div>
+
+        <!-- Spørsmål 5 -->
+        <div class="question-group" id="q5-group">
+            <span class="question-title">5. Aktivitetsnivå</span>
+            <label><input type="radio" name="q5" value="0" data-text="Jeg har ikke vært mer aktiv enn vanlig."> 0 – Jeg har ikke vært mer aktiv (faktisk har jeg vært mindre aktiv) enn vanlig.</label>
+            <label><input type="radio" name="q5" value="1" data-text="Jeg har av og til vært mer aktiv enn vanlig."> 1 – Jeg har av og til vært mer aktiv enn vanlig.</label>
+            <label><input type="radio" name="q5" value="2" data-text="Jeg har ofte vært mer aktiv enn vanlig."> 2 – Jeg har ofte vært mer aktiv enn vanlig.</label>
+            <label><input type="radio" name="q5" value="3" data-text="Jeg har vært mer aktiv enn vanlig mesteparten av tiden."> 3 – Jeg har vært mer aktiv enn vanlig mesteparten av tiden.</label>
+            <label><input type="radio" name="q5" value="4" data-text="Jeg er konstant aktiv eller på farten hele tiden."> 4 – Jeg er konstant aktiv eller på farten hele tiden.</label>
+        </div>
+    </form>
+
+    <div id="result-section">
+        <h3>Resultat</h3>
+        <div class="score-display">Totalskår: <span id="total-score">0</span> / 20</div>
+        <p id="interpretation-text" class="interpretation"></p>
+        
+        <div class="action-buttons">
+            <button onclick="savePDF()" class="btn btn-pdf">Lagre som PDF</button>
+            <button onclick="saveHTML()" class="btn btn-html">Lagre som HTML-fil</button>
+            <button onclick="sendEmail()" class="btn btn-email">Send resultatet per e-post</button>
+        </div>
+    </div>
+
+    <div class="intro-bottom">
+        <h3>Om ASRM</h3>
+        <p>Altman selvevalueringsskala for mani (ASRM) er et diagnostisk verktøy utviklet for å vurdere tilstedeværelsen og alvorlighetsgraden av maniske symptomer. Skalaen er utviklet av Dr. Edward Altman og kolleger, og gir en enkel metode for å rapportere maniske symptomer, noe som letter diagnostisering og oppfølging av bipolar lidelse og relaterte tilstander.</p>
+    </div>
+
+    <footer>
+        <p>Kilder: Altman et al., Biol Psychiatry 1997;42:948-955.</p>
+    </footer>
+</div>
+
+<script>
+    const radioButtons = document.querySelectorAll('input[type="radio"]');
+    const resultSection = document.getElementById('result-section');
+    const totalScoreSpan = document.getElementById('total-score');
+    const interpretationText = document.getElementById('interpretation-text');
+
+    radioButtons.forEach(radio => {
+        radio.addEventListener('change', calculateScore);
+    });
+
+    function calculateScore() {
+        let total = 0;
+        let answeredCount = 0;
+
+        for (let i = 1; i <= 5; i++) {
+            const selected = document.querySelector(`input[name="q${i}"]:checked`);
+            if (selected) {
+                total += parseInt(selected.value);
+                answeredCount++;
+            }
+        }
+
+        if (answeredCount > 0) {
+            resultSection.style.display = 'block';
+            totalScoreSpan.textContent = total;
+
+            if (total >= 6) {
+                interpretationText.innerHTML = "En skår på 6 eller høyere indikerer en <strong>høy sannsynlighet</strong> for en manisk eller hypoman tilstand.";
+                interpretationText.className = "interpretation warning";
+            } else {
+                interpretationText.innerHTML = "En skår på 5 eller lavere er mindre sannsynlig forbundet med betydelige symptomer på mani.";
+                interpretationText.className = "interpretation";
+            }
+        }
+    }
+
+    function savePDF() {
+        window.print();
+    }
+
+    function saveHTML() {
+        // Oppdater DOM slik at valgte knapper blir markert som 'checked' i HTML-koden
+        const radios = document.querySelectorAll('input[type="radio"]');
+        radios.forEach(radio => {
+            if (radio.checked) {
+                radio.setAttribute('checked', 'checked');
+            } else {
+                radio.removeAttribute('checked');
+            }
+        });
+        
+        // Sørg for at resultatseksjonen er synlig i lagret fil
+        const resultHTML = document.getElementById('result-section').outerHTML;
+        
+        // Hent hele HTML-innholdet
+        let htmlContent = document.documentElement.outerHTML;
+        
+        // Opprett en blob og last ned
+        const blob = new Blob([htmlContent], {type: 'text/html'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'ASRM_Resultater.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    function sendEmail() {
+        let report = "ASRM RESULTATER\n";
+        report += "Dato: " + new Date().toLocaleDateString('no-NO') + "\n";
+        report += "----------------------------\n\n";
+
+        let total = 0;
+        const questions = ["Stemningsleie", "Selvtillit", "Søvnbehov", "Taletrang", "Aktivitetsnivå"];
+
+        for (let i = 1; i <= 5; i++) {
+            const selected = document.querySelector(`input[name="q${i}"]:checked`);
+            const qTitle = questions[i-1];
+            if (selected) {
+                total += parseInt(selected.value);
+                // Henter teksten fra data-attributtet for ryddigere visning
+                const answerText = selected.getAttribute('data-text');
+                report += `${i}. ${qTitle}: ${answerText} (Poeng: ${selected.value})\n\n`;
+            } else {
+                report += `${i}. ${qTitle}: Ikke besvart\n\n`;
+            }
+        }
+        
+        report += "----------------------------\n";
+        report += `TOTALSKÅR: ${total} / 20\n\n`;
+        report += "Tolkning: " + document.getElementById('interpretation-text').innerText;
+
+        // Kopier til utklippstavlen
+        navigator.clipboard.writeText(report).then(function() {
+            // Åpne e-postklient
+            const subject = encodeURIComponent("ASRM-resultater");
+            const body = encodeURIComponent("Lim inn det skjemaet fra utklippstavlen (Ctrl+V på Windows og Cmd+V på Mac)");
+            window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        }, function(err) {
+            alert('Kunne ikke kopiere tekst til utklippstavlen. Prøv igjen.');
+        });
+    }
+</script>
+
+</body>
+</html>

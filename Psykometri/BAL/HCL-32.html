@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <title>HCL-32 R1 Spørreskjema</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:#f9fafb; margin:0; }
+    .container { max-width: 900px; margin: 0 auto; padding: 24px; }
+    .card { background:#ffffff; border-radius:12px; padding:24px; box-shadow:0 10px 30px rgba(15,23,42,0.08); border:1px solid #e5e7eb; margin-bottom:24px; }
+    h1 { font-size: 2rem; margin-bottom: 0.5rem; color:#111827; }
+    h2 { font-size: 1.25rem; margin-bottom: 0.75rem; color:#111827; }
+    h3 { font-size: 1.05rem; margin-bottom: 0.4rem; color:#111827; }
+    p { color:#4b5563; }
+    .section-label { font-weight:600; color:#6b7280; margin-bottom:4px; font-size:0.9rem; }
+    .question-section { background:#ffffff; border-radius:8px; border:1px solid #e5e7eb; padding:16px 20px; margin-bottom:16px; }
+    .options label { display:flex; align-items:center; gap:8px; margin-bottom:4px; cursor:pointer; }
+    .grid { display:grid; gap:10px; }
+    .item-row { display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-radius:8px; border:1px solid #e5e7eb; background:#f9fafb; }
+    .item-row span { flex:1; color:#111827; }
+    
+    /* Knappe-stiler */
+    .btn-primary { background:#2563eb; color:white; border:none; border-radius:999px; padding:10px 24px; font-size:1rem; cursor:pointer; }
+    .btn-secondary { background:#6b7280; color:white; border:none; border-radius:999px; padding:8px 18px; font-size:0.95rem; cursor:pointer; }
+    
+    /* Eksport-knapper */
+    .btn-html { background:#4f46e5; color:white; border:none; border-radius:6px; padding:10px 20px; font-size:0.95rem; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
+    .btn-pdf { background:#dc2626; color:white; border:none; border-radius:6px; padding:10px 20px; font-size:0.95rem; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
+    .btn-email { background:#059669; color:white; border:none; border-radius:6px; padding:10px 20px; font-size:0.95rem; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
+    
+    .btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
+    .badge { display:inline-block; padding:4px 10px; border-radius:999px; font-size:0.875rem; font-weight:600; }
+    .badge-low { background:#dcfce7; color:#166534; }
+    .badge-high { background:#fef3c7; color:#92400e; }
+    .box { border-radius:8px; padding:12px; margin-top:12px; }
+    .box-green { background:#ecfdf3; color:#14532d; }
+    .box-amber { background:#fffbeb; color:#78350f; }
+    .box-yellow { background:#fefce8; color:#854d0e; font-size:0.875rem; }
+    .result-number { font-size:2.2rem; font-weight:700; color:#2563eb; }
+    .factor-number { font-size:1.5rem; font-weight:700; }
+    .factor-green { color:#16a34a; }
+    .factor-orange { color:#ea580c; }
+    .footer { text-align:center; margin-top:24px; font-size:0.875rem; color:#6b7280; }
+    textarea { width:100%; min-height:70px; border-radius:6px; border:1px solid #d1d5db; padding:8px; font-family:inherit; font-size:0.95rem; }
+    .matrix-table { width:100%; border-collapse:collapse; font-size:0.9rem; margin-top:8px; }
+    .matrix-table th, .matrix-table td { border:1px solid #e5e7eb; padding:6px 8px; text-align:center; }
+    .matrix-table th { background:#f3f4f6; }
+    .matrix-row-label { text-align:left; font-weight:500; }
+    
+    /* Skjul eksport-knapper ved utskrift */
+    @media print {
+      .no-print { display:none !important; }
+      body { background:white; }
+      .card { box-shadow:none; border:1px solid #d1d5db; page-break-inside: avoid; }
+      .container { width: 100%; max-width: 100%; padding:0; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container" id="main-content">
+    <form id="hcl32-form">
+      <div class="card">
+        <h1>Hypomania Check List (HCL-32 R1) - norsk versjon</h1>      
+        <p>
+          Til ulike tider i livet opplever alle endringer eller svingninger i energi, aktivitet og stemningsleie 
+          («oppturer og nedturer»). Hensikten med dette spørreskjemaet er å kartlegge kjennetegn ved perioder 
+          med «opphøyd» stemningsleie.
+        </p>
+
+        <div class="section-label">1. Tilstanden i dag</div>
+        <div class="question-section">
+          <h2>Hvordan har du det i dag sammenlignet med hvordan du vanligvis har det?</h2>
+          <div class="options">
+            <label><input type="radio" name="q1" value="0" required> Mye dårligere enn vanlig</label>
+            <label><input type="radio" name="q1" value="1" required> Dårligere enn vanlig</label>
+            <label><input type="radio" name="q1" value="2" required> Litt dårligere enn vanlig</label>
+            <label><input type="radio" name="q1" value="3" required> Verken bedre eller dårligere enn vanlig</label>
+            <label><input type="radio" name="q1" value="4" required> Litt bedre enn vanlig</label>
+            <label><input type="radio" name="q1" value="5" required> Bedre enn vanlig</label>
+            <label><input type="radio" name="q1" value="6" required> Mye bedre enn vanlig</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-label">2. Vanlig aktivitets‑ og stemningsnivå</div>
+        <div class="question-section">
+          <h2>Sammenlignet med andre mennesker, er mitt nivå av aktivitet, energi og stemningsleie:</h2>
+          <p>(Ikke hvordan du har det i dag, men hvordan du vanligvis er)</p>
+          <div class="options">
+            <label><input type="radio" name="q2" value="0" required> alltid nokså stabilt og jevnt</label>
+            <label><input type="radio" name="q2" value="1" required> generelt høyere</label>
+            <label><input type="radio" name="q2" value="2" required> generelt lavere</label>
+            <label><input type="radio" name="q2" value="3" required> preget av gjentatte perioder med oppturer og nedturer</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-label">3. Perioder med «opphøyd» tilstand</div>
+        <div class="question-section">
+          <h2>Prøv å huske en periode hvor du var i en «opphøyd» tilstand (uten bruk av rusmidler eller alkohol). I en slik tilstand:</h2>
+          <div class="grid">
+            <div class="item-row"><span>1. Jeg trenger mindre søvn</span><div><label><input type="radio" name="q3_0" value="yes" required> Ja</label><label><input type="radio" name="q3_0" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>2. Jeg føler meg mer energisk og mer aktiv</span><div><label><input type="radio" name="q3_1" value="yes" required> Ja</label><label><input type="radio" name="q3_1" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>3. Jeg er mer selvsikker</span><div><label><input type="radio" name="q3_2" value="yes" required> Ja</label><label><input type="radio" name="q3_2" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>4. Jeg har mer glede av arbeidet mitt</span><div><label><input type="radio" name="q3_3" value="yes" required> Ja</label><label><input type="radio" name="q3_3" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>5. Jeg er mer sosial (ringer oftere, går mer ut)</span><div><label><input type="radio" name="q3_4" value="yes" required> Ja</label><label><input type="radio" name="q3_4" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>6. Jeg får større lyst til å reise og/eller reiser mer</span><div><label><input type="radio" name="q3_5" value="yes" required> Ja</label><label><input type="radio" name="q3_5" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>7. Jeg kjører fortere eller tar flere sjanser i trafikken</span><div><label><input type="radio" name="q3_6" value="yes" required> Ja</label><label><input type="radio" name="q3_6" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>8. Jeg bruker mer penger / for mye penger</span><div><label><input type="radio" name="q3_7" value="yes" required> Ja</label><label><input type="radio" name="q3_7" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>9. Jeg tar flere sjanser i hverdagen (på jobb og/eller i andre aktiviteter)</span><div><label><input type="radio" name="q3_8" value="yes" required> Ja</label><label><input type="radio" name="q3_8" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>10. Jeg er mer fysisk aktiv (sport osv.)</span><div><label><input type="radio" name="q3_9" value="yes" required> Ja</label><label><input type="radio" name="q3_9" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>11. Jeg planlegger flere aktiviteter eller prosjekter</span><div><label><input type="radio" name="q3_10" value="yes" required> Ja</label><label><input type="radio" name="q3_10" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>12. Jeg får flere ideer, jeg er mer kreativ</span><div><label><input type="radio" name="q3_11" value="yes" required> Ja</label><label><input type="radio" name="q3_11" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>13. Jeg er mindre sjenert eller hemmet</span><div><label><input type="radio" name="q3_12" value="yes" required> Ja</label><label><input type="radio" name="q3_12" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>14. Jeg bruker mer fargerike og mer ekstravagante klær/sminke</span><div><label><input type="radio" name="q3_13" value="yes" required> Ja</label><label><input type="radio" name="q3_13" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>15. Jeg får større lyst til å treffe, eller treffer faktisk, flere mennesker</span><div><label><input type="radio" name="q3_14" value="yes" required> Ja</label><label><input type="radio" name="q3_14" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>16. Jeg er mer interessert i sex og/eller har økt seksuell lyst</span><div><label><input type="radio" name="q3_15" value="yes" required> Ja</label><label><input type="radio" name="q3_15" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>17. Jeg flørter mer og/eller er mer seksuelt aktiv</span><div><label><input type="radio" name="q3_16" value="yes" required> Ja</label><label><input type="radio" name="q3_16" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>18. Jeg snakker mer</span><div><label><input type="radio" name="q3_17" value="yes" required> Ja</label><label><input type="radio" name="q3_17" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>19. Jeg tenker raskere</span><div><label><input type="radio" name="q3_18" value="yes" required> Ja</label><label><input type="radio" name="q3_18" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>20. Jeg forteller flere vitser eller ordspill når jeg snakker</span><div><label><input type="radio" name="q3_19" value="yes" required> Ja</label><label><input type="radio" name="q3_19" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>21. Jeg blir lettere distrahert</span><div><label><input type="radio" name="q3_20" value="yes" required> Ja</label><label><input type="radio" name="q3_20" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>22. Jeg engasjerer meg i mange nye ting</span><div><label><input type="radio" name="q3_21" value="yes" required> Ja</label><label><input type="radio" name="q3_21" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>23. Tankene mine hopper fra tema til tema</span><div><label><input type="radio" name="q3_22" value="yes" required> Ja</label><label><input type="radio" name="q3_22" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>24. Jeg gjør ting raskere og/eller lettere</span><div><label><input type="radio" name="q3_23" value="yes" required> Ja</label><label><input type="radio" name="q3_23" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>25. Jeg er mer utålmodig og/eller blir lettere irritert</span><div><label><input type="radio" name="q3_24" value="yes" required> Ja</label><label><input type="radio" name="q3_24" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>26. Jeg kan virke utmattende eller irriterende på andre</span><div><label><input type="radio" name="q3_25" value="yes" required> Ja</label><label><input type="radio" name="q3_25" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>27. Jeg havner i flere krangler</span><div><label><input type="radio" name="q3_26" value="yes" required> Ja</label><label><input type="radio" name="q3_26" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>28. Stemningsleiet mitt er høyere, mer optimistisk</span><div><label><input type="radio" name="q3_27" value="yes" required> Ja</label><label><input type="radio" name="q3_27" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>29. Jeg drikker mer kaffe</span><div><label><input type="radio" name="q3_28" value="yes" required> Ja</label><label><input type="radio" name="q3_28" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>30. Jeg røyker flere sigaretter</span><div><label><input type="radio" name="q3_29" value="yes" required> Ja</label><label><input type="radio" name="q3_29" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>31. Jeg drikker mer alkohol</span><div><label><input type="radio" name="q3_30" value="yes" required> Ja</label><label><input type="radio" name="q3_30" value="no" required> Nei</label></div></div>
+            <div class="item-row"><span>32. Jeg bruker mer medikamenter (beroligende, angstdempende, sentralstimulerende)</span><div><label><input type="radio" name="q3_31" value="yes" required> Ja</label><label><input type="radio" name="q3_31" value="no" required> Nei</label></div></div>
+          </div>
+
+          <div id="results-section" class="box box-yellow" style="margin-top:18px;">
+            <h3>Resultat (automatisk beregnet)</h3>
+            <p id="results-placeholder" style="margin:0;">
+              Fyll ut alle 34 spørsmål og trykk «Beregn resultater» for å se totalskår og delskårer.
+            </p>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+            <button type="button" id="calc-btn" class="btn-primary">Beregn resultater</button>
+            <button type="button" id="reset-btn-top" class="btn-secondary">Nullstill</button>
+          </div>
+
+          <div style="margin-top:12px; text-align:center; font-size:0.875rem; color:#6b7280;">
+            <span id="progress-text">Fullfør alle spørsmål for å kunne sende inn (0/34).</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-label">4. Virkning av «oppturene» på livet ditt</div>
+        <div class="question-section">
+          <h2>Hvordan påvirker «oppturene» dine ulike områder av livet ditt?</h2>
+          <p>Marker hvordan disse periodene vanligvis påvirker deg.</p>
+          <table class="matrix-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Positiv og negativ</th>
+                <th>Kun positiv</th>
+                <th>Kun negativ</th>
+                <th>Ingen påvirkning</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="matrix-row-label">Familieliv</td><td><input type="radio" name="impact_family" value="both"></td><td><input type="radio" name="impact_family" value="positive"></td><td><input type="radio" name="impact_family" value="negative"></td><td><input type="radio" name="impact_family" value="none"></td></tr>
+              <tr><td class="matrix-row-label">Sosialt liv</td><td><input type="radio" name="impact_social" value="both"></td><td><input type="radio" name="impact_social" value="positive"></td><td><input type="radio" name="impact_social" value="negative"></td><td><input type="radio" name="impact_social" value="none"></td></tr>
+              <tr><td class="matrix-row-label">Arbeid</td><td><input type="radio" name="impact_work" value="both"></td><td><input type="radio" name="impact_work" value="positive"></td><td><input type="radio" name="impact_work" value="negative"></td><td><input type="radio" name="impact_work" value="none"></td></tr>
+              <tr><td class="matrix-row-label">Fritid</td><td><input type="radio" name="impact_leisure" value="both"></td><td><input type="radio" name="impact_leisure" value="positive"></td><td><input type="radio" name="impact_leisure" value="negative"></td><td><input type="radio" name="impact_leisure" value="none"></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-label">5. Andres reaksjoner på «oppturene»</div>
+        <div class="question-section">
+          <h2>Hvordan har personer som står deg nær reagert på eller kommentert «oppturene» dine?</h2>
+          <div class="options">
+            <label><input type="radio" name="others_reaction" value="positive"> Overveiende positivt (oppmuntrende eller støttende)</label>
+            <label><input type="radio" name="others_reaction" value="neutral"> Nøytralt</label>
+            <label><input type="radio" name="others_reaction" value="negative"> Overveiende negativt (bekymret, irritert, kritisk)</label>
+            <label><input type="radio" name="others_reaction" value="both"> Både positivt og negativt</label>
+            <label><input type="radio" name="others_reaction" value="none"> Ingen reaksjoner</label>
+          </div>
+          <label for="others_comments" style="display:block; margin-top:8px; font-size:0.9rem; color:#4b5563;">
+            Eventuelle kommentarer eller beskrivelser:
+          </label>
+          <textarea id="others_comments" name="others_comments"></textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-label">6. Vanlig varighet av «oppturene»</div>
+        <div class="question-section">
+          <h2>Hvor lenge varer «oppturene» dine vanligvis (i gjennomsnitt)?</h2>
+          <div class="options">
+            <label><input type="radio" name="high_duration" value="1day"> 1 dag</label>
+            <label><input type="radio" name="high_duration" value="2-3days"> 2–3 dager</label>
+            <label><input type="radio" name="high_duration" value="4-7days"> 4–7 dager</label>
+            <label><input type="radio" name="high_duration" value=">1week"> Lenger enn 1 uke</label>
+            <label><input type="radio" name="high_duration" value=">1month"> Lenger enn 1 måned</label>
+            <label><input type="radio" name="high_duration" value="dontknow"> Jeg kan ikke bedømme / vet ikke</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-label">7. «Oppturer» siste 12 måneder</div>
+        <div class="question-section">
+          <h2>Har du opplevd slike «oppturer» i løpet av de siste 12 månedene?</h2>
+          <div class="options">
+            <label><input type="radio" name="high_last_year" value="yes"> Ja</label>
+            <label><input type="radio" name="high_last_year" value="no"> Nei</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-label">8. Omfang av «oppturene» siste 12 måneder</div>
+        <div class="question-section">
+          <h2>Hvis ja: omtrent hvor mange dager til sammen har du vært i «opptur» i løpet av de siste 12 månedene?</h2>
+          <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+            <span>Til sammen omtrent</span>
+            <input type="number" name="high_days_total" min="0" style="width:90px; padding:6px 8px; border-radius:6px; border:1px solid #d1d5db;">
+            <span>dager</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card no-print">
+        <div class="section-label">Eksporter og Del</div>
+        <div class="question-section" style="background:#f0f9ff; border-color:#bae6fd;">
+          <h2>Valg for lagring og sending</h2>
+          <p>Her kan du lagre hele det utfylte skjemaet, enten som en fil til datamaskinen din, eller kopiere det for sending.</p>
+          
+          <div style="display:flex; flex-wrap:wrap; gap:12px; margin-top:16px;">
+            <button type="button" class="btn-html" onclick="saveAsHtml()">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+              Lagre som HTML-fil
+            </button>
+
+            <button type="button" class="btn-pdf" onclick="exportToPDF()">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"></path><path d="M6 14h12v8H6z"></path></svg>
+              Lagre som PDF
+            </button>
+
+            <button type="button" class="btn-email" onclick="copyRichTextToEmail()">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><path d="M22 6l-10 7L2 6"></path></svg>
+              Send som e-post
+            </button>
+          </div>
+          <p style="font-size:0.85rem; color:#64748b; margin-top:12px;">
+            <em>* Knappen "Send som e-post" kopierer skjemaet (formattert tekst og tabeller) til utklippstavlen din. Når e-postprogrammet åpnes, høyreklikk og velg "Lim inn" (eller Ctrl+V på Windows / Command+V på Mac).</em>
+          </p>
+        </div>
+      </div>
+
+      <div class="footer no-print">
+        <p><strong>Merk:</strong> Dette verktøyet er kun ment som et screeningsverktøy og erstatter ikke faglig vurdering.</p>
+        <p>© 2024 HCL-32 kartleggingsverktøy</p>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    // --- Kalkuleringslogikk (samme som før) ---
+    const activeElatedItems = [1,2,3,4,5,9,10,11,12,14,15,18,19,21,23,27];
+    const irritableRiskItems = [6,7,8,20,24,25,26,30,31];
+
+    const form = document.getElementById('hcl32-form');
+    const resultsSection = document.getElementById('results-section');
+    const calcBtn = document.getElementById('calc-btn');
+    const resetBtnTop = document.getElementById('reset-btn-top');
+    const progressText = document.getElementById('progress-text');
+
+    function calcScores() {
+      let total = 0;
+      let active = 0;
+      let irritable = 0;
+
+      for (let i = 0; i < 32; i++) {
+        const yes = form.querySelector(`input[name="q3_${i}"][value="yes"]`);
+        if (yes && yes.checked) {
+          total++;
+          if (activeElatedItems.includes(i)) active++;
+          if (irritableRiskItems.includes(i)) irritable++;
+        }
+      }
+      return { total, active, irritable };
+    }
+
+    function buildInterpretation(total) {
+      if (total <= 13) {
+        return {
+          label: "Lav sannsynlighet",
+          badgeClass: "badge badge-low",
+          text: "0–13 poeng – Lav sannsynlighet: Mindre sannsynlig med bipolar spektrum-lidelse. Vurder andre stemningslidelser eller personlighetsrelaterte forhold."
+        };
+      } else {
+        return {
+          label: "Økt sannsynlighet",
+          badgeClass: "badge badge-high",
+          text: "≥14 poeng – Økt sannsynlighet: Økt sannsynlighet for bipolar spektrum-lidelse. Anbefales videre utredning hos spesialist med fokus på hypomane episoder."
+        };
+      }
+    }
+
+    const questionNames = [
+      'q1', 'q2', ...Array.from({ length: 32 }, (_, i) => `q3_${i}`)
+    ];
+    const totalQuestions = questionNames.length;
+
+    form.addEventListener('change', () => {
+      const answered = questionNames.filter(name =>
+        form.querySelector(`input[name="${name}"]:checked`)
+      ).length;
+
+      if (answered === totalQuestions) {
+        progressText.textContent = `Alle spørsmål er besvart. Du kan nå beregne resultater (${answered}/${totalQuestions}).`;
+      } else {
+        progressText.textContent = `Fullfør alle spørsmål for å kunne sende inn (${answered}/${totalQuestions}).`;
+      }
+    });
+
+    calcBtn.addEventListener('click', () => {
+      const unanswered = questionNames.filter(name =>
+        !form.querySelector(`input[name="${name}"]:checked`)
+      );
+      if (unanswered.length > 0) {
+        alert("Vennligst besvar alle 34 spørsmål før du beregner resultater.");
+        return;
+      }
+
+      const { total, active, irritable } = calcScores();
+      const interp = buildInterpretation(total);
+
+      resultsSection.className = 'box ' + (total <= 13 ? 'box-green' : 'box-amber');
+      resultsSection.innerHTML = `
+        <h3>Resultat av kartlegging</h3>
+        <div style="text-align:left; margin-bottom:8px;">
+          <div class="result-number">${total}</div>
+          <div style="font-size:1rem; color:#4b5563; margin-top:4px;">
+            Totalskåre (antall «Ja» på spørsmål 1–32)
+          </div>
+          <div style="margin-top:8px;">
+            <span class="${interp.badgeClass}">${interp.label}</span>
+          </div>
+        </div>
+
+        <p style="margin:8px 0 4px; font-size:0.95rem;">${interp.text}</p>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-top:10px;">
+          <div class="box box-green" style="margin-top:0;">
+            <h4 style="margin:0 0 4px 0; font-size:0.95rem;">Aktiv/oppstemt faktor</h4>
+            <div class="factor-number factor-green">${active}</div>
+            <p style="margin:4px 0 0; font-size:0.85rem;">
+              En delskår på 12 eller mer er typisk for en «aktiv/oppstemt hypomani-profil».
+            </p>
+          </div>
+          <div class="box" style="background:#fff7ed; color:#9a3412; margin-top:0;">
+            <h4 style="margin:0 0 4px 0; font-size:0.95rem;">Irritabel/risikotakende faktor</h4>
+            <div class="factor-number factor-orange">${irritable}</div>
+            <p style="margin:4px 0 0; font-size:0.85rem;">
+              En delskår på 3 eller mer er typisk for en mer «irritabel/risikotakende hypomani-profil».
+            </p>
+          </div>
+        </div>
+
+        <div class="box box-yellow" style="margin-top:10px;">
+          <strong>Ansvarsfraskrivelse:</strong> Denne kartleggingen er kun et screeningsverktøy og kan ikke brukes som
+          eneste grunnlag for diagnose eller behandling. Ved bekymring for bipolar spektrum-lidelse anbefales vurdering
+          hos lege eller spesialist i psykisk helsevern.
+        </div>
+      `;
+    });
+
+    function resetForm() {
+      form.reset();
+      resultsSection.className = 'box box-yellow';
+      resultsSection.innerHTML = `
+        <h3>Resultat (automatisk beregnet)</h3>
+        <p id="results-placeholder" style="margin:0;">
+          Fyll ut alle 34 spørsmål og trykk «Beregn resultater» for å se totalskår og delskårer.
+        </p>
+      `;
+      progressText.textContent = "Fullfør alle spørsmål for å kunne sende inn (0/34).";
+    }
+
+    resetBtnTop.addEventListener('click', resetForm);
+
+    // --- FUNKSJONER FOR LAGRING OG DELING ---
+
+    // Oppdaterer HTML-koden slik at "checked" og "value" blir en del av selve koden
+    // Dette sikrer at lagrede filer og kopiert tekst viser det du faktisk har fylt ut.
+    function updateDOMForExport() {
+      const inputs = document.querySelectorAll('input');
+      inputs.forEach(input => {
+        if (input.type === 'radio' || input.type === 'checkbox') {
+          if (input.checked) {
+            input.setAttribute('checked', 'checked');
+          } else {
+            input.removeAttribute('checked');
+          }
+        } else if (input.type === 'text' || input.type === 'number') {
+          input.setAttribute('value', input.value);
+        }
+      });
+      const textareas = document.querySelectorAll('textarea');
+      textareas.forEach(ta => {
+        ta.textContent = ta.value; 
+      });
+    }
+
+    // 1. Lagre som HTML-fil (Komplett kopi)
+    function saveAsHtml() {
+      updateDOMForExport();
+      
+      const htmlContent = document.documentElement.outerHTML;
+      const blob = new Blob([htmlContent], { type: "text/html" });
+      
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "HCL-32_Utfylt.html";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // 2. Lagre som PDF
+    function exportToPDF() {
+      window.print();
+    }
+
+    // 3. Send som E-post (Kopierer formatert tekst)
+    function copyRichTextToEmail() {
+      updateDOMForExport();
+
+      // Vi velger hovedinnholdet for kopiering
+      const content = document.getElementById('main-content');
+      
+      // Metode for moderne nettlesere (Clipboard API med HTML-blob)
+      try {
+        const type = "text/html";
+        const blob = new Blob([content.outerHTML], { type });
+        const data = [new ClipboardItem({ [type]: blob })];
+
+        navigator.clipboard.write(data).then(() => {
+          triggerMailto();
+        }, (err) => {
+          // Fallback hvis moderne API feiler
+          fallbackCopyText();
+        });
+      } catch (e) {
+        fallbackCopyText();
+      }
+    }
+
+    function fallbackCopyText() {
+        // Gammel metode (select & execCommand) hvis nettleseren er streng/gammel
+        const range = document.createRange();
+        range.selectNode(document.getElementById('main-content'));
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        document.execCommand('copy');
+        window.getSelection().removeAllRanges();
+        triggerMailto();
+    }
+
+    function triggerMailto() {
+      alert("Skjemaet er kopiert til utklippstavlen som formatert tekst!\n\n1. E-postprogrammet ditt åpnes nå.\n2. Klikk i tekstfeltet.\n3. Trykk 'Lim inn' (Ctrl+V) på Windows. Command+V) på Mac.");
+      window.location.href = "mailto:?subject=HCL-32: Utfylt skjema&body=Lim inn skjemaet her (Ctrl+V)/(Command+V)...";
+    }
+
+  </script>
+</body>
+</html>

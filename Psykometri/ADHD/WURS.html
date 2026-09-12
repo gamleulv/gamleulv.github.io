@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WURS - Wender Utah Rating Scale</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --panel-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #e0e0e0;
+            --success-color: #27ae60;
+            --highlight-bg: #fff8e1; /* For WURS-25 items */
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background-color: var(--panel-bg);
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 5px;
+            font-weight: 300;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        .meta-info {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .meta-field {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .meta-field label {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .meta-field input {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        .instruction {
+            background-color: #e8f4fc;
+            border-left: 4px solid var(--secondary-color);
+            padding: 15px;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        .section-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            letter-spacing: 0.5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: #f1f1f1;
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 0.85em;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        th:first-child, td:first-child {
+            text-align: left;
+            width: 45%;
+        }
+
+        tr:hover {
+            background-color: #fafafa;
+        }
+
+        /* Marker WURS-25 items subtilt */
+        .wurs25-item td:first-child {
+            font-weight: 500;
+            color: #000;
+        }
+        
+        .wurs25-item {
+            background-color: rgba(255, 248, 225, 0.3);
+        }
+
+        .wurs25-tag {
+            display: inline-block;
+            font-size: 0.75em;
+            color: #d35400;
+            background: #ffe0b2;
+            padding: 1px 4px;
+            border-radius: 3px;
+            margin-right: 8px;
+            vertical-align: middle;
+            font-weight: bold;
+        }
+
+        input[type="radio"] {
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .btn-calc { background-color: var(--success-color); color: white; font-size: 1.1em; }
+        .btn-export { background-color: var(--secondary-color); color: white; }
+        .btn-word { background-color: #2b579a; color: white; }
+        .btn-pdf { background-color: #b30b00; color: white; }
+
+        #results {
+            margin-top: 40px;
+            padding: 25px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            display: none;
+            background-color: #fff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .result-header {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .score-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .main-score {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid #eee;
+        }
+
+        .main-score-val {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--primary-color);
+            display: block;
+            margin: 10px 0;
+        }
+
+        .sub-score-table {
+            width: 100%;
+            font-size: 0.9em;
+        }
+        .sub-score-table td { text-align: left; padding: 8px; }
+        .sub-score-table td:last-child { text-align: right; font-weight: bold; }
+
+        .cut-off-note {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .positive-result { color: var(--accent-color); }
+        .negative-result { color: var(--success-color); }
+
+        @media print {
+            body { background-color: white; padding: 0; }
+            .container { box-shadow: none; width: 100%; max-width: 100%; padding: 0; margin: 0; }
+            .controls, .instruction, .subtitle { display: none; }
+            h1 { font-size: 16pt; margin: 0 0 10px 0; }
+            td, th { padding: 2px 4px; font-size: 9pt; height: auto; }
+            input[type="text"] { border: none; border-bottom: 1px solid #000; }
+            .section-header { margin-top: 10px; padding: 2px 5px; font-size: 10pt; background-color: #ddd !important; color: #000 !important; }
+            #results { display: block !important; border: 1px solid #000; break-inside: avoid; }
+            .wurs25-item { background-color: transparent !important; }
+            /* Simple print marker */
+            input[type="radio"]:checked:after {
+                content: "X"; font-weight: bold; font-size: 12pt; position: relative; top: -5px; left: -2px;
+            }
+            .score-box { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="document-content">
+    <h1>WURS</h1>
+    <div class="subtitle">Wender Utah Rating Scale (Selvrapportering)</div>
+    
+    <div class="meta-info">
+        <div class="meta-field">
+            <label>Navn:</label>
+            <input type="text" id="patientName" style="width: 200px;">
+        </div>
+        <div class="meta-field">
+            <label>Alder:</label>
+            <input type="text" id="patientAge" style="width: 60px;">
+        </div>
+        <div class="meta-field">
+            <label>Dato:</label>
+            <input type="text" id="testDate" style="width: 100px;">
+        </div>
+    </div>
+
+    <div class="instruction">
+        <strong>Instruksjon:</strong> Beskriv deg selv slik du var <strong>som barn</strong>. Marker det alternativet som passer best for hvert utsagn.
+        <br><br>
+        0 = Ikke i det hele tatt / bare litt &nbsp;|&nbsp; 
+        1 = Av og til &nbsp;|&nbsp; 
+        2 = En del &nbsp;|&nbsp; 
+        3 = Nokså mye &nbsp;|&nbsp; 
+        4 = Veldig mye
+    </div>
+
+    <form id="wursForm">
+        <!-- Section 1 -->
+        <div class="section-header">Som barn var jeg / hadde jeg:</div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Spørsmål</th>
+                    <th style="width:40px">0</th>
+                    <th style="width:40px">1</th>
+                    <th style="width:40px">2</th>
+                    <th style="width:40px">3</th>
+                    <th style="width:40px">4</th>
+                </tr>
+            </thead>
+            <tbody id="questionsBody">
+                <!-- Javascript will populate this to keep code clean, or we write it out -->
+                <!-- Writing out manually to ensure specific WURS-25 items are tagged correctly -->
+                
+                <!-- 1 -->
+                <tr><td>1. Aktiv, rastløs, alltid på farten</td>
+                <td><input type="radio" name="q1" value="0"></td><td><input type="radio" name="q1" value="1"></td><td><input type="radio" name="q1" value="2"></td><td><input type="radio" name="q1" value="3"></td><td><input type="radio" name="q1" value="4"></td></tr>
+                
+                <!-- 2 -->
+                <tr><td>2. Redd for ting, gjenstander</td>
+                <td><input type="radio" name="q2" value="0"></td><td><input type="radio" name="q2" value="1"></td><td><input type="radio" name="q2" value="2"></td><td><input type="radio" name="q2" value="3"></td><td><input type="radio" name="q2" value="4"></td></tr>
+                
+                <!-- 3 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>3. Konsentrasjonsproblemer, lett å distrahere</td>
+                <td><input type="radio" name="q3" value="0"></td><td><input type="radio" name="q3" value="1"></td><td><input type="radio" name="q3" value="2"></td><td><input type="radio" name="q3" value="3"></td><td><input type="radio" name="q3" value="4"></td></tr>
+                
+                <!-- 4 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>4. Engstelig, bekymret</td>
+                <td><input type="radio" name="q4" value="0"></td><td><input type="radio" name="q4" value="1"></td><td><input type="radio" name="q4" value="2"></td><td><input type="radio" name="q4" value="3"></td><td><input type="radio" name="q4" value="4"></td></tr>
+
+                <!-- 5 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>5. Nervøs, urolig</td>
+                <td><input type="radio" name="q5" value="0"></td><td><input type="radio" name="q5" value="1"></td><td><input type="radio" name="q5" value="2"></td><td><input type="radio" name="q5" value="3"></td><td><input type="radio" name="q5" value="4"></td></tr>
+
+                <!-- 6 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>6. Uoppmerksom, dagdrømmende</td>
+                <td><input type="radio" name="q6" value="0"></td><td><input type="radio" name="q6" value="1"></td><td><input type="radio" name="q6" value="2"></td><td><input type="radio" name="q6" value="3"></td><td><input type="radio" name="q6" value="4"></td></tr>
+
+                <!-- 7 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>7. Hissig temperament, ble lett sint</td>
+                <td><input type="radio" name="q7" value="0"></td><td><input type="radio" name="q7" value="1"></td><td><input type="radio" name="q7" value="2"></td><td><input type="radio" name="q7" value="3"></td><td><input type="radio" name="q7" value="4"></td></tr>
+
+                <!-- 8 -->
+                <tr><td>8. Sjenert, sårbar</td>
+                <td><input type="radio" name="q8" value="0"></td><td><input type="radio" name="q8" value="1"></td><td><input type="radio" name="q8" value="2"></td><td><input type="radio" name="q8" value="3"></td><td><input type="radio" name="q8" value="4"></td></tr>
+
+                <!-- 9 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>9. Raserianfall</td>
+                <td><input type="radio" name="q9" value="0"></td><td><input type="radio" name="q9" value="1"></td><td><input type="radio" name="q9" value="2"></td><td><input type="radio" name="q9" value="3"></td><td><input type="radio" name="q9" value="4"></td></tr>
+
+                <!-- 10 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>10. Problemer med å holde seg til en aktivitet, fullførte ikke</td>
+                <td><input type="radio" name="q10" value="0"></td><td><input type="radio" name="q10" value="1"></td><td><input type="radio" name="q10" value="2"></td><td><input type="radio" name="q10" value="3"></td><td><input type="radio" name="q10" value="4"></td></tr>
+
+                <!-- 11 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>11. Sta, sterk viljestyrke</td>
+                <td><input type="radio" name="q11" value="0"></td><td><input type="radio" name="q11" value="1"></td><td><input type="radio" name="q11" value="2"></td><td><input type="radio" name="q11" value="3"></td><td><input type="radio" name="q11" value="4"></td></tr>
+
+                <!-- 12 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>12. Trist, deprimert, ikke glad</td>
+                <td><input type="radio" name="q12" value="0"></td><td><input type="radio" name="q12" value="1"></td><td><input type="radio" name="q12" value="2"></td><td><input type="radio" name="q12" value="3"></td><td><input type="radio" name="q12" value="4"></td></tr>
+
+                <!-- 13 -->
+                <tr><td>13. Uforsiktig, dumdristig, var ofte med på tull</td>
+                <td><input type="radio" name="q13" value="0"></td><td><input type="radio" name="q13" value="1"></td><td><input type="radio" name="q13" value="2"></td><td><input type="radio" name="q13" value="3"></td><td><input type="radio" name="q13" value="4"></td></tr>
+
+                <!-- 14 -->
+                <tr><td>14. Fikk ikke noe ut av ting, misfornøyd med livet</td>
+                <td><input type="radio" name="q14" value="0"></td><td><input type="radio" name="q14" value="1"></td><td><input type="radio" name="q14" value="2"></td><td><input type="radio" name="q14" value="3"></td><td><input type="radio" name="q14" value="4"></td></tr>
+
+                <!-- 15 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>15. Ulydig, uforskammet, frekk</td>
+                <td><input type="radio" name="q15" value="0"></td><td><input type="radio" name="q15" value="1"></td><td><input type="radio" name="q15" value="2"></td><td><input type="radio" name="q15" value="3"></td><td><input type="radio" name="q15" value="4"></td></tr>
+
+                <!-- 16 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>16. Dårlig selvbilde</td>
+                <td><input type="radio" name="q16" value="0"></td><td><input type="radio" name="q16" value="1"></td><td><input type="radio" name="q16" value="2"></td><td><input type="radio" name="q16" value="3"></td><td><input type="radio" name="q16" value="4"></td></tr>
+
+                <!-- 17 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>17. Irritabel</td>
+                <td><input type="radio" name="q17" value="0"></td><td><input type="radio" name="q17" value="1"></td><td><input type="radio" name="q17" value="2"></td><td><input type="radio" name="q17" value="3"></td><td><input type="radio" name="q17" value="4"></td></tr>
+
+                <!-- 18 -->
+                <tr><td>18. Utadvendt, vennlig, likte å være sammen med andre</td>
+                <td><input type="radio" name="q18" value="0"></td><td><input type="radio" name="q18" value="1"></td><td><input type="radio" name="q18" value="2"></td><td><input type="radio" name="q18" value="3"></td><td><input type="radio" name="q18" value="4"></td></tr>
+
+                <!-- 19 -->
+                <tr><td>19. Slurvete, rotet mye</td>
+                <td><input type="radio" name="q19" value="0"></td><td><input type="radio" name="q19" value="1"></td><td><input type="radio" name="q19" value="2"></td><td><input type="radio" name="q19" value="3"></td><td><input type="radio" name="q19" value="4"></td></tr>
+
+                <!-- 20 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>20. Humørsyk, humøret svinger ofte</td>
+                <td><input type="radio" name="q20" value="0"></td><td><input type="radio" name="q20" value="1"></td><td><input type="radio" name="q20" value="2"></td><td><input type="radio" name="q20" value="3"></td><td><input type="radio" name="q20" value="4"></td></tr>
+
+                <!-- 21 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>21. Sint</td>
+                <td><input type="radio" name="q21" value="0"></td><td><input type="radio" name="q21" value="1"></td><td><input type="radio" name="q21" value="2"></td><td><input type="radio" name="q21" value="3"></td><td><input type="radio" name="q21" value="4"></td></tr>
+
+                <!-- 22 -->
+                <tr><td>22. Hadde mange venner, populær</td>
+                <td><input type="radio" name="q22" value="0"></td><td><input type="radio" name="q22" value="1"></td><td><input type="radio" name="q22" value="2"></td><td><input type="radio" name="q22" value="3"></td><td><input type="radio" name="q22" value="4"></td></tr>
+
+                <!-- 23 -->
+                <tr><td>23. Strukturert, ordentlig</td>
+                <td><input type="radio" name="q23" value="0"></td><td><input type="radio" name="q23" value="1"></td><td><input type="radio" name="q23" value="2"></td><td><input type="radio" name="q23" value="3"></td><td><input type="radio" name="q23" value="4"></td></tr>
+
+                <!-- 24 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>24. Handlet uten å tenke, var impulsiv</td>
+                <td><input type="radio" name="q24" value="0"></td><td><input type="radio" name="q24" value="1"></td><td><input type="radio" name="q24" value="2"></td><td><input type="radio" name="q24" value="3"></td><td><input type="radio" name="q24" value="4"></td></tr>
+
+                <!-- 25 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>25. Tendens til å være umoden</td>
+                <td><input type="radio" name="q25" value="0"></td><td><input type="radio" name="q25" value="1"></td><td><input type="radio" name="q25" value="2"></td><td><input type="radio" name="q25" value="3"></td><td><input type="radio" name="q25" value="4"></td></tr>
+
+                <!-- 26 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>26. Plaget av skyldfølelse og anger</td>
+                <td><input type="radio" name="q26" value="0"></td><td><input type="radio" name="q26" value="1"></td><td><input type="radio" name="q26" value="2"></td><td><input type="radio" name="q26" value="3"></td><td><input type="radio" name="q26" value="4"></td></tr>
+
+                <!-- 27 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>27. Lett for å miste kontrollen over meg selv</td>
+                <td><input type="radio" name="q27" value="0"></td><td><input type="radio" name="q27" value="1"></td><td><input type="radio" name="q27" value="2"></td><td><input type="radio" name="q27" value="3"></td><td><input type="radio" name="q27" value="4"></td></tr>
+
+                <!-- 28 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>28. Tendens til å være, eller oppføre seg irrasjonelt</td>
+                <td><input type="radio" name="q28" value="0"></td><td><input type="radio" name="q28" value="1"></td><td><input type="radio" name="q28" value="2"></td><td><input type="radio" name="q28" value="3"></td><td><input type="radio" name="q28" value="4"></td></tr>
+
+                <!-- 29 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>29. Upopulær blant andre barn, kom dårlig overens</td>
+                <td><input type="radio" name="q29" value="0"></td><td><input type="radio" name="q29" value="1"></td><td><input type="radio" name="q29" value="2"></td><td><input type="radio" name="q29" value="3"></td><td><input type="radio" name="q29" value="4"></td></tr>
+
+                <!-- 30-39 -->
+                <tr><td>30. Dårlig koordinasjon, deltok ikke i sport</td>
+                <td><input type="radio" name="q30" value="0"></td><td><input type="radio" name="q30" value="1"></td><td><input type="radio" name="q30" value="2"></td><td><input type="radio" name="q30" value="3"></td><td><input type="radio" name="q30" value="4"></td></tr>
+                <tr><td>31. Redd for å miste kontrollen over meg selv</td>
+                <td><input type="radio" name="q31" value="0"></td><td><input type="radio" name="q31" value="1"></td><td><input type="radio" name="q31" value="2"></td><td><input type="radio" name="q31" value="3"></td><td><input type="radio" name="q31" value="4"></td></tr>
+                <tr><td>32. Bra koordinasjon, ble valgt ut først i leker</td>
+                <td><input type="radio" name="q32" value="0"></td><td><input type="radio" name="q32" value="1"></td><td><input type="radio" name="q32" value="2"></td><td><input type="radio" name="q32" value="3"></td><td><input type="radio" name="q32" value="4"></td></tr>
+                <tr><td>33. Gutteaktig (gjelder bare jenter)</td>
+                <td><input type="radio" name="q33" value="0"></td><td><input type="radio" name="q33" value="1"></td><td><input type="radio" name="q33" value="2"></td><td><input type="radio" name="q33" value="3"></td><td><input type="radio" name="q33" value="4"></td></tr>
+                <tr><td>34. Rømte hjemmefra</td>
+                <td><input type="radio" name="q34" value="0"></td><td><input type="radio" name="q34" value="1"></td><td><input type="radio" name="q34" value="2"></td><td><input type="radio" name="q34" value="3"></td><td><input type="radio" name="q34" value="4"></td></tr>
+                <tr><td>35. Kom opp i slåsskamp</td>
+                <td><input type="radio" name="q35" value="0"></td><td><input type="radio" name="q35" value="1"></td><td><input type="radio" name="q35" value="2"></td><td><input type="radio" name="q35" value="3"></td><td><input type="radio" name="q35" value="4"></td></tr>
+                <tr><td>36. Ertet andre barn</td>
+                <td><input type="radio" name="q36" value="0"></td><td><input type="radio" name="q36" value="1"></td><td><input type="radio" name="q36" value="2"></td><td><input type="radio" name="q36" value="3"></td><td><input type="radio" name="q36" value="4"></td></tr>
+                <tr><td>37. Lederskikkelse, sjefete</td>
+                <td><input type="radio" name="q37" value="0"></td><td><input type="radio" name="q37" value="1"></td><td><input type="radio" name="q37" value="2"></td><td><input type="radio" name="q37" value="3"></td><td><input type="radio" name="q37" value="4"></td></tr>
+                <tr><td>38. Vanskeligheter med å våkne om morgenen</td>
+                <td><input type="radio" name="q38" value="0"></td><td><input type="radio" name="q38" value="1"></td><td><input type="radio" name="q38" value="2"></td><td><input type="radio" name="q38" value="3"></td><td><input type="radio" name="q38" value="4"></td></tr>
+                <tr><td>39. Lett å lede, svak egen vilje</td>
+                <td><input type="radio" name="q39" value="0"></td><td><input type="radio" name="q39" value="1"></td><td><input type="radio" name="q39" value="2"></td><td><input type="radio" name="q39" value="3"></td><td><input type="radio" name="q39" value="4"></td></tr>
+                
+                <!-- 40 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>40. Vanskelig for å se ting fra andres synsvinkel</td>
+                <td><input type="radio" name="q40" value="0"></td><td><input type="radio" name="q40" value="1"></td><td><input type="radio" name="q40" value="2"></td><td><input type="radio" name="q40" value="3"></td><td><input type="radio" name="q40" value="4"></td></tr>
+
+                <!-- 41 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>41. Trøbbel med autoriteter / problemer på skolen</td>
+                <td><input type="radio" name="q41" value="0"></td><td><input type="radio" name="q41" value="1"></td><td><input type="radio" name="q41" value="2"></td><td><input type="radio" name="q41" value="3"></td><td><input type="radio" name="q41" value="4"></td></tr>
+
+                <!-- 42-49 -->
+                <tr><td>42. Vanskeligheter med politiet, arrestert, straffet</td>
+                <td><input type="radio" name="q42" value="0"></td><td><input type="radio" name="q42" value="1"></td><td><input type="radio" name="q42" value="2"></td><td><input type="radio" name="q42" value="3"></td><td><input type="radio" name="q42" value="4"></td></tr>
+                
+                <!-- Medical -->
+                <tr style="background-color: #f1f1f1;"><td colspan="6"><strong>Medisinske problemer som barn</strong></td></tr>
+                <tr><td>43. Hodepine</td><td><input type="radio" name="q43" value="0"></td><td><input type="radio" name="q43" value="1"></td><td><input type="radio" name="q43" value="2"></td><td><input type="radio" name="q43" value="3"></td><td><input type="radio" name="q43" value="4"></td></tr>
+                <tr><td>44. Mavesmerter</td><td><input type="radio" name="q44" value="0"></td><td><input type="radio" name="q44" value="1"></td><td><input type="radio" name="q44" value="2"></td><td><input type="radio" name="q44" value="3"></td><td><input type="radio" name="q44" value="4"></td></tr>
+                <tr><td>45. Forstoppelse</td><td><input type="radio" name="q45" value="0"></td><td><input type="radio" name="q45" value="1"></td><td><input type="radio" name="q45" value="2"></td><td><input type="radio" name="q45" value="3"></td><td><input type="radio" name="q45" value="4"></td></tr>
+                <tr><td>46. Diare</td><td><input type="radio" name="q46" value="0"></td><td><input type="radio" name="q46" value="1"></td><td><input type="radio" name="q46" value="2"></td><td><input type="radio" name="q46" value="3"></td><td><input type="radio" name="q46" value="4"></td></tr>
+                <tr><td>47. Mat allergier</td><td><input type="radio" name="q47" value="0"></td><td><input type="radio" name="q47" value="1"></td><td><input type="radio" name="q47" value="2"></td><td><input type="radio" name="q47" value="3"></td><td><input type="radio" name="q47" value="4"></td></tr>
+                <tr><td>48. Andre former for allergier</td><td><input type="radio" name="q48" value="0"></td><td><input type="radio" name="q48" value="1"></td><td><input type="radio" name="q48" value="2"></td><td><input type="radio" name="q48" value="3"></td><td><input type="radio" name="q48" value="4"></td></tr>
+                <tr><td>49. Sengevæter</td><td><input type="radio" name="q49" value="0"></td><td><input type="radio" name="q49" value="1"></td><td><input type="radio" name="q49" value="2"></td><td><input type="radio" name="q49" value="3"></td><td><input type="radio" name="q49" value="4"></td></tr>
+
+                <!-- School -->
+                <tr style="background-color: #f1f1f1;"><td colspan="6"><strong>Som skolebarn var jeg / hadde jeg</strong></td></tr>
+                <tr><td>50. Stort sett en flink elev, lærte raskt</td>
+                <td><input type="radio" name="q50" value="0"></td><td><input type="radio" name="q50" value="1"></td><td><input type="radio" name="q50" value="2"></td><td><input type="radio" name="q50" value="3"></td><td><input type="radio" name="q50" value="4"></td></tr>
+
+                <!-- 51 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>51. Lite flink, lærte sent</td>
+                <td><input type="radio" name="q51" value="0"></td><td><input type="radio" name="q51" value="1"></td><td><input type="radio" name="q51" value="2"></td><td><input type="radio" name="q51" value="3"></td><td><input type="radio" name="q51" value="4"></td></tr>
+
+                <tr><td>52. Lærte å lese sent</td><td><input type="radio" name="q52" value="0"></td><td><input type="radio" name="q52" value="1"></td><td><input type="radio" name="q52" value="2"></td><td><input type="radio" name="q52" value="3"></td><td><input type="radio" name="q52" value="4"></td></tr>
+                <tr><td>53. Leste sakte</td><td><input type="radio" name="q53" value="0"></td><td><input type="radio" name="q53" value="1"></td><td><input type="radio" name="q53" value="2"></td><td><input type="radio" name="q53" value="3"></td><td><input type="radio" name="q53" value="4"></td></tr>
+                <tr><td>54. Skrev speilvendte bokstaver</td><td><input type="radio" name="q54" value="0"></td><td><input type="radio" name="q54" value="1"></td><td><input type="radio" name="q54" value="2"></td><td><input type="radio" name="q54" value="3"></td><td><input type="radio" name="q54" value="4"></td></tr>
+                <tr><td>55. Problemer med å stave</td><td><input type="radio" name="q55" value="0"></td><td><input type="radio" name="q55" value="1"></td><td><input type="radio" name="q55" value="2"></td><td><input type="radio" name="q55" value="3"></td><td><input type="radio" name="q55" value="4"></td></tr>
+
+                <!-- 56 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>56. Problemer med matematikk eller tall</td>
+                <td><input type="radio" name="q56" value="0"></td><td><input type="radio" name="q56" value="1"></td><td><input type="radio" name="q56" value="2"></td><td><input type="radio" name="q56" value="3"></td><td><input type="radio" name="q56" value="4"></td></tr>
+
+                <tr><td>57. Stygg håndskrift</td><td><input type="radio" name="q57" value="0"></td><td><input type="radio" name="q57" value="1"></td><td><input type="radio" name="q57" value="2"></td><td><input type="radio" name="q57" value="3"></td><td><input type="radio" name="q57" value="4"></td></tr>
+                <tr><td>58. Leste bra, men har aldri likt å lese</td><td><input type="radio" name="q58" value="0"></td><td><input type="radio" name="q58" value="1"></td><td><input type="radio" name="q58" value="2"></td><td><input type="radio" name="q58" value="3"></td><td><input type="radio" name="q58" value="4"></td></tr>
+
+                <!-- 59 * -->
+                <tr class="wurs25-item"><td><span class="wurs25-tag">W25</span>59. Fikk aldri vist hva jeg kunne klare</td>
+                <td><input type="radio" name="q59" value="0"></td><td><input type="radio" name="q59" value="1"></td><td><input type="radio" name="q59" value="2"></td><td><input type="radio" name="q59" value="3"></td><td><input type="radio" name="q59" value="4"></td></tr>
+
+                <tr><td>60. Gikk en klasse om igjen</td><td><input type="radio" name="q60" value="0"></td><td><input type="radio" name="q60" value="1"></td><td><input type="radio" name="q60" value="2"></td><td><input type="radio" name="q60" value="3"></td><td><input type="radio" name="q60" value="4"></td></tr>
+                <tr><td>61. Ble utvist</td><td><input type="radio" name="q61" value="0"></td><td><input type="radio" name="q61" value="1"></td><td><input type="radio" name="q61" value="2"></td><td><input type="radio" name="q61" value="3"></td><td><input type="radio" name="q61" value="4"></td></tr>
+
+            </tbody>
+        </table>
+    </form>
+
+    <div id="results">
+        <div class="result-header">Resultater WURS-25</div>
+        
+        <div class="score-box">
+            <div class="main-score">
+                <span>Total Skåre (25 items)</span>
+                <span class="main-score-val" id="totalScoreVal">-</span>
+                <span id="scoreInterpretation" style="font-weight: bold;">-</span>
+                <div class="cut-off-note">Cut-off > 46 indikerer sannsynlig ADHD.<br>(Cut-off > 36 kan brukes for mildere screening).</div>
+            </div>
+            
+            <div>
+                <strong>Kliniske Faktorer (Delskårer):</strong><br>
+                <div style="color: #666; font-size: 0.85em; margin-bottom: 10px;">Basert på Reimherr et al. (2021) faktorstruktur.</div>
+                
+                <table class="sub-score-table">
+                    <tr style="background: #fff; border-bottom: 1px solid #eee;">
+                        <td>Impulsivitet / Atferd</td>
+                        <td id="factorMood">-</td>
+                    </tr>
+                    <tr style="background: #fff; border-bottom: 1px solid #eee;">
+                        <td>Uoppmerksomhet (ADHD)</td>
+                        <td id="factorAttn">-</td>
+                    </tr>
+                    <tr style="background: #fff;">
+                        <td>Engstelse / Dysfori</td>
+                        <td id="factorAnx">-</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button type="button" class="btn-calc" onclick="calculateWURS()">Regne ut skårer</button>
+        <button type="button" class="btn-export" onclick="exportHTML()">Lage til html</button>
+        <button type="button" class="btn-word" onclick="exportWord()">Lagre til Word</button>
+        <button type="button" class="btn-pdf" onclick="window.print()">Lagre til PDF</button>
+    </div>
+</div>
+
+<script>
+    // Definition of WURS-25 items and subscales
+    const wurs25Items = [3, 4, 5, 6, 7, 9, 10, 11, 12, 15, 16, 17, 20, 21, 24, 25, 26, 27, 28, 29, 40, 41, 51, 56, 59];
+    
+    // Subscales (Reimherr 2021)
+    // Note: Item 29 is typically excluded from these specific factors but included in total.
+    const factorMoodItems = [7, 9, 11, 15, 17, 20, 21, 27, 28, 40, 41];
+    const factorAttnItems = [3, 5, 6, 10, 24, 25, 51, 56, 59];
+    const factorAnxItems = [4, 12, 16, 26];
+
+    function getVal(qNum) {
+        const radios = document.getElementsByName('q' + qNum);
+        for (let radio of radios) {
+            if (radio.checked) return parseInt(radio.value);
+        }
+        return 0; // Default to 0 if not checked, or handle as missing
+    }
+
+    function calculateWURS() {
+        let totalScore = 0;
+        let scoreMood = 0;
+        let scoreAttn = 0;
+        let scoreAnx = 0;
+
+        // Calculate Total WURS-25
+        wurs25Items.forEach(q => {
+            totalScore += getVal(q);
+        });
+
+        // Calculate Factors
+        factorMoodItems.forEach(q => scoreMood += getVal(q));
+        factorAttnItems.forEach(q => scoreAttn += getVal(q));
+        factorAnxItems.forEach(q => scoreAnx += getVal(q));
+
+        // Display results
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('totalScoreVal').innerText = totalScore;
+        
+        const interpElem = document.getElementById('scoreInterpretation');
+        if (totalScore >= 46) {
+            interpElem.innerText = "Positiv (Høy sannsynlighet)";
+            interpElem.className = "positive-result";
+        } else if (totalScore >= 36) {
+             interpElem.innerText = "Gråsone (Mulig)";
+             interpElem.className = "positive-result";
+             interpElem.style.color = "#f39c12"; // Orange
+        } else {
+            interpElem.innerText = "Negativ (Lav sannsynlighet)";
+            interpElem.className = "negative-result";
+        }
+
+        document.getElementById('factorMood').innerText = scoreMood + " / " + (factorMoodItems.length * 4);
+        document.getElementById('factorAttn').innerText = scoreAttn + " / " + (factorAttnItems.length * 4);
+        document.getElementById('factorAnx').innerText = scoreAnx + " / " + (factorAnxItems.length * 4);
+        
+        document.getElementById('results').scrollIntoView({behavior: "smooth"});
+    }
+
+    // Export Logic (Same as ASRS)
+    function prepareContentForExport() {
+        // Update input fields to value for export
+        const nameVal = document.getElementById('patientName').value;
+        const ageVal = document.getElementById('patientAge').value;
+        const dateVal = document.getElementById('testDate').value;
+        
+        const contentClone = document.getElementById('document-content').cloneNode(true);
+        
+        // Remove controls
+        const controls = contentClone.querySelector('.controls');
+        if (controls) controls.remove();
+        
+        // Set values in clone
+        contentClone.querySelector('#patientName').setAttribute('value', nameVal);
+        contentClone.querySelector('#patientAge').setAttribute('value', ageVal);
+        contentClone.querySelector('#testDate').setAttribute('value', dateVal);
+
+        // Convert Radios to Text [X]
+        const originalInputs = document.querySelectorAll('input[type="radio"]');
+        const clonedInputs = contentClone.querySelectorAll('input[type="radio"]');
+        
+        for (let i = 0; i < originalInputs.length; i++) {
+            if (originalInputs[i].checked) {
+                const parent = clonedInputs[i].parentNode;
+                clonedInputs[i].style.display = 'none'; 
+                const marker = document.createElement('strong');
+                marker.innerHTML = " [X] ";
+                marker.style.fontSize = "1.2em";
+                parent.appendChild(marker);
+                parent.style.backgroundColor = "#dff0d8"; 
+            } else {
+                 clonedInputs[i].style.display = 'none';
+                 const emptyParams = document.createElement('span');
+                 emptyParams.innerHTML = " ( ) ";
+                 clonedInputs[i].parentNode.appendChild(emptyParams);
+            }
+        }
+        
+        const results = contentClone.querySelector('#results');
+        if (results) results.style.display = 'block';
+
+        return contentClone.innerHTML;
+    }
+    
+    function prepareHTMLFileContent() {
+         const docClone = document.documentElement.cloneNode(true);
+         // Set Input values to attributes
+         const nameVal = document.getElementById('patientName').value;
+         const ageVal = document.getElementById('patientAge').value;
+         const dateVal = document.getElementById('testDate').value;
+         
+         docClone.querySelector('#patientName').setAttribute('value', nameVal);
+         docClone.querySelector('#patientAge').setAttribute('value', ageVal);
+         docClone.querySelector('#testDate').setAttribute('value', dateVal);
+
+         const origInputs = document.querySelectorAll('input[type="radio"]');
+         const cloneInputs = docClone.querySelectorAll('input[type="radio"]');
+         
+         for(let i=0; i<origInputs.length; i++) {
+             if(origInputs[i].checked) {
+                 cloneInputs[i].setAttribute('checked', 'checked');
+             }
+         }
+         return docClone.outerHTML;
+    }
+
+    function exportHTML() {
+        const htmlContent = prepareHTMLFileContent();
+        const blob = new Blob([htmlContent], {type: 'text/html'});
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'WURS_utfylt.html';
+        link.click();
+    }
+
+    function exportWord() {
+        const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' " +
+            "xmlns:w='urn:schemas-microsoft-com:office:word' " +
+            "xmlns='http://www.w3.org/TR/REC-html40'>" +
+            "<head><meta charset='utf-8'><title>WURS Resultat</title></head><body>";
+        const footer = "</body></html>";
+        const bodyContent = prepareContentForExport();
+        const sourceHTML = header + bodyContent + footer;
+        
+        const blob = new Blob(['\ufeff', sourceHTML], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'WURS_Resultat.doc';
+        link.click();
+    }
+</script>
+
+</body>
+</html>

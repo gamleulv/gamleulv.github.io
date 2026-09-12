@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="no">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCID-5-KV - Skåringsskjema</title>
+
+    <!-- PDF Generator Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+      :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #3498db;
+        --bg-color: #f4f7f6;
+        --panel-bg: #ffffff;
+        --border-color: #cbd5e0;
+        --met-color: #e8f5e9;
+        /* Grønn bakgrunn for oppfylt */
+        --met-border: #27ae60;
+        /* Grønn kant for oppfylt */
+        --header-text: #fff;
+      }
+
+      body {
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg-color);
+        color: #333;
+        line-height: 1.5;
+        padding: 40px 20px;
+      }
+
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        background-color: var(--panel-bg);
+        padding: 50px;
+        border-radius: 8px;
+        box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e1e4e8;
+      }
+
+      h1 {
+        color: var(--primary-color);
+        text-align: center;
+        margin-bottom: 5px;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #7f8c8d;
+        margin-bottom: 40px;
+      }
+
+      /* Pasientinfo */
+      .meta-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 30px;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .form-group label {
+        font-size: 0.85em;
+        font-weight: bold;
+        text-transform: uppercase;
+        color: #7f8c8d;
+        margin-bottom: 5px;
+      }
+
+      .form-group input {
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 1em;
+      }
+
+      /* Modul Header */
+      .module-header {
+        background-color: var(--primary-color);
+        color: var(--header-text);
+        padding: 12px 20px;
+        font-size: 1.2em;
+        font-weight: bold;
+        border-radius: 6px 6px 0 0;
+        margin-top: 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .module-badge {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 2px 10px;
+        border-radius: 10px;
+        font-size: 0.8em;
+        font-weight: normal;
+      }
+
+      /* Tabell */
+      .scid-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border: 1px solid var(--border-color);
+        margin-bottom: 10px;
+      }
+
+      .scid-table th {
+        background-color: #ecf0f1;
+        padding: 10px;
+        text-align: center;
+        border-bottom: 2px solid #bdc3c7;
+        font-size: 0.9em;
+        color: #2c3e50;
+      }
+
+      .scid-table th.th-left {
+        text-align: left;
+        padding-left: 20px;
+      }
+
+      .scid-table td {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        vertical-align: middle;
+      }
+
+      .row-criterion {
+        transition: background-color 0.2s;
+      }
+
+      .row-criterion:hover {
+        background-color: #f9f9f9;
+      }
+
+      /* Når kriteriet er oppfylt (3) */
+      .row-criterion.is-met {
+        background-color: var(--met-color);
+        border-left: 5px solid var(--met-border);
+      }
+
+      .col-code {
+        width: 60px;
+        font-weight: bold;
+        color: #7f8c8d;
+        text-align: center;
+      }
+
+      .col-desc {
+        font-size: 1em;
+      }
+
+      .col-score {
+        width: 220px;
+        text-align: center;
+      }
+
+      /* Skåringsknapper */
+      .score-group {
+        display: flex;
+        justify-content: center;
+        gap: 4px;
+      }
+
+      .score-btn {
+        border: 1px solid #bdc3c7;
+        background: white;
+        padding: 6px 10px;
+        cursor: pointer;
+        border-radius: 4px;
+        font-size: 0.85em;
+        min-width: 20px;
+        text-align: center;
+        transition: all 0.1s;
+      }
+
+      .score-btn:hover {
+        background: #eee;
+      }
+
+      input[type="radio"] {
+        display: none;
+      }
+
+      input[type="radio"]:checked+.lbl-q {
+        background: #95a5a6;
+        color: white;
+        border-color: #7f8c8d;
+      }
+
+      input[type="radio"]:checked+.lbl-1 {
+        background: #bdc3c7;
+        color: #333;
+        border-color: #95a5a6;
+      }
+
+      input[type="radio"]:checked+.lbl-2 {
+        background: #f39c12;
+        color: white;
+        border-color: #e67e22;
+      }
+
+      input[type="radio"]:checked+.lbl-3 {
+        background: #27ae60;
+        color: white;
+        border-color: #2ecc71;
+        font-weight: bold;
+        transform: scale(1.05);
+      }
+
+      /* Resultatboks */
+      #summary-panel {
+        margin-top: 50px;
+        border: 2px solid var(--primary-color);
+        border-radius: 8px;
+        background-color: #fff;
+        overflow: hidden;
+      }
+
+      .summary-header {
+        background: var(--primary-color);
+        color: white;
+        padding: 15px;
+        font-weight: bold;
+        font-size: 1.1em;
+      }
+
+      .summary-body {
+        padding: 20px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+      }
+
+      .summary-item {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px dashed #eee;
+        padding-bottom: 5px;
+      }
+
+      .sum-val {
+        font-weight: bold;
+        color: var(--secondary-color);
+      }
+
+      .sum-val.has-score {
+        color: var(--met-border);
+      }
+
+      /* Knapper */
+      .controls {
+        margin-top: 40px;
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+      }
+
+      button.action-btn {
+        padding: 12px 25px;
+        border: none;
+        border-radius: 5px;
+        font-size: 1em;
+        cursor: pointer;
+        color: white;
+        font-weight: 600;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      button.action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .btn-word {
+        background-color: #2b579a;
+      }
+
+      .btn-pdf {
+        background-color: #c0392b;
+      }
+
+      .btn-reset {
+        background-color: #7f8c8d;
+      }
+
+      /* PDF-spesifikk styling */
+      .instruction {
+        background: #e3f2fd;
+        padding: 15px;
+        border-left: 5px solid #2980b9;
+        margin-bottom: 20px;
+      }
+
+      @media print {
+
+        .controls,
+        .instruction {
+          display: none;
+        }
+
+        .container {
+          box-shadow: none;
+          border: none;
+          padding: 0;
+          width: 100%;
+          max-width: 100%;
+        }
+
+        .module-header {
+          background-color: #eee !important;
+          color: black !important;
+          border: 1px solid #000;
+          page-break-after: avoid;
+        }
+
+        tr {
+          page-break-inside: avoid;
+        }
+      }
+    </style>
+    <link rel="preconnect" href="https://psykometri-sovn.wunderbucket.dev/" crossorigin="true">
+    <link rel="dns-prefetch" href="https://psykometri-sovn.wunderbucket.dev/">
+  </head>
+
+  <body>
+
+    <div class="container" id="pdf-content">
+      <h1>SCID-5-KV</h1>
+      <div class="subtitle">Strukturert Klinisk Intervju for DSM-5 (Klinisk Versjon)</div>
+
+      <div class="meta-info">
+        <div class="form-group">
+          <label>Pasientnavn / ID:</label>
+          <input type="text" id="patientName" placeholder="Navn...">
+        </div>
+        <div class="form-group">
+          <label>Dato:</label>
+          <input type="date" id="assessmentDate">
+        </div>
+      </div>
+
+      <div class="instruction">
+        <strong>Instruksjon:</strong> Marker skår for hvert kriterium basert på klinisk intervju.
+        <br>
+        <span style="font-size:0.9em; color:#555;"><strong>?</strong> = Utilstrekkelig info &nbsp;|&nbsp; <strong>1</strong> = Fraværende/Usant &nbsp;|&nbsp; <strong>2</strong> = Under terskel &nbsp;|&nbsp; <strong>3</strong> = Terskel/SANT (Oppfylt)</span>
+      </div>
+
+      <!-- MODUL A -->
+      <div class="module-header">
+        MODUL A: Affektive Episoder
+        <span class="module-badge">Depresjon / Mani</span>
+      </div>
+      <table class="scid-table" data-module="A">
+        <thead>
+          <tr>
+            <th>Kode</th>
+            <th class="th-left">Kriterium (Stikkord)</th>
+            <th>Skåring</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-criterion">
+            <td class="col-code">A.1</td>
+            <td class="col-desc">Depressivt stemningsleie (subjektivt eller observert)</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_0" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_0" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_0" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_0" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">A.2</td>
+            <td class="col-desc">Markert interesse- eller gledestap</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_1" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_1" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_1" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_1" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">A.3</td>
+            <td class="col-desc">Vekttap/økning eller endret appetitt</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_2" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_2" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_2" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_2" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">A.4</td>
+            <td class="col-desc">Søvnløshet eller hypersomni</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_3" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_3" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_3" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_3" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">A.5</td>
+            <td class="col-desc">Psykomotorisk agitasjon eller hemning</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_4" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_4" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_4" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_4" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">A.Man</td>
+            <td class="col-desc">Screening Mani/Hypomani (Hevet stemningsleie/irritabilitet)</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_5" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_5" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_5" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_5" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- MODUL B -->
+      <div class="module-header">
+        MODUL B: Psykotiske Symptomer
+        <span class="module-badge">Schizofreni / Psykose</span>
+      </div>
+      <table class="scid-table" data-module="B">
+        <thead>
+          <tr>
+            <th>Kode</th>
+            <th class="th-left">Kriterium (Stikkord)</th>
+            <th>Skåring</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-criterion">
+            <td class="col-code">B.1</td>
+            <td class="col-desc">Vrangforestillinger</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_6" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_6" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_6" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_6" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">B.2</td>
+            <td class="col-desc">Hallusinasjoner</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_7" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_7" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_7" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_7" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">B.3</td>
+            <td class="col-desc">Desorganisert tale</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_8" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_8" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_8" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_8" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">B.4</td>
+            <td class="col-desc">Grovt desorganisert eller katatont atferd</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_9" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_9" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_9" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_9" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">B.5</td>
+            <td class="col-desc">Negative symptomer (flat affekt, viljesløshet)</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_10" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_10" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_10" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_10" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- MODUL C -->
+      <div class="module-header">
+        MODUL C: Rusmiddelbruk
+        <span class="module-badge">Alkohol / Stoff</span>
+      </div>
+      <table class="scid-table" data-module="C">
+        <thead>
+          <tr>
+            <th>Kode</th>
+            <th class="th-left">Kriterium (Stikkord)</th>
+            <th>Skåring</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-criterion">
+            <td class="col-code">C.1</td>
+            <td class="col-desc">Bruk i større mengder/lengre tid enn tilsiktet</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_11" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_11" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_11" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_11" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">C.2</td>
+            <td class="col-desc">Ønske om å slutte/mislykkede forsøk</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_12" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_12" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_12" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_12" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">C.3</td>
+            <td class="col-desc">Mye tidsbruk på å skaffe/bruke/komme seg</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_13" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_13" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_13" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_13" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">C.4</td>
+            <td class="col-desc">Sterk trang (Craving)</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_14" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_14" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_14" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_14" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">C.5</td>
+            <td class="col-desc">Svikt i forpliktelser (jobb, skole, hjem)</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_15" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_15" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_15" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_15" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- MODUL D -->
+      <div class="module-header">
+        MODUL D: Angstlidelser
+        <span class="module-badge">Panikk / Fobi / GAD</span>
+      </div>
+      <table class="scid-table" data-module="D">
+        <thead>
+          <tr>
+            <th>Kode</th>
+            <th class="th-left">Kriterium (Stikkord)</th>
+            <th>Skåring</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-criterion">
+            <td class="col-code">D.Pan</td>
+            <td class="col-desc">Tilbakevendende uventede panikkanfall</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_16" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_16" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_16" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_16" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">D.Ago</td>
+            <td class="col-desc">Agorafobi (angst for steder uten fluktmulighet)</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_17" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_17" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_17" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_17" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">D.Sos</td>
+            <td class="col-desc">Sosial angstlidelse (frykt for vurdering)</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_18" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_18" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_18" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_18" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">D.Gen</td>
+            <td class="col-desc">Generalisert angst (overdreven bekymring &gt; 6 mnd)</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_19" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_19" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_19" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_19" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- MODUL E -->
+      <div class="module-header">
+        MODUL E: Tvang og traumer
+        <span class="module-badge">OCD / PTSD</span>
+      </div>
+      <table class="scid-table" data-module="E">
+        <thead>
+          <tr>
+            <th>Kode</th>
+            <th class="th-left">Kriterium (Stikkord)</th>
+            <th>Skåring</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-criterion">
+            <td class="col-code">E.Obs</td>
+            <td class="col-desc">Tvangstanker (Obsesjoner)</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_20" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_20" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_20" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_20" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">E.Komp</td>
+            <td class="col-desc">Tvangshandlinger (Kompulsjoner)</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_21" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_21" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_21" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_21" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">E.PTSD1</td>
+            <td class="col-desc">Eksponering for traumatisk hendelse</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_22" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_22" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_22" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_22" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">E.PTSD2</td>
+            <td class="col-desc">Gjenopplevelse (Flashbacks/Mareritt)</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_23" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_23" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_23" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_23" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- MODUL F -->
+      <div class="module-header">
+        MODUL F: ADHD
+        <span class="module-badge">Oppmerksomhet / Hyperaktivitet</span>
+      </div>
+      <table class="scid-table" data-module="F">
+        <thead>
+          <tr>
+            <th>Kode</th>
+            <th class="th-left">Kriterium (Stikkord)</th>
+            <th>Skåring</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-criterion">
+            <td class="col-code">F.Uopp</td>
+            <td class="col-desc">Uoppmerksomhet (Mange symptomer oppfylt)</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_24" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_24" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_24" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_24" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">F.Hyper</td>
+            <td class="col-desc">Hyperaktivitet/Impulsivitet (Mange symptomer oppfylt)</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_25" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_25" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_25" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_25" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">F.Tid</td>
+            <td class="col-desc">Symptomer tilstede før 12 års alder</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_26" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_26" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_26" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_26" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- MODUL G -->
+      <div class="module-header">
+        MODUL G: Spiseforstyrrelser
+        <span class="module-badge">Anoreksi / Bulimi / Overspising</span>
+      </div>
+      <table class="scid-table" data-module="G">
+        <thead>
+          <tr>
+            <th>Kode</th>
+            <th class="th-left">Kriterium (Stikkord)</th>
+            <th>Skåring</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-criterion">
+            <td class="col-code">G.Res</td>
+            <td class="col-desc">Restriksjon av energiinntak / lav vekt</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_27" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_27" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_27" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_27" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">G.Frykt</td>
+            <td class="col-desc">Intens frykt for vektøkning</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_28" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_28" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_28" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_28" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">G.Bing</td>
+            <td class="col-desc">Overspisingsepisoder (Binge eating)</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_29" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_29" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_29" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_29" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">G.Komp</td>
+            <td class="col-desc">Kompenserende adferd (Oppkast, avføringsmiddel)</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_30" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_30" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_30" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_30" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- MODUL H -->
+      <div class="module-header">
+        MODUL H: Somatiske Symptomlidelser
+        <span class="module-badge">Helseangst</span>
+      </div>
+      <table class="scid-table" data-module="H">
+        <thead>
+          <tr>
+            <th>Kode</th>
+            <th class="th-left">Kriterium (Stikkord)</th>
+            <th>Skåring</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-criterion">
+            <td class="col-code">H.Symp</td>
+            <td class="col-desc">Plagsomme somatiske symptomer</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_31" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_31" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_31" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_31" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">H.Tank</td>
+            <td class="col-desc">Overdrevne tanker/følelser knyttet til helse</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_32" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_32" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_32" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_32" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">H.Angst</td>
+            <td class="col-desc">Helseangst (uten somatiske symptomer)</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_33" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_33" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_33" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_33" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- MODUL I -->
+      <div class="module-header">
+        MODUL I: Søvnforstyrrelser
+        <span class="module-badge">Insomni</span>
+      </div>
+      <table class="scid-table" data-module="I">
+        <thead>
+          <tr>
+            <th>Kode</th>
+            <th class="th-left">Kriterium (Stikkord)</th>
+            <th>Skåring</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-criterion">
+            <td class="col-code">I.Ins</td>
+            <td class="col-desc">Misnøye med søvnkvalitet/kvantitet</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_34" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_34" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_34" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_34" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">I.Funk</td>
+            <td class="col-desc">Forårsaker vesentlig ubehag eller funksjonsfall</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_35" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_35" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_35" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_35" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- MODUL J -->
+      <div class="module-header">
+        MODUL J: Andre lidelser
+        <span class="module-badge">Tilpasning / Annet</span>
+      </div>
+      <table class="scid-table" data-module="J">
+        <thead>
+          <tr>
+            <th>Kode</th>
+            <th class="th-left">Kriterium (Stikkord)</th>
+            <th>Skåring</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-criterion">
+            <td class="col-code">J.Tilp</td>
+            <td class="col-desc">Emosjonelle/atferdsmessige symptomer etter stressor</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_36" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_36" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_36" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_36" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+          <tr class="row-criterion">
+            <td class="col-code">J.Tid</td>
+            <td class="col-desc">Startet innen 3 mnd etter stressor</td>
+            <td class="col-score">
+              <div class="score-group">
+                <label><input type="radio" name="crit_37" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="crit_37" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="crit_37" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="crit_37" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Resultat Panel -->
+      <div id="summary-panel">
+        <div class="summary-header">Oppsummering av "Oppfylte" kriterier (Skår 3)</div>
+        <div class="summary-body" id="summary-content">
+          <div class="summary-item">
+            <span>Modul A</span>
+            <span class="sum-val ">0</span>
+          </div>
+          <div class="summary-item">
+            <span>Modul B</span>
+            <span class="sum-val ">0</span>
+          </div>
+          <div class="summary-item">
+            <span>Modul C</span>
+            <span class="sum-val ">0</span>
+          </div>
+          <div class="summary-item">
+            <span>Modul D</span>
+            <span class="sum-val ">0</span>
+          </div>
+          <div class="summary-item">
+            <span>Modul E</span>
+            <span class="sum-val ">0</span>
+          </div>
+          <div class="summary-item">
+            <span>Modul F</span>
+            <span class="sum-val ">0</span>
+          </div>
+          <div class="summary-item">
+            <span>Modul G</span>
+            <span class="sum-val ">0</span>
+          </div>
+          <div class="summary-item">
+            <span>Modul H</span>
+            <span class="sum-val ">0</span>
+          </div>
+          <div class="summary-item">
+            <span>Modul I</span>
+            <span class="sum-val ">0</span>
+          </div>
+          <div class="summary-item">
+            <span>Modul J</span>
+            <span class="sum-val ">0</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="controls">
+      <button type="button" class="action-btn btn-word" onclick="exportToWord()">💾 Last ned Word</button>
+      <button type="button" class="action-btn btn-pdf" onclick="exportToPDF()">📄 Last ned PDF</button>
+      <button type="button" class="action-btn btn-reset" onclick="location.reload()">🔄 Nullstill</button>
+    </div>
+
+    <script>
+      document.getElementById('assessmentDate').valueAsDate = new Date();
+
+      // Initialiser alle rader med radio buttons
+      document.addEventListener("DOMContentLoaded", function() {
+        const rows = document.querySelectorAll('.row-criterion');
+
+        rows.forEach((row, index) => {
+          // Generer unikt navn for gruppen
+          const groupName = "crit_" + index;
+          const container = row.querySelector('.score-group');
+
+          // Generer HTML for knappene
+          const html = `
+                <label><input type="radio" name="${groupName}" value="?" onclick="handleRadioClick(this)"><span class="score-btn lbl-q">?</span></label>
+                <label><input type="radio" name="${groupName}" value="1" onclick="handleRadioClick(this)"><span class="score-btn lbl-1">1</span></label>
+                <label><input type="radio" name="${groupName}" value="2" onclick="handleRadioClick(this)"><span class="score-btn lbl-2">2</span></label>
+                <label><input type="radio" name="${groupName}" value="3" onclick="handleRadioClick(this)"><span class="score-btn lbl-3">3</span></label>
+            `;
+          container.innerHTML = html;
+        });
+
+        calculateSummary();
+      });
+
+      function handleRadioClick(radio) {
+        // Visuell feedback på rad
+        const row = radio.closest('tr');
+        if (radio.value === "3") {
+          row.classList.add('is-met');
+        } else {
+          row.classList.remove('is-met');
+        }
+        calculateSummary();
+      }
+
+      function calculateSummary() {
+        const modules = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+        const summaryContainer = document.getElementById('summary-content');
+        summaryContainer.innerHTML = "";
+
+        modules.forEach(mod => {
+          const table = document.querySelector(`table[data-module="${mod}"]`);
+          if (table) {
+            // Tell antall "3" i denne tabellen
+            const checks = table.querySelectorAll('input[type="radio"]:checked');
+            let count = 0;
+            checks.forEach(c => {
+              if (c.value === "3") count++;
+            });
+
+            // Lag HTML element
+            const div = document.createElement('div');
+            div.className = "summary-item";
+            const hasScoreClass = count > 0 ? "has-score" : "";
+
+            div.innerHTML = `
+                    <span>Modul ${mod}</span>
+                    <span class="sum-val ${hasScoreClass}">${count}</span>
+                `;
+            summaryContainer.appendChild(div);
+          }
+        });
+      }
+
+      function exportToPDF() {
+        const name = document.getElementById('patientName').value || "Ukjent";
+        const date = document.getElementById('assessmentDate').value || new Date().toLocaleDateString('no-NO');
+
+        // Skjul kontrollknapper midlertidig
+        const controls = document.querySelector('.controls');
+        const instruction = document.querySelector('.instruction');
+        controls.style.display = 'none';
+        instruction.style.display = 'none';
+
+        // PDF-innstillinger
+        const opt = {
+          margin: [10, 10, 10, 10],
+          filename: `SCID-KV_${name}_${date}.pdf`,
+          image: {
+            type: 'jpeg',
+            quality: 0.98
+          },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            letterRendering: true
+          },
+          jsPDF: {
+            unit: 'mm',
+            format: 'a4',
+            orientation: 'portrait'
+          },
+          pagebreak: {
+            mode: ['avoid-all', 'css', 'legacy']
+          }
+        };
+
+        // Generer PDF
+        const element = document.getElementById('pdf-content');
+
+        html2pdf().set(opt).from(element).save().then(() => {
+          // Vis knapper igjen
+          controls.style.display = 'flex';
+          instruction.style.display = 'block';
+        });
+      }
+
+      function exportToWord() {
+        const name = document.getElementById('patientName').value || "Ukjent";
+        const date = document.getElementById('assessmentDate').value || new Date().toLocaleDateString('no-NO');
+
+        let content = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>SCID-5-KV Resultat</title>
+            <style>
+                body { font-family: Arial, sans-serif; font-size: 11pt; }
+                h1 { color: #2c3e50; font-size: 16pt; margin-bottom: 10px; }
+                h2 { background-color: #2c3e50; color: white; padding: 5px; font-size: 12pt; margin-top: 20px; }
+                table { border-collapse: collapse; width: 100%; margin-bottom: 10px; }
+                th { background-color: #eee; border: 1px solid #999; padding: 5px; text-align: left; font-size: 10pt; }
+                td { border: 1px solid #999; padding: 5px; vertical-align: top; font-size: 10pt; }
+                .met { background-color: #e8f5e9; font-weight: bold; }
+            </style>
+            </head><body>
+            <h1>SCID-5-KV Skåring</h1>
+            <p><strong>Pasient:</strong> ${name} <br> <strong>Dato:</strong> ${date}</p>
+        `;
+
+        // Iterer gjennom alle tabeller (Moduler)
+        const tables = document.querySelectorAll('.scid-table');
+
+        tables.forEach(table => {
+          const modID = table.getAttribute('data-module');
+          // Finn overskrift for modulen (elementet rett før tabellen)
+          const headerText = table.previousElementSibling.innerText;
+
+          content += `<h2>${headerText}</h2>`;
+          content += `<table><tr><th style="width:10%">Kode</th><th style="width:60%">Kriterium</th><th style="width:30%">Skåring</th></tr>`;
+
+          const rows = table.querySelectorAll('tbody tr');
+          rows.forEach(row => {
+            const code = row.querySelector('.col-code').innerText;
+            const desc = row.querySelector('.col-desc').innerText;
+
+            // Finn verdi
+            const checked = row.querySelector('input:checked');
+            let val = checked ? checked.value : "";
+
+            // Word-formattert visning av valget med [ X ] fix
+            let display = "";
+            const opts = ["?", "1", "2", "3"];
+
+            opts.forEach(opt => {
+              if (val === opt) {
+                // FIX: Bruker &#160; (non-breaking space) for å holde [ X ] samlet
+                display += `[&#160;<strong>${opt}</strong>&#160;] `;
+              } else {
+                display += `<span style="color:#ccc; font-size:0.9em;">${opt}</span> `;
+              }
+            });
+
+            let rowStyle = (val === "3") ? "class='met'" : "";
+            content += `<tr ${rowStyle}><td>${code}</td><td>${desc}</td><td>${display}</td></tr>`;
+          });
+          content += `</table>`;
+        });
+
+        // Legg til oppsummering
+        content += `<h3>Oppsummering (Antall oppfylte kriterier)</h3><ul>`;
+        const sumItems = document.querySelectorAll('.summary-item');
+        sumItems.forEach(item => {
+          const label = item.querySelector('span:first-child').innerText;
+          const val = item.querySelector('.sum-val').innerText;
+          if (parseInt(val) > 0) {
+            content += `<li><strong>${label}:</strong> ${val}</li>`;
+          } else {
+            content += `<li>${label}: 0</li>`;
+          }
+        });
+        content += `</ul></body></html>`;
+
+        const blob = new Blob(['\ufeff', content], {
+          type: 'application/msword'
+        });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `SCID-KV_Komplett_${name}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    </script>
+
+
+
+  </body>
+
+</html>

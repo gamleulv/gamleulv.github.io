@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KBL - Kartlegging av Belastende Livshendelser</title>
+    
+    <!-- PDF & Word Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --bg: #f4f7f6;
+            --paper: #ffffff;
+            --border: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 30px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background-color: var(--paper);
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-radius: 8px;
+        }
+
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-weight: 300; }
+
+        .instructions {
+            background: #e8f4fd;
+            padding: 15px;
+            border-left: 4px solid var(--secondary);
+            margin-bottom: 30px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* Meta Info */
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .form-group label { display: block; font-size: 12px; font-weight: bold; color: #7f8c8d; margin-bottom: 4px; }
+        .form-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+
+        /* Question Blocks */
+        .question-box {
+            margin-bottom: 20px;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .main-q {
+            padding: 15px;
+            background: #fdfdfd;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .main-q.active { background-color: #f4faff; border-left: 4px solid var(--secondary); }
+
+        .q-text { font-weight: 600; font-size: 15px; flex: 1; padding-right: 15px; }
+
+        /* Buttons Fix */
+        .yes-no-group { display: flex; gap: 10px; }
+        
+        .btn-toggle {
+            padding: 8px 18px;
+            border: 1px solid #aaa;  /* Tydeligere ramme */
+            border-radius: 4px;
+            cursor: pointer;
+            background: #ffffff;     /* Hvit bakgrunn som standard */
+            color: #333333;          /* Mørk tekst som standard */
+            font-size: 13px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            min-width: 60px;
+        }
+        
+        .btn-toggle:hover {
+            background-color: #f0f0f0;
+            border-color: #888;
+        }
+
+        .btn-toggle.selected {
+            background: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Follow-up Details */
+        .details-section {
+            padding: 15px;
+            background-color: #fff;
+            display: none; /* Hidden by default */
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+        
+        .detail-row {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .detail-label { font-weight: 500; min-width: 150px; }
+        .detail-input { padding: 5px; border: 1px solid #ccc; border-radius: 3px; width: 100px; }
+        .detail-text { padding: 5px; border: 1px solid #ccc; border-radius: 3px; width: 100%; }
+
+        /* Radios for sub-questions */
+        .sub-radio-group label { margin-right: 10px; cursor: pointer; }
+        .sub-radio-group input { margin-right: 4px; }
+
+        /* Results */
+        .results-section {
+            margin-top: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            display: none;
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            transition: transform 0.1s;
+            font-size: 14px;
+        }
+        button:hover { transform: translateY(-2px); }
+        .btn-calc { background-color: var(--secondary); }
+        .btn-word { background-color: #2980b9; }
+        .btn-pdf { background-color: #c0392b; }
+        .btn-reset { background-color: #95a5a6; }
+
+        @media print {
+            .controls { display: none; }
+            .container { box-shadow: none; margin: 0; padding: 0; width: 100%; }
+            .details-section { display: block !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="doc-content">
+    <h1>KBL</h1>
+    <div class="subtitle">Kartlegging av Belastende Livshendelser</div>
+
+    <div class="meta-grid">
+        <div class="form-group">
+            <label>Pasientnavn</label>
+            <input type="text" id="pName" placeholder="Navn...">
+        </div>
+        <div class="form-group">
+            <label>Dato</label>
+            <input type="date" id="pDate">
+        </div>
+    </div>
+
+    <div class="instructions">
+        <strong>Instruksjon:</strong> Refererer til hendelser som kan ha inntruffet når som helst i livet ditt, inkludert tidlig barndom.
+        <br>Svar <strong>JA</strong> eller <strong>NEI</strong>. Ved JA, fyll ut tilleggsspørsmålene.
+    </div>
+
+    <div id="questions-container">
+        <!-- Spørsmål genereres her -->
+    </div>
+
+    <div class="results-section" id="results">
+        <h3>Oppsummering</h3>
+        <div>Totalt antall bekreftede hendelser (JA): <strong id="total-count" style="font-size: 24px; color: #2c3e50;">0</strong> av 16</div>
+        <div style="margin-top: 10px; font-size: 13px; color: #666;">
+            Dette er et screeningskjema. Positive svar bør følges opp med klinisk intervju for å vurdere alvorlighetsgrad og behov for behandling.
+        </div>
+    </div>
+
+</div>
+
+<div class="controls">
+    <button class="btn-calc" onclick="calculate()">📊 Beregn</button>
+    <button class="btn-word" onclick="exportWord()">💾 Lagre til Word</button>
+    <button class="btn-pdf" onclick="exportPDF()" id="pdfBtn">📄 Lagre til PDF</button>
+    <button class="btn-reset" onclick="resetForm()">🔄 Nullstill</button>
+</div>
+
+<script>
+    document.getElementById('pDate').valueAsDate = new Date();
+
+    const questions = [
+        { id: 1, text: "Har du noen gang hatt en livstruende sykdom?", type: "simple" },
+        { id: 2, text: "Har du noen gang vært med i en livstruende ulykke?", type: "complex_physical" },
+        { id: 3, text: "Har du noen gang vært berørt av en naturkatastrofe?", type: "complex_physical" },
+        { id: 5, text: "Har du noen gang blitt utsatt for ran eller overfall med bruk av fysisk makt eller våpen?", type: "complex_physical" },
+        { id: 6, text: "Har noen i din aller nærmeste familie, samboer/kjæreste eller svært nær venn dødd i ulykke, drap eller selvmord?", type: "simple" },
+        { id: 7, text: "Har du noen gang opplevd at noen ved bruk av fysisk makt eller trusler har tvunget deg til å ha seksuell omgang mot din vilje?", type: "complex_frequency" },
+        { id: 8, text: "Har du noen gang opplevd at noen har berørt kjønnsorganene dine mot din vilje, eller fått deg til å berøre sitt kjønnsorgan?", type: "complex_frequency" },
+        { id: 9, text: "Da du var barn: Opplevde du at en av foreldrene dine eller annen voksen sparket, slo eller skadet deg?", type: "complex_frequency" },
+        { id: 10, text: "Som voksen: Har du noen gang blitt sparket, slått eller fysisk skadet av en partner eller andre?", type: "complex_frequency" },
+        { id: 11, text: "Har en av foreldrene dine, kjæreste eller familiemedlem gjentatte ganger latterliggjort deg eller ydmyket deg?", type: "complex_frequency" },
+        { id: 12, text: "Har noen utenfor familien (medelever/kollegaer) gjentatte ganger latterliggjort eller ydmyket deg?", type: "complex_frequency" },
+        { id: 13, text: "Har du noen gang opplevd at noen har truet deg med et våpen?", type: "complex_frequency" },
+        { id: 14, text: "Har du noen gang vært vitne til at en annen person ble drept, alvorlig skadet eller mishandlet?", type: "simple" },
+        { id: 15, text: "Har du opplevd annen situasjon der du ble alvorlig skadet eller livet ditt var i fare (f.eks. krig, terror)?", type: "complex_physical" },
+        { id: 16, text: "Har du opplevd noen annen situasjon som var veldig skremmende eller fryktelig?", type: "text_desc" }
+    ];
+
+    const container = document.getElementById('questions-container');
+    
+    // EDGE FIX: Tøm container først
+    container.innerHTML = '';
+
+    questions.forEach(q => {
+        const div = document.createElement('div');
+        div.className = 'question-box';
+        div.id = `qbox-${q.id}`;
+        
+        let detailsHTML = '';
+
+        if (q.type === 'simple') {
+            detailsHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">Hvis ja, hvor gammel var du?</span>
+                    <input type="text" class="detail-input" placeholder="Alder">
+                </div>
+            `;
+        } else if (q.type === 'complex_physical') {
+            detailsHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">Døde noen?</span>
+                    <div class="sub-radio-group">
+                        <label><input type="radio" name="dode-${q.id}" value="nei"> Nei</label>
+                        <label><input type="radio" name="dode-${q.id}" value="ja"> Ja</label>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Ble du fysisk skadet?</span>
+                    <div class="sub-radio-group">
+                        <label><input type="radio" name="skade-${q.id}" value="nei"> Nei</label>
+                        <label><input type="radio" name="skade-${q.id}" value="ja"> Ja</label>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Var livet ditt i fare?</span>
+                    <div class="sub-radio-group">
+                        <label><input type="radio" name="fare-${q.id}" value="nei"> Nei</label>
+                        <label><input type="radio" name="fare-${q.id}" value="ja"> Ja</label>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Hvis ja, hvor gammel var du?</span>
+                    <input type="text" class="detail-input" placeholder="Alder">
+                </div>
+            `;
+        } else if (q.type === 'complex_frequency') {
+            detailsHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">Hvis ja, hvor gammel var du?</span>
+                    <input type="text" class="detail-input" placeholder="Alder">
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Hvor mange ganger?</span>
+                    <div class="sub-radio-group">
+                        <label><input type="radio" name="freq-${q.id}" value="1"> 1</label>
+                        <label><input type="radio" name="freq-${q.id}" value="2-4"> 2-4</label>
+                        <label><input type="radio" name="freq-${q.id}" value="5-10"> 5-10</label>
+                        <label><input type="radio" name="freq-${q.id}" value=">10"> Mer enn 10</label>
+                    </div>
+                </div>
+            `;
+        } else if (q.type === 'text_desc') {
+            detailsHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">Hvis ja, hvor gammel var du?</span>
+                    <input type="text" class="detail-input" placeholder="Alder">
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Vennligst beskriv:</span>
+                    <textarea class="detail-text" rows="2"></textarea>
+                </div>
+            `;
+        }
+
+        div.innerHTML = `
+            <div class="main-q" id="main-${q.id}">
+                <div class="q-text">${q.id}. ${q.text}</div>
+                <div class="yes-no-group">
+                    <button class="btn-toggle" onclick="setAns(${q.id}, 'nei')" id="btn-nei-${q.id}">NEI</button>
+                    <button class="btn-toggle" onclick="setAns(${q.id}, 'ja')" id="btn-ja-${q.id}">JA</button>
+                </div>
+                <input type="hidden" id="ans-${q.id}" value="">
+            </div>
+            <div class="details-section" id="details-${q.id}">
+                ${detailsHTML}
+            </div>
+        `;
+        container.appendChild(div);
+    });
+
+    function setAns(id, val) {
+        document.getElementById(`ans-${id}`).value = val;
+        
+        const btnJa = document.getElementById(`btn-ja-${id}`);
+        const btnNei = document.getElementById(`btn-nei-${id}`);
+        const details = document.getElementById(`details-${id}`);
+        const main = document.getElementById(`main-${id}`);
+
+        if (val === 'ja') {
+            btnJa.classList.add('selected');
+            btnNei.classList.remove('selected');
+            details.style.display = 'block';
+            main.classList.add('active');
+        } else {
+            btnNei.classList.add('selected');
+            btnJa.classList.remove('selected');
+            details.style.display = 'none';
+            main.classList.remove('active');
+        }
+    }
+
+    function calculate() {
+        let count = 0;
+        questions.forEach(q => {
+            const val = document.getElementById(`ans-${q.id}`).value;
+            if (val === 'ja') count++;
+        });
+
+        document.getElementById('total-count').innerText = count;
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        if(confirm("Slette data?")) location.reload();
+    }
+
+    async function exportPDF() {
+        const btn = document.getElementById('pdfBtn');
+        btn.innerText = "Genererer...";
+        btn.disabled = true;
+
+        const element = document.getElementById('doc-content');
+        const name = document.getElementById('pName').value || "Ukjent";
+
+        try {
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            const imgWidth = 190;
+            const pageHeight = 295;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 10;
+
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pageHeight - 20);
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight + 10;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - 20);
+            }
+
+            pdf.save(`KBL_${name}.pdf`);
+        } catch(e) {
+            alert("Feil ved PDF");
+        } finally {
+            btn.innerText = "📄 Lagre til PDF";
+            btn.disabled = false;
+        }
+    }
+
+    function exportWord() {
+        const name = document.getElementById('pName').value || "Ukjent";
+        const content = document.getElementById('doc-content').cloneNode(true);
+        
+        // Transform inputs to text
+        content.querySelectorAll('input[type="text"], input[type="date"], textarea').forEach(inp => {
+            const span = document.createElement('span');
+            span.innerHTML = inp.value ? `<b>${inp.value}</b>` : "______";
+            inp.parentNode.replaceChild(span, inp);
+        });
+
+        // Handle Main Questions & Logic
+        questions.forEach(q => {
+            const box = content.querySelector(`#qbox-${q.id}`);
+            const ans = document.getElementById(`ans-${q.id}`).value;
+            const yesNoGroup = box.querySelector('.yes-no-group');
+            
+            // Replace toggle buttons with text
+            const resText = document.createElement('div');
+            resText.innerHTML = `<b>Svar: ${ans ? ans.toUpperCase() : "Ubesvart"}</b>`;
+            resText.style.color = ans === 'ja' ? "#c0392b" : "#2c3e50";
+            yesNoGroup.parentNode.replaceChild(resText, yesNoGroup);
+
+            // Hide details if NO
+            if (ans !== 'ja') {
+                const det = box.querySelector('.details-section');
+                if(det) det.remove();
+            } else {
+                const det = box.querySelector('.details-section');
+                if(det) det.style.display = 'block';
+                
+                // Fix radios in details
+                det.querySelectorAll('input[type="radio"]').forEach(rad => {
+                    const label = rad.parentElement;
+                    if(rad.checked) {
+                        label.innerHTML = `<b>[X] ${label.innerText}</b>`;
+                    } else {
+                        label.innerHTML = `[ ] ${label.innerText}`;
+                    }
+                });
+            }
+        });
+
+        const header = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>KBL Resultat</title>
+            <style>
+                body { font-family: Arial; }
+                .question-box { border-bottom: 1px solid #ccc; margin-bottom: 10px; padding-bottom: 5px; }
+                .main-q { font-weight: bold; background: #eee; padding: 5px; margin-bottom: 5px; }
+                .details-section { margin-left: 20px; font-size: 12px; color: #444; }
+                .detail-row { margin-bottom: 5px; }
+            </style>
+            </head><body>
+        `;
+        const footer = "</body></html>";
+        const html = header + content.innerHTML + footer;
+
+        const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `KBL_${name}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</body>
+</html>

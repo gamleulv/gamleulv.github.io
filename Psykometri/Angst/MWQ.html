@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MWQ - Meta-Worry Questionnaire</title>
+    
+    <!-- PDF & Word Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --bg: #f4f7f6;
+            --paper: #ffffff;
+            --border: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 30px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background-color: var(--paper);
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-radius: 8px;
+        }
+
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-weight: 300; }
+
+        .instructions {
+            background: #e8f4fd;
+            padding: 15px;
+            border-left: 4px solid var(--secondary);
+            margin-bottom: 30px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .form-group label { display: block; font-size: 12px; font-weight: bold; color: #7f8c8d; margin-bottom: 4px; }
+        .form-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+
+        /* Question Row Styling */
+        .q-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 2fr;
+            gap: 20px;
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+        }
+
+        .q-text { font-weight: 600; font-size: 15px; }
+
+        /* Frequency Scale (Left) */
+        .freq-scale {
+            display: flex;
+            justify-content: space-between;
+            background: #fdfdfd;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 5px;
+        }
+        
+        .freq-opt {
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+            border-right: 1px solid #eee;
+        }
+        .freq-opt:last-child { border-right: none; }
+        .freq-opt:hover { background: #eef; }
+        .freq-opt.selected { background: var(--secondary); color: white; }
+        
+        .freq-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #888;
+            margin-bottom: 2px;
+        }
+
+        /* Belief Scale (Right) */
+        .belief-scale {
+            padding: 0 10px;
+        }
+        
+        .range-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .range-val { font-weight: bold; color: var(--secondary); min-width: 35px; text-align: right; }
+        
+        /* Headers for columns */
+        .col-header {
+            display: grid;
+            grid-template-columns: 2fr 1fr 2fr;
+            gap: 20px;
+            font-weight: bold;
+            color: var(--primary);
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        /* Results */
+        .results-section {
+            margin-top: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            display: none;
+        }
+
+        .score-box {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            font-size: 16px;
+        }
+        
+        .total-val { font-weight: bold; font-size: 20px; color: var(--secondary); }
+
+        /* Controls */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            transition: transform 0.1s;
+            font-size: 14px;
+        }
+        button:hover { transform: translateY(-2px); }
+        .btn-calc { background-color: var(--secondary); }
+        .btn-word { background-color: #2980b9; }
+        .btn-pdf { background-color: #c0392b; }
+        .btn-reset { background-color: #95a5a6; }
+
+        @media print {
+            .controls { display: none; }
+            .container { box-shadow: none; margin: 0; padding: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="doc-content">
+    <h1>MWQ</h1>
+    <div class="subtitle">Meta-Worry Questionnaire (Wells, 1998)</div>
+
+    <div class="meta-grid">
+        <div class="form-group">
+            <label>Navn</label>
+            <input type="text" id="pName" placeholder="Navn...">
+        </div>
+        <div class="form-group">
+            <label>Dato</label>
+            <input type="date" id="pDate">
+        </div>
+    </div>
+
+    <div class="instructions">
+        <strong>Instruksjon:</strong> 
+        Dette skjemaet måler tanker om å bekymre seg (meta-bekymring).
+        <br>1. Marker <strong>hvor ofte</strong> tanken oppstår (Venstre kolonne: 1-4).
+        <br>2. Marker <strong>hvor mye du tror</strong> på tanken (Høyre kolonne: 0-100%).
+    </div>
+
+    <div class="col-header">
+        <div>1. Hvor ofte? (1-4)</div>
+        <div style="text-align:center;">Meta-tanke</div>
+        <div style="text-align:right;">2. Hvor mye tror du på den? (0-100%)</div>
+    </div>
+
+    <div id="questions-container">
+        <!-- Injected via JS -->
+    </div>
+
+    <div class="results-section" id="results">
+        <h3>Resultater</h3>
+        
+        <div class="score-box">
+            <span><strong>Hyppighet (Total):</strong><br><small>Range: 7 - 28</small></span>
+            <span class="total-val" id="scoreFreq">-</span>
+        </div>
+
+        <div class="score-box">
+            <span><strong>Tro på tankene (Gjennomsnitt):</strong><br><small>0 - 100 %</small></span>
+            <span class="total-val" id="scoreBelief">-</span>
+        </div>
+        
+        <div style="font-size:13px; color:#555; margin-top:10px;">
+            * Høye skårer indikerer høy grad av negative metakognisjoner (bekymring for bekymring), som er en sentral faktor i generalisert angstlidelse (GAD).
+        </div>
+    </div>
+
+</div>
+
+<div class="controls">
+    <button class="btn-calc" onclick="calculateScore()">📊 Beregn</button>
+    <button class="btn-word" onclick="exportWord()">💾 Lagre til Word</button>
+    <button class="btn-pdf" onclick="exportPDF()" id="pdfBtn">📄 Lagre til PDF</button>
+    <button class="btn-reset" onclick="resetForm()">🔄 Nullstill</button>
+</div>
+
+<script>
+    document.getElementById('pDate').valueAsDate = new Date();
+
+    const questions = [
+        "Jeg blir gal av bekymring",
+        "Mine bekymringer vil øke og jeg stopper å fungere",
+        "Jeg gjør meg syk av bekymring",
+        "Jeg er unormal som bekymrer meg",
+        "Min psyke takler ikke bekymringene",
+        "Jeg mister muligheten til et godt liv på grunn av bekymring",
+        "Kroppen min tåler ikke all bekymringen"
+    ];
+
+    const freqLabels = ["1 (Aldri)", "2", "3", "4 (Alltid)"];
+
+    const container = document.getElementById('questions-container');
+    container.innerHTML = ''; // Edge fix
+
+    questions.forEach((q, index) => {
+        const i = index + 1;
+        const div = document.createElement('div');
+        div.className = 'q-row';
+
+        // Frequency Scale HTML
+        let freqHTML = `<div class="freq-labels"><span>Aldri</span><span>Nesten alltid</span></div>
+                        <div class="freq-scale">`;
+        for(let val=1; val<=4; val++) {
+            freqHTML += `<div class="freq-opt" onclick="selectFreq(${i}, ${val}, this)">${val}</div>`;
+        }
+        freqHTML += `</div><input type="hidden" id="freq-${i}" value="">`;
+
+        // Belief Scale HTML
+        let beliefHTML = `<div class="belief-scale">
+                            <div class="range-wrap">
+                                <input type="range" min="0" max="100" value="0" style="width:100%" oninput="updateRange(${i}, this)">
+                                <span id="disp-${i}" class="range-val">0</span>
+                                <input type="hidden" id="belief-${i}" value="0">
+                            </div>
+                            <div class="freq-labels" style="margin-top:5px;"><span>0% (Tror ikke)</span><span>100% (Helt overbevist)</span></div>
+                          </div>`;
+
+        div.innerHTML = `
+            <div>${freqHTML}</div>
+            <div class="q-text" style="text-align:center;">${q}</div>
+            <div>${beliefHTML}</div>
+        `;
+        container.appendChild(div);
+    });
+
+    // Helper functions on window scope
+    window.selectFreq = function(id, val, el) {
+        const parent = el.parentElement;
+        parent.querySelectorAll('.freq-opt').forEach(d => d.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById(`freq-${id}`).value = val;
+    };
+
+    window.updateRange = function(id, el) {
+        document.getElementById(`disp-${id}`).innerText = el.value;
+        document.getElementById(`belief-${id}`).value = el.value;
+    };
+
+    function calculateScore() {
+        let totalFreq = 0;
+        let totalBelief = 0;
+        let missing = 0;
+
+        for (let i = 1; i <= 7; i++) {
+            const f = document.getElementById(`freq-${i}`).value;
+            const b = document.getElementById(`belief-${i}`).value;
+
+            if (f) totalFreq += parseInt(f);
+            else missing++;
+
+            totalBelief += parseInt(b);
+        }
+
+        document.getElementById('scoreFreq').innerText = totalFreq;
+        document.getElementById('scoreBelief').innerText = (totalBelief / 7).toFixed(1) + " %";
+
+        if (missing > 0) alert(`Obs: Du har ikke angitt hyppighet for ${missing} spørsmål.`);
+
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        if(confirm("Slette data?")) location.reload();
+    }
+
+    async function exportPDF() {
+        const btn = document.getElementById('pdfBtn');
+        btn.innerText = "Genererer...";
+        btn.disabled = true;
+
+        const element = document.getElementById('doc-content');
+        const name = document.getElementById('pName').value || "Ukjent";
+
+        try {
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            const imgWidth = 190;
+            const pageHeight = 295;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 10;
+
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pageHeight - 20);
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight + 10;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - 20);
+            }
+
+            pdf.save(`MWQ_${name}.pdf`);
+        } catch(e) {
+            alert("Feil ved PDF");
+        } finally {
+            btn.innerText = "📄 Lagre til PDF";
+            btn.disabled = false;
+        }
+    }
+
+    function exportWord() {
+        const name = document.getElementById('pName').value || "Ukjent";
+        const content = document.getElementById('doc-content').cloneNode(true);
+        
+        // Transform inputs
+        content.querySelectorAll('input[type="text"], input[type="date"]').forEach(inp => {
+            const span = document.createElement('span');
+            span.innerHTML = inp.value ? `<b>${inp.value}</b>` : "______";
+            inp.parentNode.replaceChild(span, inp);
+        });
+
+        // Transform Rows to text summaries
+        for (let i = 1; i <= 7; i++) {
+            // Because content is a clone, we can't use ID selectors directly if we modified structure? 
+            // Actually IDs persist in clone.
+            // But complex structure: q-row > div > freq-scale
+            
+            // Let's traverse rows
+            const rows = content.querySelectorAll('.q-row');
+            const row = rows[i-1];
+            
+            const fVal = document.getElementById(`freq-${i}`).value || "-";
+            const bVal = document.getElementById(`belief-${i}`).value || "0";
+            
+            // Replace row content with summary
+            const qText = questions[i-1];
+            
+            row.innerHTML = `
+                <div style="border-bottom:1px solid #ccc; padding:5px;">
+                    <strong>${i}. ${qText}</strong><br>
+                    Hyppighet: <b>${fVal}</b> (1-4)<br>
+                    Tro på tanken: <b>${bVal}%</b>
+                </div>
+            `;
+            row.style.display = "block"; // Reset grid
+        }
+
+        const header = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>MWQ Resultat</title>
+            <style>
+                body { font-family: Arial; }
+                .q-row { margin-bottom: 10px; }
+            </style>
+            </head><body>
+        `;
+        const footer = "</body></html>";
+        const html = header + content.innerHTML + footer;
+
+        const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `MWQ_${name}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</body>
+</html>

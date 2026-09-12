@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DIVA-5 Oppsummering</title>
+
+  <!-- PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+
+  <!-- DOCX + FileSaver -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://unpkg.com/html-docx-js/dist/html-docx.js"></script>
+
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card-bg: #ffffff;
+      --accent: #355c7d;
+      --accent-soft: #e6edf7;
+      --accent-strong: #26415a;
+      --text: #222222;
+      --muted: #666666;
+      --border: #d5ddeb;
+      --danger: #c0392b;
+      --success: #2c7a4b;
+      --shadow-soft: 0 10px 30px rgba(0,0,0,0.06);
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --radius-sm: 6px;
+      box-sizing: border-box;
+    }
+    *, *:before, *:after { box-sizing: inherit; }
+
+    body {
+      margin: 0;
+      padding: 2.5rem 1rem 3rem;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #f0f4ff 0, #f8fafc 40%, #fdfefe 100%);
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.9rem;
+      letter-spacing: 0.03em;
+      color: var(--accent-strong);
+    }
+
+    header p {
+      margin: 0.35rem 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(255,255,255,0.8);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    .card:before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(53,92,125,0.04), transparent 50%);
+      pointer-events: none;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--accent-strong);
+    }
+
+    .card-subtitle {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.2rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      white-space: nowrap;
+      position: relative;
+      z-index: 1;
+    }
+
+    .pill-number {
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    th, td {
+      padding: 0.6rem 0.5rem;
+      vertical-align: middle;
+    }
+
+    th {
+      text-align: left;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    tr:nth-child(even) td {
+      background: rgba(246, 249, 255, 0.9);
+    }
+
+    .code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.85rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .checkbox-cell {
+      text-align: center;
+    }
+
+    .checkbox-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+    }
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .totals-row td {
+      border-top: 2px solid var(--border);
+      font-weight: 600;
+      padding-top: 0.8rem;
+      background: #fff !important;
+    }
+
+    .totals-value {
+      color: var(--accent-strong);
+      font-size: 1rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .totals-max {
+      color: var(--muted);
+      margin-left: 0.25rem;
+    }
+
+    .section-label {
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      font-weight: 600;
+      position: relative;
+      z-index: 1;
+    }
+
+    .yesno-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.4rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .yesno-group label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.8rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      font-size: 0.85rem;
+      cursor: pointer;
+      color: var(--muted);
+      background: #f9fbff;
+      transition: all 0.2s;
+    }
+
+    .yesno-group label:hover {
+      background: #eef2fa;
+    }
+
+    .yesno-group input[type="radio"] {
+      width: 15px;
+      height: 15px;
+      accent-color: var(--accent);
+    }
+
+    .radio-row {
+      margin-top: 0.8rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .radio-row-title {
+      font-size: 0.9rem;
+      color: var(--text);
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .support-scale {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.4rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .support-scale label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.3rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      font-size: 0.8rem;
+      cursor: pointer;
+      color: var(--muted);
+      background: #f9fbff;
+    }
+
+    textarea, input[type="text"] {
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      font-size: 0.9rem;
+      margin-top: 0.3rem;
+      background: #fbfdff;
+      position: relative;
+      z-index: 1;
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .summary-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-bottom: 0.4rem;
+      font-size: 1.0rem;
+      color: var(--muted);
+      position: relative;
+      z-index: 1;
+    }
+
+    .summary-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.2rem 0.7rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #f6f8ff;
+      color: var(--accent-strong);
+    }
+
+    .summary-pill strong {
+      font-variant-numeric: tabular-nums;
+      font-size: 1.1rem;
+    }
+
+    .footer-actions {
+      margin-top: 3rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: flex-end;
+      align-items: center;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      position: relative;
+      z-index: 1;
+    }
+
+    .hint {
+      color: var(--muted);
+      margin-right: auto;
+      font-size: 0.9rem;
+    }
+
+    .btn {
+      border-radius: 999px;
+      padding: 0.6rem 1.5rem;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: transform 0.1s;
+      user-select: none;
+    }
+
+    .btn svg { width: 22px; height: 22px; }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: white;
+      color: var(--accent-strong);
+      border: 1px solid var(--border);
+    }
+
+    .btn-primary:active, .btn-secondary:active {
+      transform: translateY(1px);
+    }
+
+    /* For exports */
+    .export-mark {
+      font-size: 16px;
+      line-height: 1;
+      display: inline-block;
+    }
+
+    .export-field {
+      display: block;
+      min-height: 1.2em;
+      padding: 2px 0;
+      white-space: pre-wrap;
+    }
+
+    .export-text {
+      min-height: 3em;
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      background: #fff;
+    }
+  
+  /* Print/Word page breaks */
+  .page-break { page-break-before: always; break-before: page; height: 0; }
+</style>
+</head>
+
+<body>
+  <div class="page" id="reportContent">
+    <header>
+      <h1>DIVA-5 Oppsummering</h1>
+      <p>Diagnostisk intervju for utredning av ADHD hos voksne – oppsummering av symptomer A og H/I.</p>
+    </header>
+
+    <form id="divaForm">
+
+      <!-- Kriterium A1 -->
+      <section class="card" id="cardA1">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Kriterium A1 – Oppmerksomhetssvikt</div>
+            <div class="card-subtitle">Angi hvilke symptomer som har vært til stede i barndom og voksen alder.</div>
+          </div>
+          <div class="badge">
+            <span>Totalt</span>
+            <span id="totalAOverall" class="pill-number">0 / 18</span>
+          </div>
+        </div>
+
+        <div class="section-label">DSM-5 TR symptomer A1–A9</div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width:8%;">Kode</th>
+              <th>Symptom</th>
+              <th style="width:15%; text-align:center;">Voksen</th>
+              <th style="width:15%; text-align:center;">Barndom</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="code">A1a</td>
+              <td class="symptom">Svikter ofte på å være nøye med detaljer eller gjør slurvefeil i skolearbeid, yrke eller andre aktiviteter.</td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A1avoksen"></div></td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A1abarndom"></div></td>
+            </tr>
+            <tr>
+              <td class="code">A1b</td>
+              <td class="symptom">Har ofte vansker med å holde på oppmerksomheten i oppgaver eller lek.</td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A1bvoksen"></div></td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A1bbarndom"></div></td>
+            </tr>
+            <tr>
+              <td class="code">A1c</td>
+              <td class="symptom">Synes ofte ikke å lytte når de tilsnakkes direkte.</td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A1cvoksen"></div></td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A1cbarndom"></div></td>
+            </tr>
+            <tr>
+              <td class="code">A1d</td>
+              <td class="symptom">Følger ofte ikke instruksjoner og mislykkes i å gjennomføre skolearbeid, husarbeid eller oppgaver på jobben.</td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A1dvoksen"></div></td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A1dbarndom"></div></td>
+            </tr>
+            <tr>
+              <td class="code">A1e</td>
+              <td class="symptom">Har ofte vansker med å organisere oppgaver og aktiviteter.</td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A1evoksen"></div></td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A1ebarndom"></div></td>
+            </tr>
+            <tr>
+              <td class="code">A1f</td>
+              <td class="symptom">Unnviker ofte, misliker eller er uvillig til å utføre oppgaver som krever vedvarende psykisk anstrengelse.</td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A1fvoksen"></div></td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A1fbarndom"></div></td>
+            </tr>
+            <tr>
+              <td class="code">A1g</td>
+              <td class="symptom">Mister ofte ting som er nødvendige for oppgaver eller aktiviteter (for eksempel skolearbeid, bøker, verktøy).</td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A1gvoksen"></div></td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A1gbarndom"></div></td>
+            </tr>
+            <tr>
+              <td class="code">A1h</td>
+              <td class="symptom">Blir ofte lett distrahert av tilfeldige stimuli.</td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A1hvoksen"></div></td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A1hbarndom"></div></td>
+            </tr>
+            <tr>
+              <td class="code">A1i</td>
+              <td class="symptom">Er ofte glemsk i dagliglivet.</td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A1ivoksen"></div></td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A1ibarndom"></div></td>
+            </tr>
+
+            <tr class="totals-row">
+              <td colspan="2" class="totals-label">Totalt antall kriterier oppmerksomhetssvikt</td>
+              <td style="text-align:center;">
+                <span class="totals-value" id="totalAvoksen">0</span><span class="totals-max">/ 9</span>
+              </td>
+              <td style="text-align:center;">
+                <span class="totals-value" id="totalAbarndom">0</span><span class="totals-max">/ 9</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Kriterium A2 -->
+      <div class="page-break" style="page-break-before: always; break-before: page;"></div>
+<section class="card" id="cardA2">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Kriterium A2 – Hyperaktivitet/impulsivitet</div>
+            <div class="card-subtitle">Angi hvilke symptomer som har vært til stede i barndom og voksen alder.</div>
+          </div>
+          <div class="badge">
+            <span>Totalt</span>
+            <span id="totalHOverall" class="pill-number">0 / 18</span>
+          </div>
+        </div>
+
+        <div class="section-label">DSM-5 TR symptomer H/I 1–9</div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width:8%;">Kode</th>
+              <th>Symptom</th>
+              <th style="width:15%; text-align:center;">Voksen</th>
+              <th style="width:15%; text-align:center;">Barndom</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="code">A2a</td>
+              <td class="symptom">Har ofte vansker med å sitte stille eller å holde hender eller føtter i ro.</td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A2avoksen"></div></td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A2abarndom"></div></td>
+            </tr>
+            <tr>
+              <td class="code">A2b</td>
+              <td class="symptom">Går ofte fra plassen sin i situasjoner der det forventes at man blir sittende.</td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A2bvoksen"></div></td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A2bbarndom"></div></td>
+            </tr>
+            <tr>
+              <td class="code">A2c</td>
+              <td class="symptom">Springer ofte omkring eller klatrer i situasjoner der dette ikke passer (hos ungdom/voksne kan dette være subjektiv rastløshet).</td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A2cvoksen"></div></td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A2cbarndom"></div></td>
+            </tr>
+            <tr>
+              <td class="code">A2d</td>
+              <td class="symptom">Har ofte vansker med å leke eller gjøre fritidssysler på en rolig måte.</td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A2dvoksen"></div></td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A2dbarndom"></div></td>
+            </tr>
+            <tr>
+              <td class="code">A2e</td>
+              <td class="symptom">Er som oftest «på farten» eller handler som «drevet av en motor».</td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A2evoksen"></div></td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A2ebarndom"></div></td>
+            </tr>
+            <tr>
+              <td class="code">A2f</td>
+              <td class="symptom">Snakker ofte i et kjør.</td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A2fvoksen"></div></td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A2fbarndom"></div></td>
+            </tr>
+            <tr>
+              <td class="code">A2g</td>
+              <td class="symptom">Buser ofte ut med et svar før spørsmålet er ferdigstilt.</td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A2gvoksen"></div></td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A2gbarndom"></div></td>
+            </tr>
+            <tr>
+              <td class="code">A2h</td>
+              <td class="symptom">Har ofte vansker med å vente på sin tur.</td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A2hvoksen"></div></td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A2hbarndom"></div></td>
+            </tr>
+            <tr>
+              <td class="code">A2i</td>
+              <td class="symptom">Avbryter eller trenger seg ofte på andre (for eksempel buser inn i andres samtaler eller lek).</td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A2ivoksen"></div></td>
+              <td class="checkbox-cell"><div class="checkbox-wrapper"><input type="checkbox" name="A2ibarndom"></div></td>
+            </tr>
+
+            <tr class="totals-row">
+              <td colspan="2" class="totals-label">Totalt antall kriterier hyperaktivitet/impulsivitet</td>
+              <td style="text-align:center;">
+                <span class="totals-value" id="totalHvoksen">0</span><span class="totals-max">/ 9</span>
+              </td>
+              <td style="text-align:center;">
+                <span class="totals-value" id="totalHbarndom">0</span><span class="totals-max">/ 9</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- DSM-5 kriterier A–E -->
+      <div class="page-break" style="page-break-before: always; break-before: page;"></div>
+<section class="card" id="cardResults">
+        <div class="card-header">
+          <div>
+            <div class="card-title">DSM-5 kriterier A–E</div>
+            <div class="card-subtitle">Resultatskjema basert på symptomopptelling og klinisk vurdering.</div>
+          </div>
+        </div>
+
+        <div class="summary-strip">
+          <div class="summary-pill"><span>A voksen</span> <strong id="summaryAvoksen">0</strong><span>/ 9</span></div>
+          <div class="summary-pill"><span>H/I voksen</span> <strong id="summaryHvoksen">0</strong><span>/ 9</span></div>
+          <div class="summary-pill"><span>A barndom</span> <strong id="summaryAbarndom">0</strong><span>/ 9</span></div>
+          <div class="summary-pill"><span>H/I barndom</span> <strong id="summaryHbarndom">0</strong><span>/ 9</span></div>
+        </div>
+
+        <div class="section-label">Kriterium A</div>
+
+        <div class="radio-row">
+          <div class="radio-row-title">Barndom – er flere (3 eller flere) symptomer til stede for A og/eller H/I?</div>
+          <div class="yesno-group">
+            <label><input type="radio" name="kriteriumAbarndom" value="ja"> Ja</label>
+            <label><input type="radio" name="kriteriumAbarndom" value="nei"> Nei</label>
+          </div>
+        </div>
+
+        <div class="radio-row">
+          <div class="radio-row-title">Voksen alder – er antall A-kriterier ≥ 5?</div>
+          <div class="yesno-group">
+            <label><input type="radio" name="kriteriumAvoksenA" value="ja"> Ja</label>
+            <label><input type="radio" name="kriteriumAvoksenA" value="nei"> Nei</label>
+          </div>
+        </div>
+
+        <div class="radio-row">
+          <div class="radio-row-title">Voksen alder – er antall H/I-kriterier ≥ 5?</div>
+          <div class="yesno-group">
+            <label><input type="radio" name="kriteriumAvoksenHI" value="ja"> Ja</label>
+            <label><input type="radio" name="kriteriumAvoksenHI" value="nei"> Nei</label>
+          </div>
+        </div>
+
+        <div class="section-label" style="margin-top:1.5rem;">Kriterium B</div>
+        <div class="radio-row">
+          <div class="radio-row-title">Er det tegn på et livslangt mønster av symptomer og begrensninger?</div>
+          <div class="yesno-group">
+            <label><input type="radio" name="kriteriumB" value="ja"> Ja</label>
+            <label><input type="radio" name="kriteriumB" value="nei"> Nei</label>
+          </div>
+        </div>
+
+        <div class="section-label" style="margin-top:1.5rem;">Kriterium C og D</div>
+
+        <div class="radio-row">
+          <div class="radio-row-title">Symptomene gjør seg gjeldende på minst to livsområder i voksen alder?</div>
+          <div class="yesno-group">
+            <label><input type="radio" name="kriteriumCDvoksen" value="ja"> Ja</label>
+            <label><input type="radio" name="kriteriumCDvoksen" value="nei"> Nei</label>
+          </div>
+        </div>
+
+        <div class="radio-row">
+          <div class="radio-row-title">Symptomene gjorde seg gjeldende på minst to livsområder i barndom?</div>
+          <div class="yesno-group">
+            <label><input type="radio" name="kriteriumCDbarndom" value="ja"> Ja</label>
+            <label><input type="radio" name="kriteriumCDbarndom" value="nei"> Nei</label>
+          </div>
+        </div>
+
+        <div class="section-label" style="margin-top:1.5rem;">Kriterium E</div>
+        <div class="radio-row">
+          <div class="radio-row-title">Symptomene kan ikke forklares bedre av annen psykisk lidelse.</div>
+          <div class="yesno-group">
+            <label><input type="radio" name="kriteriumE" value="oppfylt"> Oppfylt (ingen bedre forklaring)</label>
+            <label><input type="radio" name="kriteriumE" value="annen"> Ja, bedre forklart av annen lidelse</label>
+          </div>
+          <input type="text" name="kriteriumEannen" placeholder="Hvis annen psykisk lidelse, angi hvilken">
+        </div>
+      </section>
+
+      <!-- Komparentopplysninger -->
+      <div class="page-break" style="page-break-before: always; break-before: page;"></div>
+<section class="card" id="cardComparent">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Komparentopplysninger</div>
+            <div class="card-subtitle">Grad av støtte fra pårørende og andre kilder.</div>
+          </div>
+        </div>
+
+        <div class="radio-row">
+          <div class="radio-row-title">Foreldre, søsken eller andre (angi hvem):</div>
+          <input type="text" name="komparent1hvem" placeholder="Navn/relasjon">
+          <div class="support-scale">
+            <label><input type="radio" name="komparent1" value="NA"> NA</label>
+            <label><input type="radio" name="komparent1" value="0"> 0 - ingen/liten</label>
+            <label><input type="radio" name="komparent1" value="1"> 1 - noe</label>
+            <label><input type="radio" name="komparent1" value="2"> 2 - tydelig</label>
+          </div>
+        </div>
+
+        <div class="radio-row">
+          <div class="radio-row-title">Partner, god venn/venninne eller andre (angi hvem):</div>
+          <input type="text" name="komparent2hvem" placeholder="Navn/relasjon">
+          <div class="support-scale">
+            <label><input type="radio" name="komparent2" value="NA"> NA</label>
+            <label><input type="radio" name="komparent2" value="0"> 0 - ingen/liten</label>
+            <label><input type="radio" name="komparent2" value="1"> 1 - noe</label>
+            <label><input type="radio" name="komparent2" value="2"> 2 - tydelig</label>
+          </div>
+        </div>
+
+        <div class="radio-row">
+          <div class="radio-row-title">Rapporter fra skolen:</div>
+          <div class="support-scale">
+            <label><input type="radio" name="komparent3" value="NA"> NA</label>
+            <label><input type="radio" name="komparent3" value="0"> 0 - ingen/liten</label>
+            <label><input type="radio" name="komparent3" value="1"> 1 - noe</label>
+            <label><input type="radio" name="komparent3" value="2"> 2 - tydelig</label>
+          </div>
+        </div>
+
+        <div class="radio-row" style="margin-top:1.1rem;">
+          <div class="radio-row-title">Støttes diagnosen av komparentopplysninger?</div>
+          <div class="yesno-group">
+            <label><input type="radio" name="diagnoseStottes" value="ja"> Ja</label>
+            <label><input type="radio" name="diagnoseStottes" value="nei"> Nei</label>
+          </div>
+        </div>
+
+        <label class="section-label" style="margin-top:1.1rem; display:block;">Kommentar</label>
+        <textarea name="kommentar" placeholder="Tilleggsopplysninger, nyanseringer, differensialdiagnostiske vurderinger."></textarea>
+      </section>
+
+      <!-- Diagnose og alvorlighetsgrad -->
+      <section class="card" id="cardDiagnose">
+        <div class="card-header">
+          <div class="card-title">Diagnose og alvorlighetsgrad</div>
+        </div>
+
+        <div class="grid" style="grid-template-columns: 1fr; gap: 1rem; margin-bottom:0;">
+          <div class="radio-row">
+            <div class="radio-row-title">Konklusjon: Foreligger det ADHD-diagnose?</div>
+            <div class="yesno-group">
+              <label><input type="radio" name="adhdDiagnose" value="nei"> Nei</label>
+              <label><input type="radio" name="adhdDiagnose" value="ja"> Ja</label>
+            </div>
+
+            <div class="section-label" style="margin-top:1rem;">Presentasjonstype (hvis ADHD)</div>
+            <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.4rem; font-size:0.9rem; position:relative; z-index:1;">
+              <label><input type="checkbox" name="presentasjonkombinert"> 314.01 Kombinert presentasjonstype</label>
+              <label><input type="checkbox" name="presentasjonoppm"> 314.00 Overveiende oppmerksomhetssvikt</label>
+              <label><input type="checkbox" name="presentasjonhi"> 314.01 Overveiende hyperaktiv-impulsiv</label>
+              <label><input type="checkbox" name="presentasjonannen"> 314.01 Annen angitt</label>
+              <label><input type="checkbox" name="presentasjonikkeangitt"> 314.01 Ikke angitt</label>
+              <label><input type="checkbox" name="presentasjondelvisremisjon"> I delvis remisjon</label>
+            </div>
+
+            <div class="section-label" style="margin-top:1rem;">Alvorlighetsgrad</div>
+            <div class="yesno-group" style="margin-top:0.4rem;">
+              <label><input type="radio" name="alvorlighet" value="mild"> Mild</label>
+              <label><input type="radio" name="alvorlighet" value="moderat"> Moderat</label>
+              <label><input type="radio" name="alvorlighet" value="alvorlig"> Alvorlig</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-actions">
+          <span class="hint">Skjemaet lagres lokalt ved nedlasting.</span>
+
+          <button type="button" class="btn btn-secondary" onclick="saveAsHTML()">
+            Lagre som HTML
+          </button>
+
+          <button type="button" class="btn btn-secondary" onclick="saveAsWord()">
+            Lagre som Word (.docx)
+          </button>
+
+          <button type="button" class="btn btn-primary" onclick="saveAsPDF()">
+            Lagre som PDF
+          </button>
+        </div>
+      </section>
+
+    </form>
+  </div>
+
+  <script>
+    /* ---------- 1) KALKULATORLOGIKK ---------- */
+    function updateTotals() {
+      const fieldsA = ["A1a","A1b","A1c","A1d","A1e","A1f","A1g","A1h","A1i"];
+      const fieldsH = ["A2a","A2b","A2c","A2d","A2e","A2f","A2g","A2h","A2i"];
+
+      function countFor(prefixes, suffix) {
+        let total = 0;
+        prefixes.forEach(code => {
+          const name = code + suffix;
+          const el = document.querySelector(`input[name="${name}"]`);
+          if (el && el.checked) total += 1;
+        });
+        return total;
+      }
+
+      const totalAvoksen = countFor(fieldsA, "voksen");
+      const totalAbarndom = countFor(fieldsA, "barndom");
+      const totalHvoksen = countFor(fieldsH, "voksen");
+      const totalHbarndom = countFor(fieldsH, "barndom");
+
+      document.getElementById("totalAvoksen").textContent = totalAvoksen;
+      document.getElementById("totalAbarndom").textContent = totalAbarndom;
+      document.getElementById("totalHvoksen").textContent = totalHvoksen;
+      document.getElementById("totalHbarndom").textContent = totalHbarndom;
+
+      document.getElementById("totalAOverall").textContent = `${totalAvoksen + totalAbarndom} / 18`;
+      document.getElementById("totalHOverall").textContent = `${totalHvoksen + totalHbarndom} / 18`;
+
+      document.getElementById("summaryAvoksen").textContent = totalAvoksen;
+      document.getElementById("summaryAbarndom").textContent = totalAbarndom;
+      document.getElementById("summaryHvoksen").textContent = totalHvoksen;
+      document.getElementById("summaryHbarndom").textContent = totalHbarndom;
+    }
+
+    document.addEventListener("change", function(e) {
+      if (!e.target) return;
+      if (e.target.type === "checkbox" || e.target.type === "radio") updateTotals();
+    });
+
+    updateTotals();
+
+    /* ---------- 2) EKSPORT: hjelpefunksjoner ---------- */
+    function escapeFilenamePart(s) {
+      return String(s || "")
+        .replace(/[^\w\-]+/g, "-")
+        .replace(/\-+/g, "-")
+        .replace(/^\-|\-$/g, "");
+    }
+
+    function buildStaticExportHTML(includePrintStyles = false) {
+      const originalRoot = document.querySelector("#reportContent");
+      if (!originalRoot) throw new Error("Fant ikke #reportContent.");
+
+      const clone = originalRoot.cloneNode(true);
+
+      const footer = clone.querySelector(".footer-actions");
+      if (footer) footer.remove();
+
+      // Word/print: sikre sideskift før utvalgte overskrifter (Word tolerer <br clear=all> bedre enn kun CSS)
+      if (includePrintStyles) {
+        clone.querySelectorAll('.page-break').forEach(el => el.remove());
+        const addWordPageBreakBefore = (id) => {
+          const target = clone.querySelector('#' + id);
+          if (!target || !target.parentNode) return;
+          const br = document.createElement('br');
+          br.setAttribute('clear', 'all');
+          br.setAttribute('style', 'page-break-before:always; break-before:page; mso-special-character:line-break;');
+          target.parentNode.insertBefore(br, target);
+          target.setAttribute('style', (target.getAttribute('style') || '') + '; page-break-before:always; break-before:page;');
+        };
+        ['cardA2', 'cardResults', 'cardComparent'].forEach(addWordPageBreakBefore);
+      }
+
+      const origControls = originalRoot.querySelectorAll("input, textarea, select");
+      const cloneControls = clone.querySelectorAll("input, textarea, select");
+
+      for (let i = 0; i < origControls.length; i++) {
+        const orig = origControls[i];
+        const c = cloneControls[i];
+        if (!c) continue;
+
+        let replacement = document.createElement("span");
+
+        if (orig.tagName === "TEXTAREA") {
+          replacement = document.createElement("div");
+          replacement.className = "export-text";
+          replacement.textContent = orig.value || "";
+        } else if (orig.tagName === "SELECT") {
+          replacement.className = "export-field";
+          const txt = orig.options?.[orig.selectedIndex]?.text ?? "";
+          replacement.textContent = txt;
+        } else if (orig.tagName === "INPUT") {
+          const type = (orig.type || "").toLowerCase();
+          if (type === "checkbox") {
+            replacement.className = "export-mark";
+            replacement.textContent = orig.checked ? "☑" : "☐";
+          } else if (type === "radio") {
+            replacement.className = "export-mark";
+            replacement.textContent = orig.checked ? "◉" : "○";
+          } else {
+            replacement.className = "export-field";
+            replacement.textContent = orig.value || "";
+          }
+        }
+
+        c.replaceWith(replacement);
+      }
+
+      let styles = `
+        body { margin:0; padding:16px; background:#fff; color:#111; font-family: system-ui, -apple-system, Segoe UI, sans-serif; }
+        .page { max-width: 980px; margin: 0 auto; }
+        header { margin-bottom: 1rem; }
+        header h1 { font-size: 1.5rem; margin: 0; }
+        header p { margin: 0.3rem 0 0; font-size: 0.9rem; color: #666; }
+        .card { margin: 1rem 0; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; }
+        .card-header { margin-bottom: 0.8rem; }
+        .card-title { font-size: 1.1rem; font-weight: 600; }
+        .card-subtitle { font-size: 0.85rem; color: #666; margin-top: 0.2rem; }
+        .badge { display: inline-block; padding: 0.2rem 0.5rem; background: #f0f0f0; border-radius: 4px; font-size: 0.8rem; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 0.5rem; }
+        th, td { padding: 0.5rem; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f9f9f9; font-weight: 600; font-size: 0.8rem; }
+        tr:nth-child(even) td { background: #fafafa; }
+        .section-label { margin-top: 0.8rem; font-size: 0.75rem; text-transform: uppercase; color: #666; font-weight: 600; }
+        .yesno-group { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.3rem; }
+        .yesno-group label { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.85rem; }
+        .export-mark { display: inline-block; }
+        .export-field { display: block; min-height: 1.1em; }
+        .export-text { display: block; min-height: 2.5em; padding: 0.4rem; border: 1px solid #ddd; border-radius: 4px; white-space: pre-wrap; }
+      `;
+
+      if (includePrintStyles) {
+        styles += `
+          @media print {
+            body { margin: 0; padding: 12mm; }
+            .card { page-break-inside: avoid; }
+            #cardA2, #cardResults, #cardComparent { page-break-before: always; break-before: page; }
+          }
+        `;
+      }
+
+      const title = document.title || "Eksport";
+      return `<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${title}</title>
+<style>${styles}</style>
+</head>
+<body>
+${clone.outerHTML}
+</body>
+</html>`;
+    }
+
+    /* ---------- 3) LAGRE: HTML ---------- */
+    function saveAsHTML() {
+      const html = buildStaticExportHTML(false);
+      const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const stamp = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `${escapeFilenamePart(document.title)}-${stamp}.html`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    /* ---------- 4) LAGRE: DOCX ---------- */
+    function saveAsWord() {
+      if (typeof htmlDocx === "undefined") {
+        alert("Word-eksport feiler: htmlDocx-biblioteket er ikke lastet.");
+        return;
+      }
+      const html = buildStaticExportHTML(true);
+      const stamp = new Date().toISOString().slice(0, 10);
+
+      const blob = htmlDocx.asBlob(html, {
+        orientation: "portrait",
+        margins: { top: 720, right: 720, bottom: 720, left: 720 }
+      });
+
+      saveAs(blob, `${escapeFilenamePart(document.title)}-${stamp}.docx`);
+    }
+
+    /* ---------- 5) LAGRE: PDF (FAST og FUNGERER) ---------- */
+    function saveAsPDF() {
+      const html = buildStaticExportHTML(false);
+
+      // Lag temporary container
+      const container = document.createElement("div");
+      container.innerHTML = html;
+      container.style.position = "absolute";
+      container.style.left = "-9999px";
+      container.style.top = "0";
+      container.style.width = "210mm";
+      document.body.appendChild(container);
+
+      const pageEl = container.querySelector(".page");
+      if (!pageEl) {
+        alert("Fant ikke .page-element.");
+        container.remove();
+        return;
+      }
+
+      const stamp = new Date().toISOString().slice(0, 10);
+      const opt = {
+        margin: [12, 12, 12, 12],
+        filename: `${escapeFilenamePart(document.title)}-${stamp}.pdf`,
+        image: { type: "jpeg", quality: 0.95 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        pagebreak: { mode: "css" }
+      };
+
+      html2pdf()
+        .set(opt)
+        .from(pageEl)
+        .save()
+        .finally(() => {
+          document.body.removeChild(container);
+        });
+    }
+  </script>
+</body>
+</html>

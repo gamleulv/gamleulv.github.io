@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRAPS II — Полная клиническая форма</title>
+    <style>
+      :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #3498db;
+        --accent-color: #c0392b;
+        --bg-color: #f4f7f6;
+        --panel-bg: #ffffff;
+        --text-color: #333333;
+        --border-color: #cbd5e0;
+        --success-color: #27ae60;
+        --highlight-bg: #e8f4fc;
+      }
+
+      body {
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        line-height: 1.5;
+        margin: 0;
+        padding: 40px 20px;
+      }
+
+      .container {
+        max-width: 950px;
+        margin: 0 auto;
+        background-color: var(--panel-bg);
+        padding: 50px;
+        border-radius: 8px;
+        box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e1e4e8;
+      }
+
+      /* Заголовок и сведения */
+      h1 {
+        color: var(--primary-color);
+        text-align: center;
+        margin-bottom: 5px;
+        font-weight: 600;
+        font-size: 2.2em;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #636e72;
+        margin-bottom: 30px;
+        font-size: 1.1em;
+        font-weight: 300;
+      }
+
+      .meta-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 30px;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .form-group label {
+        font-size: 0.85em;
+        font-weight: bold;
+        text-transform: uppercase;
+        color: #7f8c8d;
+        margin-bottom: 5px;
+      }
+
+      .form-group input,
+      .form-group textarea {
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 1em;
+        font-family: inherit;
+      }
+
+      .instruction {
+        background-color: #e3f2fd;
+        border-left: 5px solid var(--secondary-color);
+        padding: 15px 20px;
+        margin-bottom: 30px;
+        font-size: 0.95em;
+        color: #2c3e50;
+      }
+
+      /* Разделы */
+      .section-block {
+        margin-bottom: 40px;
+        page-break-inside: avoid;
+      }
+
+      .section-header {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 4px 4px 0 0;
+        font-size: 1.1em;
+        font-weight: 600;
+        margin-top: 20px;
+      }
+
+      .sub-header {
+        background-color: #ecf0f1;
+        padding: 8px 20px;
+        font-weight: bold;
+        color: #2c3e50;
+        border: 1px solid var(--border-color);
+        border-top: none;
+        font-size: 0.95em;
+      }
+
+      /* Таблицы */
+      .scale-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid var(--border-color);
+        background: white;
+        margin-bottom: 20px;
+      }
+
+      .scale-table th {
+        background-color: #f1f3f5;
+        padding: 10px;
+        font-size: 0.85em;
+        color: #555;
+        text-align: center;
+        border-bottom: 2px solid #ddd;
+      }
+
+      .scale-table td {
+        padding: 12px 10px;
+        border-bottom: 1px solid #eee;
+        vertical-align: top;
+      }
+
+      .scale-table tr:hover {
+        background-color: #f9f9f9;
+      }
+
+      .scale-table tr.selected {
+        background-color: var(--highlight-bg);
+      }
+
+      .question-col {
+        width: 60%;
+      }
+
+      .option-col {
+        width: 8%;
+        text-align: center;
+        font-size: 0.9em;
+        vertical-align: middle !important;
+      }
+
+      .yesno-col {
+        width: 10%;
+        text-align: center;
+        font-size: 0.9em;
+        vertical-align: middle !important;
+      }
+
+      input[type="radio"] {
+        transform: scale(1.3);
+        cursor: pointer;
+        accent-color: var(--primary-color);
+      }
+
+      /* Блок результатов */
+      #results {
+        margin-top: 40px;
+        padding: 0;
+        border: 2px solid var(--primary-color);
+        border-radius: 8px;
+        display: none;
+        overflow: hidden;
+        background-color: #fff;
+      }
+
+      .result-header {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 15px 20px;
+        font-size: 1.2em;
+        font-weight: bold;
+      }
+
+      .result-body {
+        padding: 20px;
+      }
+
+      .result-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+      }
+
+      .result-row.main-score {
+        font-weight: bold;
+        font-size: 1.1em;
+        background-color: #fafafa;
+        padding: 12px 10px;
+        margin: 5px -10px;
+      }
+
+      .diagnosis-box {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 6px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 1.3em;
+        border: 2px solid transparent;
+      }
+
+      .diag-ptsd {
+        background-color: #fff3cd;
+        color: #856404;
+        border-color: #ffeeba;
+      }
+
+      .diag-cptsd {
+        background-color: #f8d7da;
+        color: #721c24;
+        border-color: #f5c6cb;
+      }
+
+      .diag-none {
+        background-color: #d4edda;
+        color: #155724;
+        border-color: #c3e6cb;
+      }
+
+      /* Кнопки */
+      .controls {
+        margin-top: 50px;
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+      }
+
+      button {
+        padding: 12px 25px;
+        border: none;
+        border-radius: 5px;
+        font-size: 1em;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-weight: 600;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .btn-calc {
+        background-color: var(--success-color);
+        color: white;
+      }
+
+      .btn-html {
+        background-color: var(--secondary-color);
+        color: white;
+      }
+
+      .btn-word {
+        background-color: #2b579a;
+        color: white;
+      }
+
+      .btn-pdf {
+        background-color: #b30b00;
+        color: white;
+      }
+
+      @media print {
+        body {
+          background-color: white;
+          padding: 0;
+          font-size: 10pt;
+        }
+
+        .container {
+          box-shadow: none;
+          width: 100%;
+          max-width: 100%;
+          padding: 0;
+          border: none;
+          margin: 0;
+        }
+
+        .controls,
+        .instruction {
+          display: none !important;
+        }
+
+        h1 {
+          font-size: 18pt;
+          margin-bottom: 5px;
+          color: black;
+        }
+
+        .section-header {
+          background-color: #eee !important;
+          color: black !important;
+          border: 1px solid #ccc;
+          page-break-after: avoid;
+        }
+
+        .sub-header {
+          border: 1px solid #ccc;
+          color: black;
+          font-weight: bold;
+        }
+
+        .scale-table th {
+          background-color: #ddd !important;
+          color: black !important;
+        }
+
+        #results {
+          display: block !important;
+          border: 2px solid #000;
+          page-break-inside: avoid;
+        }
+
+        .diagnosis-box {
+          border: 1px solid #000;
+          color: black !important;
+          background: none !important;
+        }
+
+        input[type="text"],
+        textarea {
+          border: none;
+          border-bottom: 1px solid #000;
+          width: 100%;
+          resize: none;
+        }
+
+        /* Принудительно отображать отмеченные поля при прямой печати из браузера без предварительного экспорта */
+        input[type="radio"]:checked:after {
+          content: "X";
+          display: block;
+          width: 12px;
+          height: 12px;
+          background: #000;
+          color: #fff;
+          text-align: center;
+          line-height: 12px;
+          font-size: 10px;
+        }
+      }
+    </style>
+    <link rel="preconnect" href="https://psykometri-sovn.wunderbucket.dev/" crossorigin="true">
+    <link rel="dns-prefetch" href="https://psykometri-sovn.wunderbucket.dev/">
+  </head>
+
+  <body>
+
+    <div class="container" id="document-content">
+      <h1>TRAPS II</h1>
+      <div class="subtitle">Скрининг травмы и ПТСР (SLESQ + ITQ)</div>
+
+      <div class="meta-info">
+        <div class="form-group">
+          <label for="patientName">Имя пациента / ID:</label>
+          <input type="text" id="patientName" placeholder="Имя...">
+        </div>
+        <div class="form-group">
+          <label for="assessmentDate">Дата:</label>
+          <input type="date" id="assessmentDate">
+        </div>
+      </div>
+
+      <!-- ЧАСТЬ 1: SLESQ -->
+      <div class="section-block">
+        <div class="section-header">Часть 1: Оценка травматических событий (SLESQ)</div>
+        <div class="instruction">
+          <strong>Инструкция:</strong> Приведённые ниже вопросы относятся к событиям, которые могли произойти в любой период вашей жизни, включая раннее детство. Пожалуйста, отметьте, происходило ли с вами что-либо из перечисленного.
+        </div>
+
+        <table class="scale-table">
+          <thead>
+            <tr>
+              <th class="question-col">Вопрос</th>
+              <th class="yesno-col">ДА</th>
+              <th class="yesno-col">НЕТ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr onclick="highlightRow(this)">
+              <td>1. Было ли у вас когда-либо заболевание, угрожавшее жизни?</td>
+              <td class="yesno-col"><input type="radio" name="e1" value="1"></td>
+              <td class="yesno-col"><input type="radio" name="e1" value="0"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td>2. Были ли вы когда-либо участником несчастного случая, угрожавшего жизни?</td>
+              <td class="yesno-col"><input type="radio" name="e2" value="1"></td>
+              <td class="yesno-col"><input type="radio" name="e2" value="0"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td>3. Оказывались ли вы когда-либо непосредственно затронуты стихийным бедствием?</td>
+              <td class="yesno-col"><input type="radio" name="e3" value="1"></td>
+              <td class="yesno-col"><input type="radio" name="e3" value="0"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td>4. Подвергались ли вы когда-либо ограблению или нападению с применением физической силы или оружия?</td>
+              <td class="yesno-col"><input type="radio" name="e4" value="1"></td>
+              <td class="yesno-col"><input type="radio" name="e4" value="0"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td>5. Погибал ли кто-либо из ваших ближайших родственников, партнёр/супруг(а) или очень близкий друг в результате несчастного случая, убийства или самоубийства?</td>
+              <td class="yesno-col"><input type="radio" name="e5" value="1"></td>
+              <td class="yesno-col"><input type="radio" name="e5" value="0"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td>6. Приходилось ли вам когда-либо сталкиваться с тем, что кто-то с применением физической силы или угроз принуждал вас к вагинальному, оральному или анальному сексу против вашей воли?</td>
+              <td class="yesno-col"><input type="radio" name="e6" value="1"></td>
+              <td class="yesno-col"><input type="radio" name="e6" value="0"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td>7. Помимо перечисленных выше событий: приходилось ли вам когда-либо сталкиваться с тем, что кто-то касался ваших половых органов против вашей воли или принуждал вас касаться его/её половых органов против вашей воли?</td>
+              <td class="yesno-col"><input type="radio" name="e7" value="1"></td>
+              <td class="yesno-col"><input type="radio" name="e7" value="0"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td>8. В детстве: случалось ли, что один из родителей, лицо, осуществлявшее уход, или другой человек пинал, бил либо иным образом нападал на вас или причинял вам вред?</td>
+              <td class="yesno-col"><input type="radio" name="e8" value="1"></td>
+              <td class="yesno-col"><input type="radio" name="e8" value="0"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td>9. Во взрослом возрасте: пинал, бил, избивал или иным образом причинял вам физический вред партнёр, родственник, знакомый или другой человек?</td>
+              <td class="yesno-col"><input type="radio" name="e9" value="1"></td>
+              <td class="yesno-col"><input type="radio" name="e9" value="0"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td>10. Высмеивал ли, унижал ли или говорил ли вам неоднократно один из родителей, партнёр или член семьи, что вы ничего не стоите?</td>
+              <td class="yesno-col"><input type="radio" name="e10" value="1"></td>
+              <td class="yesno-col"><input type="radio" name="e10" value="0"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td>11. Высмеивал ли, унижал ли или говорил ли вам неоднократно кто-либо вне семьи, например одноклассники или коллеги, что вы ничего не стоите?</td>
+              <td class="yesno-col"><input type="radio" name="e11" value="1"></td>
+              <td class="yesno-col"><input type="radio" name="e11" value="0"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td>12. Помимо указанного выше: угрожал ли вам когда-либо кто-либо оружием?</td>
+              <td class="yesno-col"><input type="radio" name="e12" value="1"></td>
+              <td class="yesno-col"><input type="radio" name="e12" value="0"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td>13. Были ли вы когда-либо свидетелем того, как другой человек был убит, тяжело ранен, подвергнут жестокому обращению или сексуальному насилию?</td>
+              <td class="yesno-col"><input type="radio" name="e13" value="1"></td>
+              <td class="yesno-col"><input type="radio" name="e13" value="0"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td>14. Переживали ли вы когда-либо иную ситуацию, в которой вы получили тяжёлую травму или ваша жизнь была в опасности (например, война, терроризм)?</td>
+              <td class="yesno-col"><input type="radio" name="e14" value="1"></td>
+              <td class="yesno-col"><input type="radio" name="e14" value="0"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td>
+                15. Помимо перечисленных выше событий: переживали ли вы когда-либо другую ситуацию, которая была очень пугающей или ужасной либо в которой вы чувствовали себя крайне беспомощным(-ой)?
+                <br><textarea id="e15desc" rows="2" style="width:95%; margin-top:5px;" placeholder="Пожалуйста, опишите..."></textarea>
+              </td>
+              <td class="yesno-col"><input type="radio" name="e15" value="1"></td>
+              <td class="yesno-col"><input type="radio" name="e15" value="0"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ЧАСТЬ 2: ITQ -->
+      <div class="section-block">
+        <div class="section-header">Часть 2: Оценка симптомов (ITQ)</div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="traumaMain">Выявленная основная травма (то, что вызывает наибольшие трудности в настоящее время):</label>
+          <textarea id="traumaMain" rows="2" placeholder="Кратко опишите событие(я), применительно к которому(ым) вы отвечаете..."></textarea>
+        </div>
+
+        <div class="instruction">
+          Укажите, насколько вас беспокоили следующие проблемы в течение <strong>последнего месяца</strong> в связи с описанным выше событием.
+          <br>Шкала: <strong>0</strong>=Совсем не беспокоило, <strong>1</strong>=Незначительно, <strong>2</strong>=Умеренно, <strong>3</strong>=Сильно, <strong>4</strong>=Крайне сильно.
+        </div>
+
+        <table class="scale-table">
+          <thead>
+            <tr>
+              <th class="question-col">Симптомы ПТСР (P1–P6)</th>
+              <th class="option-col">0</th>
+              <th class="option-col">1</th>
+              <th class="option-col">2</th>
+              <th class="option-col">3</th>
+              <th class="option-col">4</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Повторное переживание -->
+            <tr>
+              <td colspan="6" class="sub-header">Повторное переживание</td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td><strong>P1.</strong> Тревожные сны, в которых части события воспроизводятся снова и снова или которые явно связаны с этим событием.</td>
+              <td class="option-col"><input type="radio" name="p1" value="0"></td>
+              <td class="option-col"><input type="radio" name="p1" value="1"></td>
+              <td class="option-col"><input type="radio" name="p1" value="2"></td>
+              <td class="option-col"><input type="radio" name="p1" value="3"></td>
+              <td class="option-col"><input type="radio" name="p1" value="4"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td><strong>P2.</strong> Яркие образы или воспоминания, которые иногда вторгаются в ваше сознание и при которых вы чувствуете, что произошедшее вновь происходит здесь и сейчас.</td>
+              <td class="option-col"><input type="radio" name="p2" value="0"></td>
+              <td class="option-col"><input type="radio" name="p2" value="1"></td>
+              <td class="option-col"><input type="radio" name="p2" value="2"></td>
+              <td class="option-col"><input type="radio" name="p2" value="3"></td>
+              <td class="option-col"><input type="radio" name="p2" value="4"></td>
+            </tr>
+
+            <!-- Избегание -->
+            <tr>
+              <td colspan="6" class="sub-header">Избегание</td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td><strong>P3.</strong> Избегаете <strong>внутренних</strong> напоминаний о травматическом событии (например, мыслей, чувств).</td>
+              <td class="option-col"><input type="radio" name="p3" value="0"></td>
+              <td class="option-col"><input type="radio" name="p3" value="1"></td>
+              <td class="option-col"><input type="radio" name="p3" value="2"></td>
+              <td class="option-col"><input type="radio" name="p3" value="3"></td>
+              <td class="option-col"><input type="radio" name="p3" value="4"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td><strong>P4.</strong> Избегаете <strong>внешних</strong> напоминаний о травматическом событии (например, людей, мест).</td>
+              <td class="option-col"><input type="radio" name="p4" value="0"></td>
+              <td class="option-col"><input type="radio" name="p4" value="1"></td>
+              <td class="option-col"><input type="radio" name="p4" value="2"></td>
+              <td class="option-col"><input type="radio" name="p4" value="3"></td>
+              <td class="option-col"><input type="radio" name="p4" value="4"></td>
+            </tr>
+
+            <!-- Угроза -->
+            <tr>
+              <td colspan="6" class="sub-header">Ощущение угрозы</td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td><strong>P5.</strong> Находитесь в состоянии повышенной настороженности, высматриваете опасность или настороже.</td>
+              <td class="option-col"><input type="radio" name="p5" value="0"></td>
+              <td class="option-col"><input type="radio" name="p5" value="1"></td>
+              <td class="option-col"><input type="radio" name="p5" value="2"></td>
+              <td class="option-col"><input type="radio" name="p5" value="3"></td>
+              <td class="option-col"><input type="radio" name="p5" value="4"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td><strong>P6.</strong> Чувствуете себя пугливым(-ой) или легко пугаетесь.</td>
+              <td class="option-col"><input type="radio" name="p6" value="0"></td>
+              <td class="option-col"><input type="radio" name="p6" value="1"></td>
+              <td class="option-col"><input type="radio" name="p6" value="2"></td>
+              <td class="option-col"><input type="radio" name="p6" value="3"></td>
+              <td class="option-col"><input type="radio" name="p6" value="4"></td>
+            </tr>
+
+            <!-- Нарушение функционирования ПТСР -->
+            <tr>
+              <td colspan="6" class="sub-header">Нарушение функционирования (связанное с симптомами ПТСР)</td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td><strong>P7.</strong> Оказывало влияние на ваши отношения или социальную жизнь.</td>
+              <td class="option-col"><input type="radio" name="p7" value="0"></td>
+              <td class="option-col"><input type="radio" name="p7" value="1"></td>
+              <td class="option-col"><input type="radio" name="p7" value="2"></td>
+              <td class="option-col"><input type="radio" name="p7" value="3"></td>
+              <td class="option-col"><input type="radio" name="p7" value="4"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td><strong>P8.</strong> Оказывало влияние на вашу работу или способность работать.</td>
+              <td class="option-col"><input type="radio" name="p8" value="0"></td>
+              <td class="option-col"><input type="radio" name="p8" value="1"></td>
+              <td class="option-col"><input type="radio" name="p8" value="2"></td>
+              <td class="option-col"><input type="radio" name="p8" value="3"></td>
+              <td class="option-col"><input type="radio" name="p8" value="4"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td><strong>P9.</strong> Оказывало влияние на другие важные сферы вашей жизни (учёба, родительские обязанности и т. д.).</td>
+              <td class="option-col"><input type="radio" name="p9" value="0"></td>
+              <td class="option-col"><input type="radio" name="p9" value="1"></td>
+              <td class="option-col"><input type="radio" name="p9" value="2"></td>
+              <td class="option-col"><input type="radio" name="p9" value="3"></td>
+              <td class="option-col"><input type="radio" name="p9" value="4"></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- ЧАСТЬ НСО -->
+        <table class="scale-table">
+          <thead>
+            <tr>
+              <th class="question-col">Нарушения самоорганизации (C1–C6)</th>
+              <th class="option-col">0</th>
+              <th class="option-col">1</th>
+              <th class="option-col">2</th>
+              <th class="option-col">3</th>
+              <th class="option-col">4</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Аффективная дисрегуляция -->
+            <tr>
+              <td colspan="6" class="sub-header">Аффективная дисрегуляция</td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td><strong>C1.</strong> Когда я расстроен(-а), мне требуется много времени, чтобы снова успокоиться.</td>
+              <td class="option-col"><input type="radio" name="c1" value="0"></td>
+              <td class="option-col"><input type="radio" name="c1" value="1"></td>
+              <td class="option-col"><input type="radio" name="c1" value="2"></td>
+              <td class="option-col"><input type="radio" name="c1" value="3"></td>
+              <td class="option-col"><input type="radio" name="c1" value="4"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td><strong>C2.</strong> Я чувствую онемение или эмоциональную отстранённость.</td>
+              <td class="option-col"><input type="radio" name="c2" value="0"></td>
+              <td class="option-col"><input type="radio" name="c2" value="1"></td>
+              <td class="option-col"><input type="radio" name="c2" value="2"></td>
+              <td class="option-col"><input type="radio" name="c2" value="3"></td>
+              <td class="option-col"><input type="radio" name="c2" value="4"></td>
+            </tr>
+
+            <!-- Негативное представление о себе -->
+            <tr>
+              <td colspan="6" class="sub-header">Негативное представление о себе</td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td><strong>C3.</strong> Я чувствую себя неудачником(-цей).</td>
+              <td class="option-col"><input type="radio" name="c3" value="0"></td>
+              <td class="option-col"><input type="radio" name="c3" value="1"></td>
+              <td class="option-col"><input type="radio" name="c3" value="2"></td>
+              <td class="option-col"><input type="radio" name="c3" value="3"></td>
+              <td class="option-col"><input type="radio" name="c3" value="4"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td><strong>C4.</strong> Я чувствую себя никчёмным(-ой).</td>
+              <td class="option-col"><input type="radio" name="c4" value="0"></td>
+              <td class="option-col"><input type="radio" name="c4" value="1"></td>
+              <td class="option-col"><input type="radio" name="c4" value="2"></td>
+              <td class="option-col"><input type="radio" name="c4" value="3"></td>
+              <td class="option-col"><input type="radio" name="c4" value="4"></td>
+            </tr>
+
+            <!-- Трудности в отношениях -->
+            <tr>
+              <td colspan="6" class="sub-header">Нарушения отношений</td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td><strong>C5.</strong> Я чувствую себя отдалённым(-ой) или отрезанным(-ой) от других людей.</td>
+              <td class="option-col"><input type="radio" name="c5" value="0"></td>
+              <td class="option-col"><input type="radio" name="c5" value="1"></td>
+              <td class="option-col"><input type="radio" name="c5" value="2"></td>
+              <td class="option-col"><input type="radio" name="c5" value="3"></td>
+              <td class="option-col"><input type="radio" name="c5" value="4"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td><strong>C6.</strong> Мне трудно быть эмоционально близким(-ой) с другими людьми.</td>
+              <td class="option-col"><input type="radio" name="c6" value="0"></td>
+              <td class="option-col"><input type="radio" name="c6" value="1"></td>
+              <td class="option-col"><input type="radio" name="c6" value="2"></td>
+              <td class="option-col"><input type="radio" name="c6" value="3"></td>
+              <td class="option-col"><input type="radio" name="c6" value="4"></td>
+            </tr>
+
+            <!-- Нарушение функционирования НСО -->
+            <tr>
+              <td colspan="6" class="sub-header">Нарушение функционирования (связанное с симптомами НСО)</td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td><strong>C7.</strong> Вызывало беспокойство или напряжение в ваших отношениях или социальной жизни.</td>
+              <td class="option-col"><input type="radio" name="c7" value="0"></td>
+              <td class="option-col"><input type="radio" name="c7" value="1"></td>
+              <td class="option-col"><input type="radio" name="c7" value="2"></td>
+              <td class="option-col"><input type="radio" name="c7" value="3"></td>
+              <td class="option-col"><input type="radio" name="c7" value="4"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td><strong>C8.</strong> Оказывало влияние на вашу работу или способность работать.</td>
+              <td class="option-col"><input type="radio" name="c8" value="0"></td>
+              <td class="option-col"><input type="radio" name="c8" value="1"></td>
+              <td class="option-col"><input type="radio" name="c8" value="2"></td>
+              <td class="option-col"><input type="radio" name="c8" value="3"></td>
+              <td class="option-col"><input type="radio" name="c8" value="4"></td>
+            </tr>
+            <tr onclick="highlightRow(this)">
+              <td><strong>C9.</strong> Оказывало влияние на другие важные сферы вашей жизни.</td>
+              <td class="option-col"><input type="radio" name="c9" value="0"></td>
+              <td class="option-col"><input type="radio" name="c9" value="1"></td>
+              <td class="option-col"><input type="radio" name="c9" value="2"></td>
+              <td class="option-col"><input type="radio" name="c9" value="3"></td>
+              <td class="option-col"><input type="radio" name="c9" value="4"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="results">
+        <div class="result-header">Итоги и результат</div>
+        <div class="result-body">
+
+          <div style="margin-bottom:15px; padding:10px; background:#f0f0f0; border-radius:4px;">
+            <strong>Воздействие травмы (часть 1):</strong> <span id="resTrauma">Не рассчитано</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <!-- ЧАСТЬ ПТСР -->
+            <div>
+              <h3 style="margin-top:0; color:var(--primary-color);">Показатели ПТСР</h3>
+              <div class="result-row"><span>Повторное переживание (≥2):</span> <span id="critP1">Нет</span></div>
+              <div class="result-row"><span>Избегание (≥2):</span> <span id="critP2">Нет</span></div>
+              <div class="result-row"><span>Угроза (≥2):</span> <span id="critP3">Нет</span></div>
+              <div class="result-row"><span>Нарушение функционирования (≥2):</span> <span id="critPFunc">Нет</span></div>
+              <div class="result-row main-score"><span>Сумма ПТСР (P1–P6):</span> <span id="sumP">0</span></div>
+            </div>
+
+            <!-- ЧАСТЬ НСО -->
+            <div>
+              <h3 style="margin-top:0; color:var(--primary-color);">Показатели НСО</h3>
+              <div class="result-row"><span>Аффективная дисрегуляция (≥2):</span> <span id="critC1">Нет</span></div>
+              <div class="result-row"><span>Представление о себе (≥2):</span> <span id="critC2">Нет</span></div>
+              <div class="result-row"><span>Отношения (≥2):</span> <span id="critC3">Нет</span></div>
+              <div class="result-row"><span>Нарушение функционирования (≥2):</span> <span id="critCFunc">Нет</span></div>
+              <div class="result-row main-score"><span>Сумма НСО (C1–C6):</span> <span id="sumC">0</span></div>
+            </div>
+          </div>
+
+          <div id="diagBox" class="diagnosis-box">
+            -
+          </div>
+
+          <div class="instruction" style="margin-top:20px; margin-bottom:0;">
+            <strong>Интерпретация:</strong><br>
+            • <strong>ПТСР:</strong> выполнены все 3 категории симптомов (повторное переживание, избегание, ощущение угрозы) + нарушение функционирования.<br>
+            • <strong>Комплексное ПТСР (КПТСР):</strong> выполнены критерии ПТСР <strong>ПЛЮС</strong> все 3 категории НСО + нарушение функционирования.<br>
+            • У одного человека не могут быть установлены оба диагноза. КПТСР имеет приоритет перед ПТСР.
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button type="button" class="btn-calc" onclick="calculateScore()">
+          <span>🔢</span> Рассчитать
+        </button>
+        <button type="button" class="btn-html" onclick="exportHTML()">
+          <span>💾</span> Сохранить как HTML
+        </button>
+        <button type="button" class="btn-word" onclick="exportWord()">
+          <span>📝</span> Сохранить в Word
+        </button>
+        <button type="button" class="btn-pdf" onclick="window.print()">
+          <span>🖨️</span> Печать / PDF
+        </button>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        if (!document.getElementById('assessmentDate').value) {
+          document.getElementById('assessmentDate').valueAsDate = new Date();
+        }
+      });
+
+      function highlightRow(row) {
+        // Простое выделение; основная логика реализована в CSS :checked для переключателей
+        // Добавляем класс 'selected' для более заметного визуального выделения
+        const table = row.closest('table');
+        const rows = row.closest('tbody').querySelectorAll('tr');
+
+        // Находим выбранный элемент ввода
+        const input = row.querySelector('input:checked');
+        if (input) {
+          const name = input.name;
+          // Удаляем selected из других строк, относящихся к тому же вопросу
+          // Это несколько сложно, если группы в HTML не заданы строго, но
+          // поскольку 'name' уникален для каждого вопроса, можно выполнить итерацию:
+          rows.forEach(r => {
+            const i = r.querySelector(`input[name="${name}"]`);
+            if (i) r.classList.remove('selected');
+          });
+          row.classList.add('selected');
+        }
+      }
+
+      // Добавляем обработчик для регистрации изменений с клавиатуры или щелчком
+      document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+          highlightRow(this.closest('tr'));
+        });
+      });
+
+      function getVal(name) {
+        const els = document.getElementsByName(name);
+        for (let i = 0; i < els.length; i++) {
+          if (els[i].checked) return parseInt(els[i].value);
+        }
+        return -1;
+      }
+
+      function calculateScore() {
+        // 1. Проверяем часть 1 (травма)
+        let traumaFound = false;
+        for (let i = 1; i <= 15; i++) {
+          if (getVal('e' + i) === 1) traumaFound = true;
+        }
+
+        // 2. Получаем значения части 2
+        // ПТСР
+        const p1 = getVal('p1'),
+          p2 = getVal('p2');
+        const p3 = getVal('p3'),
+          p4 = getVal('p4');
+        const p5 = getVal('p5'),
+          p6 = getVal('p6');
+        const p7 = getVal('p7'),
+          p8 = getVal('p8'),
+          p9 = getVal('p9');
+
+        // НСО
+        const c1 = getVal('c1'),
+          c2 = getVal('c2');
+        const c3 = getVal('c3'),
+          c4 = getVal('c4');
+        const c5 = getVal('c5'),
+          c6 = getVal('c6');
+        const c7 = getVal('c7'),
+          c8 = getVal('c8'),
+          c9 = getVal('c9');
+
+        // Рассчитываем суммы (неучтённые ответы не включаются в сумму)
+        let sumP = 0;
+        [p1, p2, p3, p4, p5, p6].forEach(v => {
+          if (v > 0) sumP += v;
+        });
+
+        let sumC = 0;
+        [c1, c2, c3, c4, c5, c6].forEach(v => {
+          if (v > 0) sumC += v;
+        });
+
+        // Проверяем критерии (пороговое значение >= 2)
+        const hasReExp = (p1 >= 2 || p2 >= 2);
+        const hasAvoid = (p3 >= 2 || p4 >= 2);
+        const hasThreat = (p5 >= 2 || p6 >= 2);
+        const hasPFunc = (p7 >= 2 || p8 >= 2 || p9 >= 2);
+
+        const hasAffect = (c1 >= 2 || c2 >= 2);
+        const hasSelf = (c3 >= 2 || c4 >= 2);
+        const hasRelat = (c5 >= 2 || c6 >= 2);
+        const hasCFunc = (c7 >= 2 || c8 >= 2 || c9 >= 2);
+
+        // Алгоритм
+        const ptsdMet = (hasReExp && hasAvoid && hasThreat && hasPFunc);
+        const dsoMet = (hasAffect && hasSelf && hasRelat && hasCFunc);
+
+        // Показываем блок результатов
+        const resDiv = document.getElementById('results');
+        resDiv.style.display = 'block';
+
+        // Обновляем текст
+        document.getElementById('resTrauma').innerText = traumaFound ? "Сообщено как минимум об одном событии" : "О событиях не сообщено";
+        document.getElementById('resTrauma').style.color = traumaFound ? "#c0392b" : "#27ae60";
+
+        document.getElementById('critP1').innerText = hasReExp ? "ДА" : "Нет";
+        document.getElementById('critP2').innerText = hasAvoid ? "ДА" : "Нет";
+        document.getElementById('critP3').innerText = hasThreat ? "ДА" : "Нет";
+        document.getElementById('critPFunc').innerText = hasPFunc ? "ДА" : "Нет";
+        document.getElementById('sumP').innerText = sumP + " / 24";
+
+        document.getElementById('critC1').innerText = hasAffect ? "ДА" : "Нет";
+        document.getElementById('critC2').innerText = hasSelf ? "ДА" : "Нет";
+        document.getElementById('critC3').innerText = hasRelat ? "ДА" : "Нет";
+        document.getElementById('critCFunc').innerText = hasCFunc ? "ДА" : "Нет";
+        document.getElementById('sumC').innerText = sumC + " / 24";
+
+        const diagBox = document.getElementById('diagBox');
+        diagBox.className = 'diagnosis-box'; // reset
+
+        if (ptsdMet && dsoMet) {
+          diagBox.innerText = "ЗАКЛЮЧЕНИЕ: Комплексное ПТСР (КПТСР)";
+          diagBox.classList.add('diag-cptsd');
+        } else if (ptsdMet && !dsoMet) {
+          diagBox.innerText = "ЗАКЛЮЧЕНИЕ: ПТСР";
+          diagBox.classList.add('diag-ptsd');
+        } else {
+          diagBox.innerText = "Критерии ПТСР/КПТСР не выполнены";
+          diagBox.classList.add('diag-none');
+        }
+
+        resDiv.scrollIntoView({
+          behavior: "smooth"
+        });
+      }
+
+      /* Функции экспорта */
+      function getFilename(ext) {
+        const name = document.getElementById('patientName').value.trim() || "Пациент";
+        const date = document.getElementById('assessmentDate').value || new Date().toISOString().slice(0, 10);
+        const safeName = name.replace(/[^a-zA-Z0-9æøåÆØÅ]/g, "_");
+        return `TRAPS-II_${safeName}_${date}.${ext}`;
+      }
+
+      // Вспомогательная функция для преобразования переключателей в [ X ] при экспорте
+      function prepareExportClone(isWord = false) {
+        const docClone = document.documentElement.cloneNode(true);
+
+        // 1. Поля ввода (текст, дата) в текстовые узлы
+        const textInputs = docClone.querySelectorAll('input[type="text"], input[type="date"], textarea');
+        textInputs.forEach(input => {
+          if (input.tagName === 'TEXTAREA') {
+            const div = document.createElement('div');
+            div.innerText = input.value;
+            div.style.whiteSpace = 'pre-wrap';
+            div.style.border = '1px solid #ccc';
+            div.style.padding = '5px';
+            input.replaceWith(div);
+          } else {
+            const span = document.createElement('span');
+            span.innerText = input.value;
+            span.style.fontWeight = 'bold';
+            input.replaceWith(span);
+          }
+        });
+
+        // 2. Переключатели в [ X ]
+        const radios = docClone.querySelectorAll('input[type="radio"]');
+        radios.forEach(radio => {
+          const cell = radio.parentNode; // td
+          cell.style.textAlign = 'center';
+          if (radio.checked) {
+            // Заменяем на жирную отметку/X
+            cell.innerHTML = isWord ? "<strong>[ X ]</strong>" : "<strong>[ X ]</strong>";
+            cell.style.backgroundColor = "#e8f4fc"; // Выделение
+          } else {
+            cell.innerHTML = isWord ? "( )" : "( )";
+            // Либо пустая строка "" для более чистого вида, но ( ) является стандартом для бумажной формы
+          }
+        });
+
+        // 3. Результаты должны быть видимыми
+        const resDivOrig = document.getElementById('results');
+        const resDivClone = docClone.querySelector('#results');
+        if (resDivOrig.style.display === 'block') {
+          resDivClone.style.display = 'block';
+          // Копируем внутренний HTML, поскольку динамические изменения JS не всегда клонируются точно
+          resDivClone.innerHTML = resDivOrig.innerHTML;
+        }
+
+        // 4. Удаляем элементы управления
+        const controls = docClone.querySelector('.controls');
+        if (controls) controls.remove();
+
+        return docClone.innerHTML;
+      }
+
+      function exportHTML() {
+        const htmlBody = prepareExportClone(false);
+        const fullHTML = `<!DOCTYPE html><html>${htmlBody}</html>`;
+        const blob = new Blob([fullHTML], {
+          type: "text/html"
+        });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = getFilename("html");
+        link.click();
+      }
+
+      function exportWord() {
+        const bodyContent = prepareExportClone(true);
+        const header = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' 
+                  xmlns:w='urn:schemas-microsoft-com:office:word' 
+                  xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>TRAPS II</title>
+            <style>
+                body { font-family: Arial, sans-serif; font-size: 11pt; }
+                table { border-collapse: collapse; width: 100%; margin-bottom: 15px; }
+                td, th { border: 1px solid #999; padding: 4px; }
+                th { background-color: #eee; }
+                .section-header { background-color: #2c3e50; color: #fff; padding: 10px; font-weight: bold; }
+                .sub-header { background-color: #ecf0f1; font-weight: bold; }
+                .diagnosis-box { border: 2px solid #000; padding: 10px; text-align: center; font-weight: bold; font-size: 14pt; margin-top: 20px;}
+            </style></head><body>`;
+        const footer = "</body></html>";
+
+        const blob = new Blob(['\ufeff', header + bodyContent + footer], {
+          type: 'application/msword'
+        });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = getFilename("doc");
+        link.click();
+      }
+    </script>
+
+
+
+  </body>
+
+</html>

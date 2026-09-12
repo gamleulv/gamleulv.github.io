@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDQ-20 - Somatoform Dissociation Questionnaire</title>
+    
+    <!-- PDF & Word Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --bg: #f4f7f6;
+            --paper: #ffffff;
+            --border: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 30px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background-color: var(--paper);
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-radius: 8px;
+        }
+
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-weight: 300; }
+
+        .instructions {
+            background: #e8f4fd;
+            padding: 15px;
+            border-left: 4px solid var(--secondary);
+            margin-bottom: 30px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* Meta Info */
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .form-group label { display: block; font-size: 12px; font-weight: bold; color: #7f8c8d; margin-bottom: 4px; }
+        .form-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+
+        /* Question Structure */
+        .question-box {
+            margin-bottom: 20px;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            background: #fff;
+            padding: 15px;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .q-num { font-weight: bold; color: var(--primary); margin-right: 10px; }
+        .q-text { font-weight: 600; font-size: 15px; flex: 1; }
+
+        /* Likert Scale */
+        .likert-container {
+            display: flex;
+            justify-content: space-between;
+            background: #fdfdfd;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .likert-option {
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .likert-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #777;
+            transition: all 0.2s;
+        }
+
+        .likert-option input { display: none; }
+        
+        .likert-option input:checked + .likert-circle {
+            background-color: var(--secondary);
+            border-color: var(--secondary);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .likert-label { font-size: 11px; color: #888; }
+
+        /* Physical Cause Section (Conditional) */
+        .physical-cause-section {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #fff9e6;
+            border: 1px solid #f39c12;
+            border-radius: 4px;
+            display: none; /* Hidden by default */
+        }
+
+        .physical-cause-section.active { display: block; }
+
+        .cause-title { font-weight: bold; font-size: 13px; color: #d35400; margin-bottom: 5px; }
+        
+        .cause-options { display: flex; gap: 15px; margin-bottom: 8px; }
+        .cause-input { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 3px; font-size: 13px; }
+
+        /* Results */
+        .results-section {
+            margin-top: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+
+        .total-score { font-size: 36px; font-weight: bold; color: var(--secondary); margin: 10px 0; }
+        
+        /* Controls */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            transition: transform 0.1s;
+            font-size: 14px;
+        }
+        button:hover { transform: translateY(-2px); }
+        .btn-calc { background-color: var(--secondary); }
+        .btn-word { background-color: #2980b9; }
+        .btn-pdf { background-color: #c0392b; }
+        .btn-reset { background-color: #95a5a6; }
+
+        @media print {
+            .controls { display: none; }
+            .container { box-shadow: none; margin: 0; padding: 0; width: 100%; }
+            body { background: white; }
+            .physical-cause-section { display: block !important; border: none; background: none; padding: 0; margin-top: 5px; }
+            .physical-cause-section input { border: none; border-bottom: 1px dotted #000; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="doc-content">
+    <h1>SDQ-20</h1>
+    <div class="subtitle">Somatoform Dissociation Questionnaire (Nijenhuis et al.)</div>
+
+    <div class="meta-grid">
+        <div class="form-group">
+            <label>Pasientnavn</label>
+            <input type="text" id="pName" placeholder="Navn...">
+        </div>
+        <div class="form-group">
+            <label>Dato</label>
+            <input type="date" id="pDate">
+        </div>
+    </div>
+
+    <div class="instructions">
+        <strong>Instruksjon:</strong> Marker i hvilken grad disse opplevelsene har vært relevante for deg <strong>det siste året</strong>.
+        <br>1 = Ikke i det hele tatt, 5 = I svært stor grad.
+        <br>Hvis du svarer 2 eller mer, må du angi om en lege har funnet en fysisk årsak.
+    </div>
+
+    <div id="questions-container">
+        <!-- Spørsmål genereres her -->
+    </div>
+
+    <div class="results-section" id="results">
+        <h3>Resultat</h3>
+        <div>Total SDQ-20 Skåre (Range: 20-100):</div>
+        <div class="total-score" id="scoreDisplay">-</div>
+        <div style="margin-top: 15px; font-size: 12px; color: #7f8c8d;">
+            * Cut-off verdier varierer, men SDQ-20 > 30 kan indikere patologisk somatoform dissosiasjon.
+        </div>
+    </div>
+
+</div>
+
+<div class="controls">
+    <button class="btn-calc" onclick="calculateScore()">📊 Beregn Skåre</button>
+    <button class="btn-word" onclick="exportWord()">💾 Lagre til Word</button>
+    <button class="btn-pdf" onclick="exportPDF()" id="pdfBtn">📄 Lagre til PDF</button>
+    <button class="btn-reset" onclick="resetForm()">🔄 Nullstill</button>
+</div>
+
+<script>
+    document.getElementById('pDate').valueAsDate = new Date();
+
+    const questions = [
+        "1. Jeg har problemer med å late vannet",
+        "2. Jeg misliker smaker som jeg vanligvis liker (utenom graviditet/mens)",
+        "3. Jeg hører lyder i nærheten av meg som om de kommer langt borte fra",
+        "4. Jeg har smerter når jeg later vannet",
+        "5. Kroppen min, eller deler av den, føles nummen",
+        "6. Mennesker og ting ser større ut enn vanlig",
+        "7. Jeg har et anfall som ligner et epileptisk anfall",
+        "8. Kroppen min, eller en del av den, kjenner ikke smerte",
+        "9. Jeg misliker lukter som jeg vanligvis liker",
+        "10. Jeg har smerter i underlivet (utenom samleie)",
+        "11. Jeg kan ikke høre i perioder (som om jeg er døv)",
+        "12. Jeg kan ikke se i perioder (som om jeg er blind)",
+        "13. Jeg ser ting rundt meg på en annen måte enn vanlig (tunnelsyn etc.)",
+        "14. Luktesansen min er mye bedre eller verre enn vanlig (uten forkjølelse)",
+        "15. Det er som om kroppen min, eller en del av den, er forsvunnet",
+        "16. Jeg klarer ikke svelge, eller klarer bare svelge med stor anstrengelse",
+        "17. Jeg klarer ikke å sove på flere netter, men er fortsatt svært aktiv på dagtid",
+        "18. Jeg klarer ikke å snakke (eller bare hviske)",
+        "19. Jeg er lammet i perioder",
+        "20. Jeg stivner til i perioder"
+    ];
+
+    const container = document.getElementById('questions-container');
+    
+    // SIKKERHET: Tøm container før generering
+    container.innerHTML = '';
+
+    questions.forEach((q, index) => {
+        const i = index + 1;
+        const div = document.createElement('div');
+        div.className = 'question-box';
+        
+        let html = `
+            <div class="question-header">
+                <span class="q-num">${i}.</span>
+                <span class="q-text">${q}</span>
+            </div>
+            
+            <div class="likert-container">
+        `;
+        
+        for (let val = 1; val <= 5; val++) {
+            html += `
+                <label class="likert-option">
+                    <input type="radio" name="q${i}" value="${val}" onclick="checkPhysical(${i}, ${val})">
+                    <div class="likert-circle">${val}</div>
+                    <span class="likert-label">${getLabel(val)}</span>
+                </label>
+            `;
+        }
+        
+        html += `
+            </div>
+            
+            <div class="physical-cause-section" id="phys-${i}">
+                <div class="cause-title">Er den fysiske årsaken kjent?</div>
+                <div class="cause-options">
+                    <label><input type="radio" name="cause-${i}" value="nei"> Nei</label>
+                    <label><input type="radio" name="cause-${i}" value="ja"> Ja, hvilken:</label>
+                </div>
+                <input type="text" class="cause-input" id="cause-text-${i}" placeholder="Beskriv årsak...">
+            </div>
+        `;
+        
+        div.innerHTML = html;
+        container.appendChild(div);
+    });
+
+    function getLabel(val) {
+        if(val===1) return "Ikke i det hele tatt";
+        if(val===3) return "Moderat";
+        if(val===5) return "Svært stor grad";
+        return "";
+    }
+
+    function checkPhysical(id, val) {
+        const physSection = document.getElementById(`phys-${id}`);
+        // Vis kun tilleggsspørsmål hvis score > 1
+        if (val > 1) {
+            physSection.classList.add('active');
+        } else {
+            physSection.classList.remove('active');
+            // Reset fields if hiding
+            const radios = document.getElementsByName(`cause-${id}`);
+            radios.forEach(r => r.checked = false);
+            document.getElementById(`cause-text-${id}`).value = "";
+        }
+    }
+
+    function calculateScore() {
+        let totalScore = 0;
+        let count = 0;
+
+        for (let i = 1; i <= 20; i++) {
+            const selected = document.querySelector(`input[name="q${i}"]:checked`);
+            if (selected) {
+                totalScore += parseInt(selected.value);
+                count++;
+            }
+        }
+
+        if (count < 20) {
+            alert("Vennligst besvar alle spørsmålene.");
+            return;
+        }
+
+        document.getElementById('scoreDisplay').innerText = totalScore;
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        if(confirm("Slette alle data?")) {
+            location.reload();
+        }
+    }
+
+    async function exportPDF() {
+        const btn = document.getElementById('pdfBtn');
+        btn.innerText = "Genererer...";
+        btn.disabled = true;
+
+        // Force show all physical sections for PDF if they have content, or hide empty ones
+        // Actually, html2canvas captures visible state.
+        
+        const element = document.getElementById('doc-content');
+        const name = document.getElementById('pName').value || "Ukjent";
+
+        try {
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            const imgWidth = 190;
+            const pageHeight = 295;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 10;
+
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pageHeight - 20);
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight + 10;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - 20);
+            }
+
+            pdf.save(`SDQ-20_${name}.pdf`);
+        } catch(e) {
+            alert("Feil ved PDF");
+        } finally {
+            btn.innerText = "📄 Lagre til PDF";
+            btn.disabled = false;
+        }
+    }
+
+    function exportWord() {
+        const name = document.getElementById('pName').value || "Ukjent";
+        const content = document.getElementById('doc-content').cloneNode(true);
+        
+        // Inputs to Text
+        content.querySelectorAll('input[type="text"], input[type="date"]').forEach(inp => {
+            const span = document.createElement('span');
+            span.innerHTML = inp.value ? `<b>${inp.value}</b>` : "______";
+            inp.parentNode.replaceChild(span, inp);
+        });
+
+        // Radios to Text
+        // Main questions
+        for(let i=1; i<=20; i++) {
+            const qBox = content.getElementsByClassName('question-box')[i-1];
+            
+            // Score
+            const scoreInp = document.querySelector(`input[name="q${i}"]:checked`);
+            const scoreVal = scoreInp ? scoreInp.value : "-";
+            const scaleDiv = qBox.querySelector('.likert-container');
+            
+            const scoreText = document.createElement('div');
+            scoreText.innerHTML = `<b>Skåre: ${scoreVal}</b>`;
+            scoreText.style.color = "#2980b9";
+            scaleDiv.parentNode.replaceChild(scoreText, scaleDiv);
+
+            // Physical cause
+            const causeDiv = qBox.querySelector('.physical-cause-section');
+            if (causeDiv) {
+                // If score is 1, remove cause section from Word doc entirely to save space
+                if (!scoreInp || scoreInp.value == 1) {
+                    causeDiv.remove();
+                } else {
+                    // Convert cause radio to text
+                    const causeYes = document.querySelector(`input[name="cause-${i}"][value="ja"]:checked`);
+                    const causeNo = document.querySelector(`input[name="cause-${i}"][value="nei"]:checked`);
+                    let causeRes = "Ikke angitt";
+                    if (causeYes) causeRes = "Ja";
+                    if (causeNo) causeRes = "Nei";
+                    
+                    // Replace radio options with text
+                    const ops = causeDiv.querySelector('.cause-options');
+                    ops.innerHTML = `Fysisk årsak kjent: <b>${causeRes}</b>`;
+                    causeDiv.style.display = "block"; // Ensure visible in Word
+                    causeDiv.style.border = "1px solid #ccc"; // Simple border
+                }
+            }
+        }
+
+        const header = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>SDQ-20 Resultat</title>
+            <style>
+                body { font-family: Arial; }
+                .question-box { border-bottom: 1px solid #ccc; margin-bottom: 10px; padding-bottom: 5px; }
+                .q-text { font-weight: bold; }
+            </style>
+            </head><body>
+        `;
+        const footer = "</body></html>";
+        const html = header + content.innerHTML + footer;
+
+        const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `SDQ-20_${name}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</body>
+</html>

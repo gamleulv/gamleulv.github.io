@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EASE - Examination of Anomalous Self-Experience</title>
+    
+    <!-- PDF & Word Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --bg: #f4f7f6;
+            --paper: #ffffff;
+            --border: #dcdde1;
+            --domain-header: #34495e;
+        }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 30px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background-color: var(--paper);
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-radius: 8px;
+        }
+
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-weight: 300; }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .form-group label { display: block; font-size: 12px; font-weight: bold; color: #7f8c8d; margin-bottom: 4px; }
+        .form-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+
+        /* Legend */
+        .legend-box {
+            background: #e8f4fd;
+            padding: 15px;
+            border-left: 4px solid var(--secondary);
+            margin-bottom: 30px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        /* Domain Sections */
+        .domain-section {
+            margin-bottom: 40px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .domain-header {
+            background-color: var(--domain-header);
+            color: white;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* Item Rows */
+        .item-row {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: grid;
+            grid-template-columns: 1fr 280px; /* Content | Controls */
+            gap: 20px;
+        }
+        .item-row:last-child { border-bottom: none; }
+
+        .item-content { }
+        .item-title { font-weight: 700; font-size: 15px; color: #2c3e50; margin-bottom: 5px; }
+        .item-desc { font-size: 13px; color: #666; font-style: italic; margin-bottom: 10px; }
+        
+        .item-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Scale */
+        .scale-wrapper { display: flex; flex-direction: column; align-items: flex-end; }
+        .scale-label { font-size: 11px; color: #888; margin-bottom: 3px; }
+        
+        .scale-container {
+            display: flex;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .scale-opt {
+            width: 40px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid #ccc;
+            cursor: pointer;
+            font-size: 14px;
+            background: #fff;
+            transition: background 0.1s;
+        }
+        .scale-opt:last-child { border-right: none; }
+        .scale-opt:hover { background-color: #f0f0f0; }
+        
+        .scale-opt.sel-0 { background-color: #ecf0f1; font-weight: bold; } /* Aldri */
+        .scale-opt.sel-1 { background-color: #f1c40f; color: white; } /* Tvilsomt */
+        .scale-opt.sel-2 { background-color: #e67e22; color: white; } /* Mild */
+        .scale-opt.sel-3 { background-color: #e74c3c; color: white; } /* Moderat */
+        .scale-opt.sel-4 { background-color: #c0392b; color: white; } /* Alvorlig */
+
+        /* Text area */
+        textarea.notes {
+            width: 100%;
+            height: 60px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        /* Results */
+        .results-section {
+            margin-top: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            display: none;
+        }
+
+        .res-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .res-table th { text-align: left; border-bottom: 2px solid #ccc; padding: 8px; }
+        .res-table td { border-bottom: 1px solid #eee; padding: 8px; }
+        .res-total { font-weight: bold; font-size: 18px; color: var(--primary); border-top: 2px solid #ccc; }
+
+        /* Controls */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            transition: transform 0.1s;
+            font-size: 14px;
+        }
+        button:hover { transform: translateY(-2px); }
+        .btn-calc { background-color: var(--secondary); }
+        .btn-word { background-color: #2980b9; }
+        .btn-pdf { background-color: #c0392b; }
+        .btn-reset { background-color: #95a5a6; }
+
+        @media print {
+            .controls { display: none; }
+            .container { box-shadow: none; margin: 0; padding: 0; width: 100%; max-width: 100%; }
+            textarea.notes { border: none; resize: none; height: auto; padding: 0; }
+            .scale-container { border: none; }
+            .scale-opt { border: 1px solid #ccc; margin-right: 2px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="doc-content">
+    <h1>EASE</h1>
+    <div class="subtitle">Examination of Anomalous Self-Experience (Parnas et al., 2005)</div>
+
+    <div class="meta-grid">
+        <div class="form-group">
+            <label>Navn</label>
+            <input type="text" id="pName" placeholder="Navn...">
+        </div>
+        <div class="form-group">
+            <label>Dato</label>
+            <input type="date" id="pDate">
+        </div>
+        <div class="form-group">
+            <label>Fødselsdato</label>
+            <input type="text" id="pBirth" placeholder="dd.mm.åååå">
+        </div>
+        <div class="form-group">
+            <label>Intervjuer</label>
+            <input type="text" id="pInterviewer">
+        </div>
+    </div>
+
+    <div class="legend-box">
+        <strong>Skåringsnøkkel (Likert 0-4):</strong><br>
+        0 = Aldri / Ikke tilstede<br>
+        1 = Tvilsomt (vagt, sjelden)<br>
+        2 = Mild (tydelig tilstede, men ikke alvorlig forstyrrende)<br>
+        3 = Moderat (hyppig, plagsomt)<br>
+        4 = Alvorlig (omfattende, sterk subjektiv lidelse/funksjonssvikt)<br>
+    </div>
+
+    <div id="form-container">
+        <!-- Generated via JS -->
+    </div>
+
+    <div class="results-section" id="results">
+        <h3>Skåringsoversikt</h3>
+        <table class="res-table">
+            <thead>
+                <tr>
+                    <th>Domene</th>
+                    <th>Antall ledd</th>
+                    <th>Sum skåre</th>
+                    <th>Snitt</th>
+                </tr>
+            </thead>
+            <tbody id="res-tbody">
+                <!-- JS fills this -->
+            </tbody>
+            <tfoot>
+                <tr class="res-total">
+                    <td>TOTAL EASE</td>
+                    <td>57</td>
+                    <td id="total-sum">-</td>
+                    <td id="total-avg">-</td>
+                </tr>
+            </tfoot>
+        </table>
+        
+        <div style="margin-top:20px; font-size:13px; color:#555;">
+            <em>Note: I forskningssammenheng dikotomiseres ofte skårene (0-1 = 0, 2-4 = 1). Denne oversikten viser råskårer (sum av 0-4).</em>
+        </div>
+    </div>
+
+</div>
+
+<div class="controls">
+    <button class="btn-calc" onclick="calculateScore()">📊 Beregn</button>
+    <button class="btn-word" onclick="exportWord()">💾 Lagre til Word</button>
+    <button class="btn-pdf" onclick="exportPDF()" id="pdfBtn">📄 Lagre til PDF</button>
+    <button class="btn-reset" onclick="resetForm()">🔄 Nullstill</button>
+</div>
+
+<script>
+    document.getElementById('pDate').valueAsDate = new Date();
+
+    const domains = [
+        {
+            id: 1,
+            title: "1. Tenkning og bevissthetsstrøm",
+            items: [
+                {id: "1.1", name: "Tankeinterferens"},
+                {id: "1.2", name: "Tankeipseitet (Tap av 'min-het')"},
+                {id: "1.3", name: "Tankepress"},
+                {id: "1.4", name: "Tankeblokk"},
+                {id: "1.5", name: "Stille tankeekko"},
+                {id: "1.6", name: "Ruminasjon / hyperrefleksjon"},
+                {id: "1.7", name: "Perseptualisering av tanke og indre tale"},
+                {id: "1.8", name: "Spatialisering av opplevelser"},
+                {id: "1.9", name: "Ambivalens"},
+                {id: "1.10", name: "Manglende evne til å skille opplevelseskategorier"},
+                {id: "1.11", name: "Forstyrrelse av tankeinitiativ eller -intensjonalitet"},
+                {id: "1.12", name: "Oppmerksomhetsforstyrrelser"},
+                {id: "1.13", name: "Forstyrret korttidshukommelse"},
+                {id: "1.14", name: "Forstyrret tidsopplevelse"},
+                {id: "1.15", name: "Diskontinuerlig bevissthet for egne handlinger"},
+                {id: "1.16", name: "Manglende samsvar mellom intendert uttrykk og det uttrykte"},
+                {id: "1.17", name: "Forstyrret ekspressivt språk"}
+            ]
+        },
+        {
+            id: 2,
+            title: "2. Selvbevissthet og primær tilstedeværelse",
+            items: [
+                {id: "2.1", name: "Svekket følelse av 'basic self'"},
+                {id: "2.2", name: "Deformert 1. person-perspektiv"},
+                {id: "2.3", name: "Psykisk depersonalisering / selv-fremmedgjøring"},
+                {id: "2.4", name: "Nedsatt følelse av tilstedeværelse"},
+                {id: "2.5", name: "Deralisering"},
+                {id: "2.6", name: "Hyperrefleksivitet"},
+                {id: "2.7", name: "Jeg-spaltning"},
+                {id: "2.8", name: "Dissosiativ depersonalisering"},
+                {id: "2.9", name: "Identitetsforvirring"},
+                {id: "2.10", name: "Endring mht. opplevd kronologisk alder"},
+                {id: "2.11", name: "Endret opplevelse av eget kjønn"},
+                {id: "2.12", name: "Svekket 'common sense' / perpleksitet"},
+                {id: "2.13", name: "Angst (Panikk, Ontologisk, etc)"},
+                {id: "2.14", name: "Ontologisk angst"},
+                {id: "2.15", name: "Svekket klarhet i bevisstheten"},
+                {id: "2.16", name: "Svekket initiativ"},
+                {id: "2.17", name: "Hypohedoni"},
+                {id: "2.18", name: "Svekket vitalitet"}
+            ]
+        },
+        {
+            id: 3,
+            title: "3. Kroppslige opplevelser",
+            items: [
+                {id: "3.1", name: "Morfologiske forandringer"},
+                {id: "3.2", name: "Speilrelaterte fenomen"},
+                {id: "3.3", name: "Somatisk depersonalisasjon"},
+                {id: "3.4", name: "Psyke og kropp passer ikke sammen"},
+                {id: "3.5", name: "Kroppslig desintegrasjon"},
+                {id: "3.6", name: "Objektivisering av kroppslig opplevelse"},
+                {id: "3.7", name: "Coenestesier (Fordreid følesans)"},
+                {id: "3.8", name: "Motoriske forstyrrelser"},
+                {id: "3.9", name: "Mimetisk opplevelse"}
+            ]
+        },
+        {
+            id: 4,
+            title: "4. Demarkasjon / Transitivisme",
+            items: [
+                {id: "4.1", name: "Forveksling med annen person"},
+                {id: "4.2", name: "Forveksling med eget speilbilde"},
+                {id: "4.3", name: "Truende kroppskontakt / fusjon"},
+                {id: "4.4", name: "Passivitetsbevissthet"},
+                {id: "4.5", name: "Andre transitivistiske fenomener"}
+            ]
+        },
+        {
+            id: 5,
+            title: "5. Eksistensiell reorientering",
+            items: [
+                {id: "5.1", name: "Primære selvhenføringsfenomener"},
+                {id: "5.2", name: "Følelse av sentralitet"},
+                {id: "5.3", name: "Følelse av at opplevelsesfeltet er eneste virkelighet"},
+                {id: "5.4", name: "Følelse av ekstraordinære evner/innsikt"},
+                {id: "5.5", name: "Følelse av at verden ikke eksisterer"},
+                {id: "5.6", name: "Magisk tenkning"},
+                {id: "5.7", name: "Eksistensiell eller intellektuell forandring"},
+                {id: "5.8", name: "Solipsistisk grandiositet"}
+            ]
+        }
+    ];
+
+    const container = document.getElementById('form-container');
+
+    // Render Form
+    domains.forEach(d => {
+        const section = document.createElement('div');
+        section.className = 'domain-section';
+        
+        let html = `<div class="domain-header">${d.title}</div>`;
+        
+        d.items.forEach(item => {
+            html += `
+            <div class="item-row" id="row-${item.id}">
+                <div class="item-content">
+                    <div class="item-title">${item.id} ${item.name}</div>
+                    <textarea class="notes" placeholder="Notater / beskrivelse av fenomenet..."></textarea>
+                </div>
+                <div class="item-controls">
+                    <div class="scale-wrapper">
+                        <div class="scale-label">Skåring (0-4)</div>
+                        <div class="scale-container">
+                            <div class="scale-opt" onclick="setScore('${item.id}', 0, this)">0</div>
+                            <div class="scale-opt" onclick="setScore('${item.id}', 1, this)">1</div>
+                            <div class="scale-opt" onclick="setScore('${item.id}', 2, this)">2</div>
+                            <div class="scale-opt" onclick="setScore('${item.id}', 3, this)">3</div>
+                            <div class="scale-opt" onclick="setScore('${item.id}', 4, this)">4</div>
+                        </div>
+                        <input type="hidden" id="val-${item.id}" value="0" data-domain="${d.id}">
+                    </div>
+                </div>
+            </div>`;
+        });
+        
+        section.innerHTML = html;
+        container.appendChild(section);
+    });
+
+    // Interaction
+    window.setScore = function(itemId, val, el) {
+        const row = document.getElementById(`row-${itemId}`);
+        const input = document.getElementById(`val-${itemId}`);
+        
+        // Update input
+        input.value = val;
+        
+        // Update visual styles
+        row.querySelectorAll('.scale-opt').forEach(opt => {
+            opt.className = 'scale-opt'; // reset
+        });
+        el.className = `scale-opt sel-${val}`; // set active class
+    };
+
+    function calculateScore() {
+        let grandTotal = 0;
+        let totalCount = 0;
+        const tbody = document.getElementById('res-tbody');
+        tbody.innerHTML = '';
+
+        domains.forEach(d => {
+            let dSum = 0;
+            let dCount = 0;
+            
+            d.items.forEach(item => {
+                const val = parseInt(document.getElementById(`val-${item.id}`).value) || 0;
+                dSum += val;
+                dCount++;
+            });
+
+            grandTotal += dSum;
+            totalCount += dCount;
+
+            const avg = (dSum / dCount).toFixed(1);
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${d.title}</td>
+                <td>${dCount}</td>
+                <td><strong>${dSum}</strong></td>
+                <td>${avg}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('total-sum').innerText = grandTotal;
+        document.getElementById('total-avg').innerText = (grandTotal / totalCount).toFixed(2);
+
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        if(confirm("Slette alle data?")) location.reload();
+    }
+
+    async function exportPDF() {
+        const btn = document.getElementById('pdfBtn');
+        btn.innerText = "Genererer...";
+        btn.disabled = true;
+
+        const element = document.getElementById('doc-content');
+        const name = document.getElementById('pName').value || "Ukjent";
+
+        try {
+            // Expand textareas for print
+            document.querySelectorAll('textarea').forEach(t => {
+                if(t.value) t.innerHTML = t.value; // Embed value for rendering
+            });
+
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            const imgWidth = 190;
+            const pageHeight = 295;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 10;
+
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pageHeight - 20);
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight + 10;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - 20);
+            }
+
+            pdf.save(`EASE_${name}.pdf`);
+        } catch(e) {
+            console.error(e);
+            alert("Feil ved PDF generering");
+        } finally {
+            btn.innerText = "📄 Lagre til PDF";
+            btn.disabled = false;
+        }
+    }
+
+    function exportWord() {
+        const name = document.getElementById('pName').value || "Ukjent";
+        const content = document.getElementById('doc-content').cloneNode(true);
+        
+        // Fix inputs
+        content.querySelectorAll('input[type="text"], input[type="date"]').forEach(inp => {
+            const span = document.createElement('span');
+            span.innerText = inp.value;
+            span.style.fontWeight = 'bold';
+            inp.parentNode.replaceChild(span, inp);
+        });
+
+        // Fix notes
+        content.querySelectorAll('textarea').forEach(t => {
+            const div = document.createElement('div');
+            div.innerText = t.value ? `Notat: ${t.value}` : "";
+            div.style.color = "#555";
+            div.style.fontStyle = "italic";
+            t.parentNode.replaceChild(div, t);
+        });
+
+        // Fix scales
+        const rows = content.querySelectorAll('.item-row');
+        rows.forEach(row => {
+            // Find score
+            const hidden = row.querySelector('input[type="hidden"]');
+            const val = hidden ? hidden.value : "0";
+            
+            // Replace controls with text
+            const controls = row.querySelector('.item-controls');
+            controls.innerHTML = `<div style="font-weight:bold; font-size:14px; text-align:right;">Skåre: ${val}</div>`;
+        });
+
+        const htmlHead = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>EASE Resultat</title>
+            <style>
+                body { font-family: Arial; }
+                .domain-header { background: #eee; font-weight: bold; font-size: 16px; padding: 5px; margin-top: 10px; }
+                .item-row { border-bottom: 1px solid #ccc; padding: 5px 0; }
+                .item-title { font-weight: bold; }
+            </style>
+            </head><body>
+        `;
+        const htmlFoot = "</body></html>";
+        const html = htmlHead + content.innerHTML + htmlFoot;
+
+        const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `EASE_${name}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</body>
+</html>

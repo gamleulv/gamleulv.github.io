@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPRS - Social Phobia Rating Scale</title>
+    
+    <!-- PDF & Word Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --bg: #f4f7f6;
+            --paper: #ffffff;
+            --border: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 30px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background-color: var(--paper);
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-radius: 8px;
+        }
+
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-weight: 300; }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .form-group label { display: block; font-size: 12px; font-weight: bold; color: #7f8c8d; margin-bottom: 4px; }
+        .form-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+
+        /* Question Box */
+        .q-box {
+            margin-bottom: 30px;
+            border: 1px solid #eee;
+            background: #fff;
+            padding: 20px;
+            border-radius: 6px;
+            break-inside: avoid;
+        }
+
+        .q-title { font-weight: bold; margin-bottom: 15px; font-size: 16px; color: var(--primary); }
+
+        /* 0-8 Scale */
+        .scale-08 {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+            background: #fdfdfd;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 5px;
+        }
+
+        .scale-opt {
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+            border-right: 1px solid #eee;
+            padding: 10px 0;
+        }
+        .scale-opt:last-child { border-right: none; }
+        .scale-opt:hover { background: #eef; }
+        .scale-opt.selected { background: var(--secondary); color: white; }
+
+        .scale-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #777;
+        }
+
+        /* Behaviors Grid */
+        .beh-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .beh-item {
+            border: 1px solid #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .beh-label { font-weight: 600; font-size: 14px; margin-bottom: 5px; }
+
+        .mini-scale { display: flex; gap: 1px; }
+        .mini-opt {
+            flex: 1;
+            text-align: center;
+            border: 1px solid #ddd;
+            font-size: 11px;
+            cursor: pointer;
+            padding: 4px 0;
+        }
+        .mini-opt.selected { background: var(--secondary); color: white; border-color: var(--secondary); }
+
+        /* Thoughts Grid */
+        .thought-grid { display: grid; gap: 10px; }
+        .thought-row {
+            display: grid;
+            grid-template-columns: 2fr 3fr;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px dotted #eee;
+            padding-bottom: 5px;
+        }
+
+        .range-wrap { display: flex; align-items: center; gap: 10px; }
+        .range-val { font-weight: bold; color: var(--secondary); width: 40px; text-align: right; }
+
+
+        /* Results */
+        .results-section {
+            margin-top: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            display: none;
+        }
+
+        .res-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #ddd; }
+        .res-val { font-weight: bold; font-size: 18px; }
+
+        /* Controls */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            transition: transform 0.1s;
+            font-size: 14px;
+        }
+        button:hover { transform: translateY(-2px); }
+        .btn-calc { background-color: var(--secondary); }
+        .btn-word { background-color: #2980b9; }
+        .btn-pdf { background-color: #c0392b; }
+        .btn-reset { background-color: #95a5a6; }
+
+        @media print {
+            .controls { display: none; }
+            .container { box-shadow: none; margin: 0; padding: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="doc-content">
+    <h1>SPRS</h1>
+    <div class="subtitle">Social Phobia Rating Scale (Wells, 1997)</div>
+
+    <div class="meta-grid">
+        <div class="form-group">
+            <label>Navn</label>
+            <input type="text" id="pName" placeholder="Navn...">
+        </div>
+        <div class="form-group">
+            <label>Dato</label>
+            <input type="date" id="pDate">
+        </div>
+    </div>
+
+    <!-- 1. Forstyrrelse -->
+    <div class="q-box">
+        <div class="q-title">1. Hvor forstyrrende har din sosiale angst vært i løpet av siste uke?</div>
+        <div class="scale-08" id="scale-1"></div>
+        <div class="scale-labels"><span>0 (Ikke i det hele tatt)</span><span>4 (Moderat)</span><span>8 (Ekstremt)</span></div>
+        <input type="hidden" id="ans-1" value="">
+    </div>
+
+    <!-- 2. Unngåelse -->
+    <div class="q-box">
+        <div class="q-title">2. Hvor mye har du unngått sosiale situasjoner på grunn av din angst i løpet av siste uke?</div>
+        <div class="scale-08" id="scale-2"></div>
+        <div class="scale-labels"><span>0 (Ikke i det hele tatt)</span><span>4 (Halvparten av tiden)</span><span>8 (Hele tiden)</span></div>
+        <input type="hidden" id="ans-2" value="">
+    </div>
+
+    <!-- 3. Selvopphengt -->
+    <div class="q-box">
+        <div class="q-title">3. Hvor selvopphengt har du følt deg i vanskelige sosiale situasjoner i den siste uken?</div>
+        <div class="scale-08" id="scale-3"></div>
+        <div class="scale-labels"><span>0 (Ikke i det hele tatt)</span><span>4 (Moderat)</span><span>8 (Ekstremt selvoppmerksom)</span></div>
+        <input type="hidden" id="ans-3" value="">
+    </div>
+
+    <!-- 4. Sikkerhetsatferd -->
+    <div class="q-box">
+        <div class="q-title">4. Sikkerhetsatferd (Hvor ofte gjør du dette når du har sosial angst?)</div>
+        <div class="scale-labels" style="margin-bottom:10px;">0 (Aldri) - 4 (Halvparten av tiden) - 8 (Hele tiden)</div>
+        <div class="beh-grid" id="beh-container">
+            <!-- Generated via JS -->
+        </div>
+    </div>
+
+    <!-- 5. Tanker -->
+    <div class="q-box">
+        <div class="q-title">5. Negative tanker (Hvor mye tror du på tanken når du er engstelig?)</div>
+        <div class="scale-labels" style="margin-bottom:10px;">0% (Tror ikke) - 100% (Helt overbevist)</div>
+        <div class="thought-grid" id="thought-container">
+            <!-- Generated via JS -->
+        </div>
+    </div>
+
+    <div class="results-section" id="results">
+        <h3>Resultater</h3>
+        
+        <div class="res-row">
+            <span>Forstyrrelse (0-8):</span>
+            <span class="res-val" id="res-1">-</span>
+        </div>
+        <div class="res-row">
+            <span>Unngåelse (0-8):</span>
+            <span class="res-val" id="res-2">-</span>
+        </div>
+        <div class="res-row">
+            <span>Selvfokus (0-8):</span>
+            <span class="res-val" id="res-3">-</span>
+        </div>
+        <div class="res-row">
+            <span>Sikkerhetsatferd (Snitt):</span>
+            <span class="res-val" id="res-beh">-</span>
+        </div>
+        <div class="res-row">
+            <span>Tro på tanker (Snitt %):</span>
+            <span class="res-val" id="res-th">-</span>
+        </div>
+
+        <div style="font-size:13px; color:#555; margin-top:15px;">
+            Dette er et prosessmål for metakognitiv terapi. Høyt selvfokus og sikkerhetsatferd er sentrale opprettholdende faktorer.
+        </div>
+    </div>
+
+</div>
+
+<div class="controls">
+    <button class="btn-calc" onclick="calculateScore()">📊 Beregn</button>
+    <button class="btn-word" onclick="exportWord()">💾 Lagre til Word</button>
+    <button class="btn-pdf" onclick="exportPDF()" id="pdfBtn">📄 Lagre til PDF</button>
+    <button class="btn-reset" onclick="resetForm()">🔄 Nullstill</button>
+</div>
+
+<script>
+    document.getElementById('pDate').valueAsDate = new Date();
+
+    const behaviors = [
+        "Sier lite", "Kontrollerer mine tanker", "Holder armene rolig",
+        "Puster sakte", "Prøver å slappe av", "Fokuserer på stemmen",
+        "Holder ting hardt", "Setter meg ned", "Unngår øyekontakt",
+        "Beveger meg sakte", "Dekker til ansiktet", "Snakker fort",
+        "Prøver å skjule", "Tar på meg spesielle klær", "Fokuserer på mine hender",
+        "Prøver å avlede"
+    ];
+
+    const thoughts = [
+        "Jeg ser dårlig ut", "De vil se at jeg er nervøs",
+        "Alle ser på meg", "Jeg vil miste ting og søle",
+        "Jeg mister kontroll", "Jeg er kjedelig",
+        "Jeg klarer ikke å snakke", "Jeg duger ikke",
+        "Jeg babler og snakker rart", "De vil tro jeg er dum",
+        "Jeg ser unormal ut", "De liker meg ikke",
+        "De vil ikke respektere meg", "Jeg kommer til å se tåpelig ut"
+    ];
+
+    // --- Render 0-8 Scales ---
+    function renderScale(containerId, inputId) {
+        const c = document.getElementById(containerId);
+        let html = '';
+        for(let i=0; i<=8; i++) {
+            html += `<div class="scale-opt" onclick="selectScale('${inputId}', ${i}, this)">${i}</div>`;
+        }
+        c.innerHTML = html;
+    }
+
+    renderScale('scale-1', 'ans-1');
+    renderScale('scale-2', 'ans-2');
+    renderScale('scale-3', 'ans-3');
+
+    // Global selector for main scales
+    window.selectScale = function(id, val, el) {
+        const parent = el.parentElement;
+        parent.querySelectorAll('.scale-opt').forEach(e => e.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById(id).value = val;
+    };
+
+    // --- Render Behaviors ---
+    const bCont = document.getElementById('beh-container');
+    bCont.innerHTML = '';
+    
+    behaviors.forEach((b, idx) => {
+        const div = document.createElement('div');
+        div.className = 'beh-item';
+        
+        let mini = `<div class="mini-scale">`;
+        for(let i=0; i<=8; i++) {
+            mini += `<div class="mini-opt" onclick="selectBeh(${idx}, ${i}, this)">${i}</div>`;
+        }
+        mini += `</div><input type="hidden" id="beh-${idx}" value="">`;
+
+        div.innerHTML = `<div class="beh-label">${b}</div>${mini}`;
+        bCont.appendChild(div);
+    });
+
+    window.selectBeh = function(idx, val, el) {
+        const parent = el.parentElement;
+        parent.querySelectorAll('.mini-opt').forEach(e => e.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById(`beh-${idx}`).value = val;
+    };
+
+    // --- Render Thoughts ---
+    const tCont = document.getElementById('thought-container');
+    tCont.innerHTML = '';
+
+    thoughts.forEach((t, idx) => {
+        const row = document.createElement('div');
+        row.className = 'thought-row';
+        row.innerHTML = `
+            <div>${t}</div>
+            <div class="range-wrap">
+                <input type="range" min="0" max="100" value="0" style="width:100%" oninput="updateRange(${idx}, this)">
+                <span id="disp-th-${idx}" class="range-val">0</span>%
+                <input type="hidden" id="th-${idx}" value="0">
+            </div>
+        `;
+        tCont.appendChild(row);
+    });
+    
+    // Add "Other"
+    const otherRow = document.createElement('div');
+    otherRow.className = 'thought-row';
+    otherRow.innerHTML = `
+        <div>Andre tanker: <input type="text" id="th-other-txt" style="width:150px; padding:2px;"></div>
+        <div class="range-wrap">
+            <input type="range" min="0" max="100" value="0" style="width:100%" oninput="updateRange('other', this)">
+            <span id="disp-th-other" class="range-val">0</span>%
+            <input type="hidden" id="th-other" value="0">
+        </div>
+    `;
+    tCont.appendChild(otherRow);
+
+
+    window.updateRange = function(idx, el) {
+        document.getElementById(`disp-th-${idx}`).innerText = el.value;
+        document.getElementById(`th-${idx}`).value = el.value;
+    };
+
+
+    function calculateScore() {
+        // Main items
+        const v1 = document.getElementById('ans-1').value;
+        const v2 = document.getElementById('ans-2').value;
+        const v3 = document.getElementById('ans-3').value;
+
+        document.getElementById('res-1').innerText = v1 !== "" ? v1 : "-";
+        document.getElementById('res-2').innerText = v2 !== "" ? v2 : "-";
+        document.getElementById('res-3').innerText = v3 !== "" ? v3 : "-";
+
+        // Behaviors
+        let bSum = 0, bCount = 0;
+        for(let i=0; i<behaviors.length; i++) {
+            const v = document.getElementById(`beh-${i}`).value;
+            if(v) { bSum += parseInt(v); bCount++; }
+        }
+        document.getElementById('res-beh').innerText = bCount > 0 ? (bSum / bCount).toFixed(1) : "-";
+
+        // Thoughts
+        let tSum = 0, tCount = 0;
+        for(let i=0; i<thoughts.length; i++) {
+            const v = document.getElementById(`th-${i}`).value;
+            // range has default 0. Should we count only > 0? 
+            // Usually we count all items if the scale is relevant.
+            tSum += parseInt(v); 
+            tCount++;
+        }
+        // Check "Other"
+        const otherTxt = document.getElementById('th-other-txt').value;
+        const otherVal = document.getElementById('th-other').value;
+        if(otherTxt.trim() !== "") {
+            tSum += parseInt(otherVal);
+            tCount++;
+        }
+
+        document.getElementById('res-th').innerText = tCount > 0 ? (tSum / tCount).toFixed(1) + "%" : "-";
+
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        if(confirm("Slette data?")) location.reload();
+    }
+
+    async function exportPDF() {
+        const btn = document.getElementById('pdfBtn');
+        btn.innerText = "Genererer...";
+        btn.disabled = true;
+
+        const element = document.getElementById('doc-content');
+        const name = document.getElementById('pName').value || "Ukjent";
+
+        try {
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            const imgWidth = 190;
+            const pageHeight = 295;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 10;
+
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pageHeight - 20);
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight + 10;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - 20);
+            }
+
+            pdf.save(`SPRS_${name}.pdf`);
+        } catch(e) {
+            alert("Feil ved PDF");
+        } finally {
+            btn.innerText = "📄 Lagre til PDF";
+            btn.disabled = false;
+        }
+    }
+
+    function exportWord() {
+        const name = document.getElementById('pName').value || "Ukjent";
+        const content = document.getElementById('doc-content').cloneNode(true);
+        
+        // Inputs
+        content.querySelectorAll('input[type="text"], input[type="date"]').forEach(inp => {
+            const span = document.createElement('span');
+            span.innerHTML = inp.value ? `<b>${inp.value}</b>` : "______";
+            inp.parentNode.replaceChild(span, inp);
+        });
+
+        // Scales 1-3
+        for(let i=1; i<=3; i++) {
+            const val = document.getElementById(`ans-${i}`).value;
+            const div = content.querySelector(`#scale-${i}`);
+            const res = document.createElement('div');
+            res.innerHTML = `<b>Skåre: ${val !== "" ? val : "-"}</b>`;
+            div.parentNode.replaceChild(res, div);
+        }
+
+        // Behaviors
+        const bItems = content.querySelectorAll('.beh-item');
+        bItems.forEach(item => {
+            const hidden = item.querySelector('input[type="hidden"]');
+            const val = hidden ? hidden.value : "-";
+            const label = item.querySelector('.beh-label').innerText;
+            
+            item.innerHTML = `<div>${label}: <b>${val}</b></div>`;
+            item.style.border = "none";
+            item.style.padding = "2px";
+        });
+
+        // Thoughts
+        const tRows = content.querySelectorAll('.thought-row');
+        tRows.forEach(row => {
+            const hidden = row.querySelector('input[type="hidden"]');
+            const val = hidden ? hidden.value : "0";
+            const txt = row.children[0].innerText;
+            row.innerHTML = `<div>${txt}: <b>${val}%</b></div>`;
+            row.style.border = "none";
+        });
+
+        const header = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>SPRS Resultat</title>
+            <style>
+                body { font-family: Arial; }
+                .q-title { background: #eee; font-weight: bold; margin-top: 10px; padding: 5px; }
+            </style>
+            </head><body>
+        `;
+        const footer = "</body></html>";
+        const html = header + content.innerHTML + footer;
+
+        const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `SPRS_${name}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCID-I Affektive Forstyrrelser - Skåringsskjema</title>
+    
+    <!-- PDF & Word Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --bg: #f4f7f6;
+            --paper: #ffffff;
+            --border: #dcdde1;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: var(--paper);
+            padding: 40px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 26px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .form-item label {
+            display: block;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #95a5a6;
+            margin-bottom: 5px;
+        }
+
+        .form-item input, .form-item select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* Diagnostic Summary */
+        .diag-summary {
+            margin: 30px 0;
+            padding: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .diag-summary h2 {
+            margin: 0 0 20px 0;
+            font-size: 20px;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+            padding-bottom: 10px;
+        }
+
+        .diag-item {
+            background: rgba(255,255,255,0.15);
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #f39c12;
+        }
+
+        .diag-item.primary {
+            border-left-color: #e74c3c;
+            background: rgba(255,255,255,0.25);
+        }
+
+        .empty-diag {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            opacity: 0.8;
+        }
+
+        /* Module Sections */
+        .module {
+            margin: 25px 0;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .module-header {
+            background: var(--primary);
+            color: white;
+            padding: 12px 20px;
+            font-weight: bold;
+            font-size: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .module-header:hover {
+            background: #34495e;
+        }
+
+        .module-header .toggle {
+            font-size: 20px;
+        }
+
+        .module-content {
+            padding: 20px;
+            display: none;
+        }
+
+        .module-content.active {
+            display: block;
+        }
+
+        /* Criteria Items */
+        .criteria-item {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-left: 4px solid var(--secondary);
+            border-radius: 4px;
+        }
+
+        .criteria-label {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .criteria-desc {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        /* Score Buttons */
+        .score-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .score-btn {
+            flex: 1;
+            min-width: 60px;
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .score-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+
+        .score-btn.active {
+            border-color: var(--secondary);
+            background: var(--secondary);
+            color: white;
+        }
+
+        .score-btn[data-score="?"] { border-color: #95a5a6; }
+        .score-btn[data-score="?"].active { background: #95a5a6; }
+        
+        .score-btn[data-score="1"] { border-color: #e74c3c; }
+        .score-btn[data-score="1"].active { background: #e74c3c; }
+        
+        .score-btn[data-score="2"] { border-color: #f39c12; }
+        .score-btn[data-score="2"].active { background: #f39c12; }
+        
+        .score-btn[data-score="3"] { border-color: #27ae60; }
+        .score-btn[data-score="3"].active { background: #27ae60; }
+
+        /* Controls */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-word { background: #2b579a; color: white; }
+        .btn-pdf { background: #c0392b; color: white; }
+        .btn-reset { background: #95a5a6; color: white; }
+        .btn-summary { background: #27ae60; color: white; }
+
+        /* Score Legend */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .legend-box {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            border: 2px solid;
+        }
+
+        @media print {
+            .controls, .module-header .toggle { display: none; }
+            .module-content { display: block !important; }
+            .container { box-shadow: none; }
+        }
+
+        @media (max-width: 768px) {
+            .meta-grid { grid-template-columns: 1fr; }
+            .container { padding: 20px; }
+            .score-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="doc-content">
+    <h1>SCID-I Strukturert Klinisk Intervju</h1>
+    <div class="subtitle">Affektive Forstyrrelser - DSM-IV / Versjon 2.0</div>
+
+    <!-- Patient Information -->
+    <div class="meta-grid">
+        <div class="form-item">
+            <label>Pasientnavn</label>
+            <input type="text" id="patientName" placeholder="Navn...">
+        </div>
+        <div class="form-item">
+            <label>ID / Fødselsdato</label>
+            <input type="text" id="patientID" placeholder="ID / dd.mm.åå">
+        </div>
+        <div class="form-item">
+            <label>Intervjudato</label>
+            <input type="date" id="interviewDate">
+        </div>
+        <div class="form-item">
+            <label>Intervjuer</label>
+            <input type="text" id="interviewer" placeholder="Navn...">
+        </div>
+        <div class="form-item">
+            <label>Prosjekt</label>
+            <input type="text" id="project" placeholder="Prosjekt...">
+        </div>
+        <div class="form-item">
+            <label>Prosjekt Nr.</label>
+            <input type="text" id="projectNr" placeholder="Nr...">
+        </div>
+    </div>
+
+    <!-- Score Legend -->
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-box" style="border-color: #95a5a6; background: #95a5a6;"></div>
+            <span><strong>?</strong> = Ufullstendig info</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-box" style="border-color: #e74c3c; background: #e74c3c;"></div>
+            <span><strong>1</strong> = Ikke tilstede/uriktig</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-box" style="border-color: #f39c12; background: #f39c12;"></div>
+            <span><strong>2</strong> = Subterskel</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-box" style="border-color: #27ae60; background: #27ae60;"></div>
+            <span><strong>3</strong> = Terskel/riktig</span>
+        </div>
+    </div>
+
+    <!-- Diagnostic Summary -->
+    <div class="diag-summary" id="diagSummary">
+        <h2>📋 DIAGNOSTISK OPPSUMMERING</h2>
+        <div class="empty-diag">Ingen diagnoser registrert ennå. Fyll ut skjemaet nedenfor.</div>
+    </div>
+
+    <!-- Module A: Current MDE -->
+    <div class="module">
+        <div class="module-header" onclick="toggleModule(this)">
+            <span>MODUL A: AKTUELL MARKANT DEPRESSIV EPISODE (MDE)</span>
+            <span class="toggle">+</span>
+        </div>
+        <div class="module-content">
+            
+            <div class="criteria-item">
+                <span class="criteria-label">A1: Depressivt stemningsleie</span>
+                <div class="criteria-desc">Depressivt stemningsleie mesteparten av dagen, nesten hver dag</div>
+                <div class="score-group">
+                    <button class="score-btn" data-score="?" data-id="A1" onclick="setScore(this)">? Ukjent</button>
+                    <button class="score-btn" data-score="1" data-id="A1" onclick="setScore(this)">1 Nei</button>
+                    <button class="score-btn" data-score="2" data-id="A1" onclick="setScore(this)">2 Subterskel</button>
+                    <button class="score-btn" data-score="3" data-id="A1" onclick="setScore(this)">3 Ja</button>
+                </div>
+            </div>
+
+            <div class="criteria-item">
+                <span class="criteria-label">A2: Tap av interesse/glede</span>
+                <div class="criteria-desc">Markert nedsatt interesse eller glede ved alle, eller nesten alle, aktiviteter</div>
+                <div class="score-group">
+                    <button class="score-btn" data-score="?" data-id="A2" onclick="setScore(this)">? Ukjent</button>
+                    <button class="score-btn" data-score="1" data-id="A2" onclick="setScore(this)">1 Nei</button>
+                    <button class="score-btn" data-score="2" data-id="A2" onclick="setScore(this)">2 Subterskel</button>
+                    <button class="score-btn" data-score="3" data-id="A2" onclick="setScore(this)">3 Ja</button>
+                </div>
+            </div>
+
+            <div class="criteria-item">
+                <span class="criteria-label">A3: Vektendring/appetitt</span>
+                <div class="criteria-desc">Betydelig vekttap/økning eller endret appetitt</div>
+                <div class="score-group">
+                    <button class="score-btn" data-score="?" data-id="A3" onclick="setScore(this)">? Ukjent</button>
+                    <button class="score-btn" data-score="1" data-id="A3" onclick="setScore(this)">1 Nei</button>
+                    <button class="score-btn" data-score="2" data-id="A3" onclick="setScore(this)">2 Subterskel</button>
+                    <button class="score-btn" data-score="3" data-id="A3" onclick="setScore(this)">3 Ja</button>
+                </div>
+            </div>
+
+            <div class="criteria-item">
+                <span class="criteria-label">A6: Søvnforstyrrelser</span>
+                <div class="criteria-desc">Søvnløshet eller økt søvnbehov nesten hver dag</div>
+                <div class="score-group">
+                    <button class="score-btn" data-score="?" data-id="A6" onclick="setScore(this)">? Ukjent</button>
+                    <button class="score-btn" data-score="1" data-id="A6" onclick="setScore(this)">1 Nei</button>
+                    <button class="score-btn" data-score="2" data-id="A6" onclick="setScore(this)">2 Subterskel</button>
+                    <button class="score-btn" data-score="3" data-id="A6" onclick="setScore(this)">3 Ja</button>
+                </div>
+            </div>
+
+            <div class="criteria-item">
+                <span class="criteria-label">A9: Psykomotorisk forstyrrelse</span>
+                <div class="criteria-desc">Psykomotorisk agitasjon eller retardasjon</div>
+                <div class="score-group">
+                    <button class="score-btn" data-score="?" data-id="A9" onclick="setScore(this)">? Ukjent</button>
+                    <button class="score-btn" data-score="1" data-id="A9" onclick="setScore(this)">1 Nei</button>
+                    <button class="score-btn" data-score="2" data-id="A9" onclick="setScore(this)">2 Subterskel</button>
+                    <button class="score-btn" data-score="3" data-id="A9" onclick="setScore(this)">3 Ja</button>
+                </div>
+            </div>
+
+            <div class="criteria-item">
+                <span class="criteria-label">A12: Tretthet/energitap</span>
+                <div class="criteria-desc">Tretthet eller tap av energi nesten hver dag</div>
+                <div class="score-group">
+                    <button class="score-btn" data-score="?" data-id="A12" onclick="setScore(this)">? Ukjent</button>
+                    <button class="score-btn" data-score="1" data-id="A12" onclick="setScore(this)">1 Nei</button>
+                    <button class="score-btn" data-score="2" data-id="A12" onclick="setScore(this)">2 Subterskel</button>
+                    <button class="score-btn" data-score="3" data-id="A12" onclick="setScore(this)">3 Ja</button>
+                </div>
+            </div>
+
+            <div class="criteria-item">
+                <span class="criteria-label">A13: Verdiløshet/skyld</span>
+                <div class="criteria-desc">Opplevelser av verdiløshet eller overdreven/urimelig skyldfølelse</div>
+                <div class="score-group">
+                    <button class="score-btn" data-score="?" data-id="A13" onclick="setScore(this)">? Ukjent</button>
+                    <button class="score-btn" data-score="1" data-id="A13" onclick="setScore(this)">1 Nei</button>
+                    <button class="score-btn" data-score="2" data-id="A13" onclick="setScore(this)">2 Subterskel</button>
+                    <button class="score-btn" data-score="3" data-id="A13" onclick="setScore(this)">3 Ja</button>
+                </div>
+            </div>
+
+            <div class="criteria-item">
+                <span class="criteria-label">A16: Konsentrasjonsvansker</span>
+                <div class="criteria-desc">Nedsatt evne til å tenke/konsentrere seg, eller ubesluttsomhet</div>
+                <div class="score-group">
+                    <button class="score-btn" data-score="?" data-id="A16" onclick="setScore(this)">? Ukjent</button>
+                    <button class="score-btn" data-score="1" data-id="A16" onclick="setScore(this)">1 Nei</button>
+                    <button class="score-btn" data-score="2" data-id="A16" onclick="setScore(this)">2 Subterskel</button>
+                    <button class="score-btn" data-score="3" data-id="A16" onclick="setScore(this)">3 Ja</button>
+                </div>
+            </div>
+
+            <div class="criteria-item">
+                <span class="criteria-label">A19: Suicidalitet</span>
+                <div class="criteria-desc">Gjentatte tanker om døden, suicidale tanker, plan eller forsøk</div>
+                <div class="score-group">
+                    <button class="score-btn" data-score="?" data-id="A19" onclick="setScore(this)">? Ukjent</button>
+                    <button class="score-btn" data-score="1" data-id="A19" onclick="setScore(this)">1 Nei</button>
+                    <button class="score-btn" data-score="2" data-id="A19" onclick="setScore(this)">2 Subterskel</button>
+                    <button class="score-btn" data-score="3" data-id="A19" onclick="setScore(this)">3 Ja</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Module: Manisk Episode -->
+    <div class="module">
+        <div class="module-header" onclick="toggleModule(this)">
+            <span>MODUL A: MANISK EPISODE</span>
+            <span class="toggle">+</span>
+        </div>
+        <div class="module-content">
+            
+            <div class="criteria-item">
+                <span class="criteria-label">A83: Hevet/ekspansivt/irritabelt stemningsleie</span>
+                <div class="criteria-desc">Unormalt og vedvarende hevet, ekspansivt eller irritabelt stemningsleie</div>
+                <div class="score-group">
+                    <button class="score-btn" data-score="?" data-id="A83" onclick="setScore(this)">? Ukjent</button>
+                    <button class="score-btn" data-score="1" data-id="A83" onclick="setScore(this)">1 Nei</button>
+                    <button class="score-btn" data-score="2" data-id="A83" onclick="setScore(this)">2 Subterskel</button>
+                    <button class="score-btn" data-score="3" data-id="A83" onclick="setScore(this)">3 Ja</button>
+                </div>
+            </div>
+
+            <div class="criteria-item">
+                <span class="criteria-label">A87: Oppblåst selvfølelse/grandiositet</span>
+                <div class="criteria-desc">Oppblåst selvfølelse eller grandiositet</div>
+                <div class="score-group">
+                    <button class="score-btn" data-score="?" data-id="A87" onclick="setScore(this)">? Ukjent</button>
+                    <button class="score-btn" data-score="1" data-id="A87" onclick="setScore(this)">1 Nei</button>
+                    <button class="score-btn" data-score="2" data-id="A87" onclick="setScore(this)">2 Subterskel</button>
+                    <button class="score-btn" data-score="3" data-id="A87" onclick="setScore(this)">3 Ja</button>
+                </div>
+            </div>
+
+            <div class="criteria-item">
+                <span class="criteria-label">A88: Nedsatt søvnbehov</span>
+                <div class="criteria-desc">Nedsatt søvnbehov (føler seg uthvilt etter bare tre timers søvn)</div>
+                <div class="score-group">
+                    <button class="score-btn" data-score="?" data-id="A88" onclick="setScore(this)">? Ukjent</button>
+                    <button class="score-btn" data-score="1" data-id="A88" onclick="setScore(this)">1 Nei</button>
+                    <button class="score-btn" data-score="2" data-id="A88" onclick="setScore(this)">2 Subterskel</button>
+                    <button class="score-btn" data-score="3" data-id="A88" onclick="setScore(this)">3 Ja</button>
+                </div>
+            </div>
+
+            <div class="criteria-item">
+                <span class="criteria-label">A89: Mer snakkesalig</span>
+                <div class="criteria-desc">Mer snakkesalig enn vanlig eller press på å fortsette å snakke</div>
+                <div class="score-group">
+                    <button class="score-btn" data-score="?" data-id="A89" onclick="setScore(this)">? Ukjent</button>
+                    <button class="score-btn" data-score="1" data-id="A89" onclick="setScore(this)">1 Nei</button>
+                    <button class="score-btn" data-score="2" data-id="A89" onclick="setScore(this)">2 Subterskel</button>
+                    <button class="score-btn" data-score="3" data-id="A89" onclick="setScore(this)">3 Ja</button>
+                </div>
+            </div>
+
+            <div class="criteria-item">
+                <span class="criteria-label">A90: Tankeflukt</span>
+                <div class="criteria-desc">Tankeflukt eller subjektiv opplevelse av at tankene raser</div>
+                <div class="score-group">
+                    <button class="score-btn" data-score="?" data-id="A90" onclick="setScore(this)">? Ukjent</button>
+                    <button class="score-btn" data-score="1" data-id="A90" onclick="setScore(this)">1 Nei</button>
+                    <button class="score-btn" data-score="2" data-id="A90" onclick="setScore(this)">2 Subterskel</button>
+                    <button class="score-btn" data-score="3" data-id="A90" onclick="setScore(this)">3 Ja</button>
+                </div>
+            </div>
+
+            <div class="criteria-item">
+                <span class="criteria-label">A91: Distraherbarhet</span>
+                <div class="criteria-desc">Oppmerksomheten for lett trekkes mot uviktige eller irrelevante ytre stimuli</div>
+                <div class="score-group">
+                    <button class="score-btn" data-score="?" data-id="A91" onclick="setScore(this)">? Ukjent</button>
+                    <button class="score-btn" data-score="1" data-id="A91" onclick="setScore(this)">1 Nei</button>
+                    <button class="score-btn" data-score="2" data-id="A91" onclick="setScore(this)">2 Subterskel</button>
+                    <button class="score-btn" data-score="3" data-id="A91" onclick="setScore(this)">3 Ja</button>
+                </div>
+            </div>
+
+            <div class="criteria-item">
+                <span class="criteria-label">A92: Økt målrettet aktivitet</span>
+                <div class="criteria-desc">Økning av målrettet aktivitet eller psykomotorisk agitasjon</div>
+                <div class="score-group">
+                    <button class="score-btn" data-score="?" data-id="A92" onclick="setScore(this)">? Ukjent</button>
+                    <button class="score-btn" data-score="1" data-id="A92" onclick="setScore(this)">1 Nei</button>
+                    <button class="score-btn" data-score="2" data-id="A92" onclick="setScore(this)">2 Subterskel</button>
+                    <button class="score-btn" data-score="3" data-id="A92" onclick="setScore(this)">3 Ja</button>
+                </div>
+            </div>
+
+            <div class="criteria-item">
+                <span class="criteria-label">A95: Lystpregede risikoaktiviteter</span>
+                <div class="criteria-desc">Overdreven involvering i lystpregede aktiviteter med høy risiko</div>
+                <div class="score-group">
+                    <button class="score-btn" data-score="?" data-id="A95" onclick="setScore(this)">? Ukjent</button>
+                    <button class="score-btn" data-score="1" data-id="A95" onclick="setScore(this)">1 Nei</button>
+                    <button class="score-btn" data-score="2" data-id="A95" onclick="setScore(this)">2 Subterskel</button>
+                    <button class="score-btn" data-score="3" data-id="A95" onclick="setScore(this)">3 Ja</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Module: Dystym Forstyrrelse -->
+    <div class="module">
+        <div class="module-header" onclick="toggleModule(this)">
+            <span>DYSTYM FORSTYRRELSE</span>
+            <span class="toggle">+</span>
+        </div>
+        <div class="module-content">
+            
+            <div class="criteria-item">
+                <span class="criteria-label">A163: Depressivt stemningsleie (≥2 år)</span>
+                <div class="criteria-desc">Depressivt stemningsleie mesteparten av dagen, i flere dager enn uten, minst 2 års varighet</div>
+                <div class="score-group">
+                    <button class="score-btn" data-score="?" data-id="A163" onclick="setScore(this)">? Ukjent</button>
+                    <button class="score-btn" data-score="1" data-id="A163" onclick="setScore(this)">1 Nei</button>
+                    <button class="score-btn" data-score="2" data-id="A163" onclick="setScore(this)">2 Subterskel</button>
+                    <button class="score-btn" data-score="3" data-id="A163" onclick="setScore(this)">3 Ja</button>
+                </div>
+            </div>
+
+            <div class="criteria-item">
+                <span class="criteria-label">A164: Dårlig appetitt/overspising</span>
+                <div class="criteria-desc">Dårlig appetitt eller overspising</div>
+                <div class="score-group">
+                    <button class="score-btn" data-score="?" data-id="A164" onclick="setScore(this)">? Ukjent</button>
+                    <button class="score-btn" data-score="1" data-id="A164" onclick="setScore(this)">1 Nei</button>
+                    <button class="score-btn" data-score="2" data-id="A164" onclick="setScore(this)">2 Subterskel</button>
+                    <button class="score-btn" data-score="3" data-id="A164" onclick="setScore(this)">3 Ja</button>
+                </div>
+            </div>
+
+            <div class="criteria-item">
+                <span class="criteria-label">A167: Lav selvaktelse</span>
+                <div class="criteria-desc">Lav selvaktelse</div>
+                <div class="score-group">
+                    <button class="score-btn" data-score="?" data-id="A167" onclick="setScore(this)">? Ukjent</button>
+                    <button class="score-btn" data-score="1" data-id="A167" onclick="setScore(this)">1 Nei</button>
+                    <button class="score-btn" data-score="2" data-id="A167" onclick="setScore(this)">2 Subterskel</button>
+                    <button class="score-btn" data-score="3" data-id="A167" onclick="setScore(this)">3 Ja</button>
+                </div>
+            </div>
+
+            <div class="criteria-item">
+                <span class="criteria-label">A169: Følelse av håpløshet</span>
+                <div class="criteria-desc">Følelse av håpløshet</div>
+                <div class="score-group">
+                    <button class="score-btn" data-score="?" data-id="A169" onclick="setScore(this)">? Ukjent</button>
+                    <button class="score-btn" data-score="1" data-id="A169" onclick="setScore(this)">1 Nei</button>
+                    <button class="score-btn" data-score="2" data-id="A169" onclick="setScore(this)">2 Subterskel</button>
+                    <button class="score-btn" data-score="3" data-id="A169" onclick="setScore(this)">3 Ja</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Comments -->
+    <div style="margin-top: 30px;">
+        <label style="font-weight: bold; display: block; margin-bottom: 10px;">Kliniske kommentarer / Notater:</label>
+        <textarea id="comments" style="width: 100%; height: 120px; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit; resize: vertical;" placeholder="Skriv eventuelle kommentarer eller notater her..."></textarea>
+    </div>
+
+</div>
+
+<!-- Controls -->
+<div class="controls">
+    <button class="btn-summary" onclick="updateSummary()">🔄 Oppdater oppsummering</button>
+    <button class="btn-word" onclick="exportWord()">💾 Last ned Word</button>
+    <button class="btn-pdf" onclick="exportPDF()" id="pdfBtn">📄 Last ned PDF</button>
+    <button class="btn-reset" onclick="resetForm()">🔄 Nullstill alt</button>
+</div>
+
+<script>
+    // Initialize
+    document.getElementById('interviewDate').valueAsDate = new Date();
+    
+    // Store scores
+    const scores = {};
+
+    // Toggle module visibility
+    function toggleModule(header) {
+        const content = header.nextElementSibling;
+        const toggle = header.querySelector('.toggle');
+        
+        if (content.classList.contains('active')) {
+            content.classList.remove('active');
+            toggle.textContent = '+';
+        } else {
+            content.classList.add('active');
+            toggle.textContent = '−';
+        }
+    }
+
+    // Set score
+    function setScore(btn) {
+        const id = btn.dataset.id;
+        const score = btn.dataset.score;
+        
+        // Remove active from siblings
+        const siblings = btn.parentElement.querySelectorAll('.score-btn');
+        siblings.forEach(s => s.classList.remove('active'));
+        
+        // Add active to clicked
+        btn.classList.add('active');
+        
+        // Store score
+        scores[id] = score;
+        
+        // Auto-update summary
+        updateSummary();
+    }
+
+    // Update diagnostic summary
+    function updateSummary() {
+        const summary = document.getElementById('diagSummary');
+        
+        // Diagnostic criteria logic
+        const diagnoses = [];
+        
+        // Check for Major Depressive Episode (MDE)
+        const mdeCore = ['A1', 'A2'];
+        const mdeSymptoms = ['A3', 'A6', 'A9', 'A12', 'A13', 'A16', 'A19'];
+        
+        const coreCount = mdeCore.filter(id => scores[id] === '3').length;
+        const symptomCount = mdeSymptoms.filter(id => scores[id] === '3').length;
+        
+        if (coreCount >= 1 && (coreCount + symptomCount) >= 5) {
+            diagnoses.push({
+                name: 'Markant Depressiv Episode (MDE)',
+                details: `${coreCount + symptomCount} av 9 kriterier oppfylt`,
+                primary: true
+            });
+        }
+        
+        // Check for Manic Episode
+        const maniaCore = ['A83'];
+        const maniaSymptoms = ['A87', 'A88', 'A89', 'A90', 'A91', 'A92', 'A95'];
+        
+        const maniaCorePresent = scores['A83'] === '3';
+        const maniaSymptomCount = maniaSymptoms.filter(id => scores[id] === '3').length;
+        
+        if (maniaCorePresent && maniaSymptomCount >= 3) {
+            diagnoses.push({
+                name: 'Manisk Episode',
+                details: `Hevet stemningsleie + ${maniaSymptomCount} av 7 symptomer`,
+                primary: false
+            });
+        }
+        
+        // Check for Dysthymia
+        const dysthymiaCore = ['A163'];
+        const dysthymiaSymptoms = ['A164', 'A167', 'A169'];
+        
+        const dysthymiaCorePresent = scores['A163'] === '3';
+        const dysthymiaSymptomCount = dysthymiaSymptoms.filter(id => scores[id] === '3').length;
+        
+        if (dysthymiaCorePresent && dysthymiaSymptomCount >= 2) {
+            diagnoses.push({
+                name: 'Dystym Forstyrrelse',
+                details: `Langvarig depressivt stemningsleie + ${dysthymiaSymptomCount} symptomer`,
+                primary: false
+            });
+        }
+        
+        // Render summary
+        if (diagnoses.length === 0) {
+            summary.innerHTML = `
+                <h2>📋 DIAGNOSTISK OPPSUMMERING</h2>
+                <div class="empty-diag">Ingen diagnoser registrert ennå. Fyll ut skjemaet nedenfor.</div>
+            `;
+        } else {
+            let html = '<h2>📋 DIAGNOSTISK OPPSUMMERING</h2>';
+            diagnoses.forEach(diag => {
+                const primaryClass = diag.primary ? ' primary' : '';
+                const primaryLabel = diag.primary ? ' <strong>[HOVEDDIAGNOSE]</strong>' : '';
+                html += `
+                    <div class="diag-item${primaryClass}">
+                        <strong>${diag.name}</strong>${primaryLabel}
+                        <div style="font-size: 13px; margin-top: 5px; opacity: 0.9;">${diag.details}</div>
+                    </div>
+                `;
+            });
+            summary.innerHTML = html;
+        }
+    }
+
+    // Export to PDF
+    async function exportPDF() {
+        const name = document.getElementById('patientName').value || 'Pasient';
+        const btn = document.getElementById('pdfBtn');
+        
+        btn.disabled = true;
+        btn.textContent = '⏳ Genererer PDF...';
+        
+        try {
+            const element = document.getElementById('doc-content');
+            
+            // Expand all modules for PDF
+            const modules = document.querySelectorAll('.module-content');
+            const wasHidden = [];
+            modules.forEach((mod, idx) => {
+                wasHidden[idx] = !mod.classList.contains('active');
+                mod.classList.add('active');
+            });
+            
+            const canvas = await html2canvas(element, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff'
+            });
+            
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+            
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            
+            const imgWidth = pageWidth - 20;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            
+            let heightLeft = imgHeight;
+            let position = 10;
+            
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pageHeight - 20);
+            
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight + 10;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - 20);
+            }
+            
+            pdf.save(`SCID-I-${name}.pdf`);
+            
+            // Restore hidden modules
+            modules.forEach((mod, idx) => {
+                if (wasHidden[idx]) mod.classList.remove('active');
+            });
+            
+        } catch (error) {
+            console.error('PDF error:', error);
+            alert('Feil ved PDF-generering. Prøv igjen.');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '📄 Last ned PDF';
+        }
+    }
+
+    // Export to Word
+    function exportWord() {
+        const name = document.getElementById('patientName').value || 'Pasient';
+        
+        // Expand all modules
+        const modules = document.querySelectorAll('.module-content');
+        modules.forEach(mod => mod.classList.add('active'));
+        
+        let htmlContent = document.getElementById('doc-content').innerHTML;
+        const container = document.createElement('div');
+        container.innerHTML = htmlContent;
+        
+        // Process inputs
+        const inputs = document.getElementById('doc-content').querySelectorAll('input[type="text"], input[type="date"], textarea');
+        const containerInputs = container.querySelectorAll('input[type="text"], input[type="date"], textarea');
+        
+        for(let i = 0; i < inputs.length; i++) {
+            const val = inputs[i].value;
+            const span = document.createElement('span');
+            span.style.fontWeight = 'bold';
+            span.textContent = val || '______';
+            if (containerInputs[i]) {
+                containerInputs[i].parentNode.replaceChild(span, containerInputs[i]);
+            }
+        }
+        
+        // Process score buttons - show selected score
+        const scoreGroups = document.getElementById('doc-content').querySelectorAll('.score-group');
+        const containerScoreGroups = container.querySelectorAll('.score-group');
+        
+        for(let i = 0; i < scoreGroups.length; i++) {
+            const activeBtn = scoreGroups[i].querySelector('.score-btn.active');
+            const span = document.createElement('span');
+            span.style.fontWeight = 'bold';
+            span.style.padding = '8px 12px';
+            span.style.background = '#27ae60';
+            span.style.color = 'white';
+            span.style.borderRadius = '4px';
+            
+            if (activeBtn) {
+                const scoreText = activeBtn.textContent.trim();
+                span.textContent = `Skåre: ${scoreText}`;
+                span.style.background = activeBtn.dataset.score === '3' ? '#27ae60' : 
+                                        activeBtn.dataset.score === '2' ? '#f39c12' :
+                                        activeBtn.dataset.score === '1' ? '#e74c3c' : '#95a5a6';
+            } else {
+                span.textContent = 'Ikke skåret';
+                span.style.background = '#95a5a6';
+            }
+            
+            if (containerScoreGroups[i]) {
+                containerScoreGroups[i].parentNode.replaceChild(span, containerScoreGroups[i]);
+            }
+        }
+        
+        // Remove toggle buttons
+        container.querySelectorAll('.toggle').forEach(el => el.remove());
+        
+        const header = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' 
+                  xmlns:w='urn:schemas-microsoft-com:office:word' 
+                  xmlns='http://www.w3.org/TR/REC-html40'>
+            <head>
+                <meta charset='utf-8'>
+                <title>SCID-I Affektive Forstyrrelser</title>
+                <style>
+                    body { font-family: Arial, Calibri, sans-serif; }
+                    table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+                    td, th { border: 1px solid #ccc; padding: 8px; }
+                    th { background: #eee; font-weight: bold; }
+                    .diag-summary { background: #667eea; color: white; padding: 20px; margin: 20px 0; }
+                    .diag-item { background: rgba(255,255,255,0.2); padding: 12px; margin: 10px 0; border-left: 4px solid #f39c12; }
+                    .diag-item.primary { border-left-color: #e74c3c; }
+                    .module { margin: 25px 0; border: 1px solid #ddd; }
+                    .module-header { background: #2c3e50; color: white; padding: 12px; font-weight: bold; }
+                    .criteria-item { margin: 15px; padding: 15px; background: #f8f9fa; border-left: 4px solid #3498db; }
+                </style>
+            </head>
+            <body>
+        `;
+        
+        const footer = '</body></html>';
+        const content = header + container.innerHTML + footer;
+        
+        const blob = new Blob(['\ufeff', content], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `SCID-I-${name}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // Reset form
+    function resetForm() {
+        if (confirm('Er du sikker på at du vil nullstille hele skjemaet? Dette kan ikke angres.')) {
+            // Clear scores
+            Object.keys(scores).forEach(key => delete scores[key]);
+            
+            // Clear all active buttons
+            document.querySelectorAll('.score-btn.active').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Clear inputs
+            document.querySelectorAll('input, textarea').forEach(input => {
+                if (input.type !== 'date') {
+                    input.value = '';
+                }
+            });
+            
+            // Reset date to today
+            document.getElementById('interviewDate').valueAsDate = new Date();
+            
+            // Update summary
+            updateSummary();
+        }
+    }
+</script>
+
+</body>
+</html>

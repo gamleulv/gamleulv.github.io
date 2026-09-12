@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MI - Mobility Inventory (Unngåelse)</title>
+    
+    <!-- PDF & Word Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --bg: #f4f7f6;
+            --paper: #ffffff;
+            --border: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 30px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: var(--paper);
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-radius: 8px;
+        }
+
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-weight: 300; }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .form-group label { display: block; font-size: 12px; font-weight: bold; color: #7f8c8d; margin-bottom: 4px; }
+        .form-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+
+        .legend-box {
+            background: #e8f4fd;
+            padding: 15px;
+            border-left: 4px solid var(--secondary);
+            margin-bottom: 30px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .legend-title { font-weight: bold; margin-bottom: 5px; }
+
+        /* The Grid Table */
+        .mi-grid {
+            display: grid;
+            grid-template-columns: 2fr 3fr 3fr; /* Item text, scale1, scale2 */
+            gap: 10px;
+            align-items: center;
+        }
+
+        .mi-header {
+            font-weight: bold;
+            color: var(--primary);
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            display: contents; /* Allows children to participate in grid */
+        }
+        
+        .header-cell { padding: 5px; text-align: center; }
+        .header-cell.left { text-align: left; }
+
+        .mi-row {
+            display: contents;
+        }
+
+        .item-text { font-weight: 500; padding: 10px 0; border-bottom: 1px dotted #eee; }
+
+        .scale-container {
+            display: flex;
+            justify-content: center;
+            gap: 2px;
+            border-bottom: 1px dotted #eee;
+            padding: 10px 0;
+        }
+
+        .scale-opt {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .scale-opt:hover { background: #eee; }
+        .scale-opt.selected { background: var(--secondary); color: white; border-color: var(--secondary); }
+        .scale-opt.selected-alone { background: var(--accent); color: white; border-color: var(--accent); }
+
+
+        /* Results */
+        .results-section {
+            margin-top: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            display: none;
+        }
+
+        .res-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #ddd; }
+        .res-val { font-weight: bold; font-size: 18px; }
+
+        /* Controls */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            transition: transform 0.1s;
+            font-size: 14px;
+        }
+        button:hover { transform: translateY(-2px); }
+        .btn-calc { background-color: var(--secondary); }
+        .btn-word { background-color: #2980b9; }
+        .btn-pdf { background-color: #c0392b; }
+        .btn-reset { background-color: #95a5a6; }
+
+        @media print {
+            .controls { display: none; }
+            .container { box-shadow: none; margin: 0; padding: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="doc-content">
+    <h1>MI - Unngåelse</h1>
+    <div class="subtitle">Mobility Inventory for Agoraphobia (Chambless et al., 1985)</div>
+
+    <div class="meta-grid">
+        <div class="form-group">
+            <label>Navn</label>
+            <input type="text" id="pName" placeholder="Navn...">
+        </div>
+        <div class="form-group">
+            <label>Dato</label>
+            <input type="date" id="pDate">
+        </div>
+    </div>
+
+    <div class="legend-box">
+        <div class="legend-title">Skala for unngåelse:</div>
+        <div>1 = Unngår aldri</div>
+        <div>2 = Unngår sjelden</div>
+        <div>3 = Unngår omtrent halvparten av gangene</div>
+        <div>4 = Unngår for det meste</div>
+        <div>5 = Unngår alltid</div>
+    </div>
+    
+    <div style="font-size:14px; margin-bottom:20px; color:#555;">
+        Angi graden av unngåelse for hver situasjon: 
+        <strong>"I følge"</strong> (blå) = Med en person du stoler på. 
+        <strong>"Alene"</strong> (rød) = Når du er alene.
+    </div>
+
+    <div class="mi-grid" id="grid-container">
+        <!-- Header -->
+        <div class="mi-header">
+            <div class="header-cell left">Situasjon</div>
+            <div class="header-cell">I FØLGE (1-5)</div>
+            <div class="header-cell">ALENE (1-5)</div>
+        </div>
+        
+        <!-- Items generated via JS -->
+    </div>
+
+    <div class="results-section" id="results">
+        <h3>Resultater (Gjennomsnittlig unngåelse)</h3>
+        
+        <div class="res-row">
+            <span>Når du er <strong>I FØLGE</strong>:</span>
+            <span class="res-val" id="res-acc" style="color:var(--secondary)">-</span>
+        </div>
+        
+        <div class="res-row">
+            <span>Når du er <strong>ALENE</strong>:</span>
+            <span class="res-val" id="res-alone" style="color:var(--accent)">-</span>
+        </div>
+        
+        <div style="font-size:13px; color:#555; margin-top:10px;">
+            Range: 1.0 (Ingen unngåelse) til 5.0 (Total unngåelse).
+        </div>
+    </div>
+
+</div>
+
+<div class="controls">
+    <button class="btn-calc" onclick="calculateScore()">📊 Beregn</button>
+    <button class="btn-word" onclick="exportWord()">💾 Lagre til Word</button>
+    <button class="btn-pdf" onclick="exportPDF()" id="pdfBtn">📄 Lagre til PDF</button>
+    <button class="btn-reset" onclick="resetForm()">🔄 Nullstill</button>
+</div>
+
+<script>
+    document.getElementById('pDate').valueAsDate = new Date();
+
+    const items = [
+        "1. Teater",
+        "2. Supermarked",
+        "3. Klasserom",
+        "4. Butikk",
+        "5. Restaurant",
+        "6. Museer",
+        "7. Heiser",
+        "8. Auditorier eller stadion",
+        "9. Parkeringshus",
+        "10. Høye plasser",
+        "11. Innestengte plasser (f.eks. tunneler)",
+        "12. Åpne plasser (ute)",
+        "13. Store rom/haller (inne)",
+        "14. Buss",
+        "15. Tog",
+        "16. Tunnelbane",
+        "17. Fly",
+        "18. Båt",
+        "19. Kjøre/sitte i bil (hvor som helst)",
+        "20. Kjøre/sitte i bil (på motorvei)",
+        "21. Stå i kø",
+        "22. Gå over bruer",
+        "23. Fester eller selskaper",
+        "24. Gå på et fortau",
+        "25. Være alene hjemme",
+        "26. Være langt hjemmefra"
+    ];
+
+    const container = document.getElementById('grid-container');
+    
+    // Note: PDF has up to 25 items + some sub-items. I merged/renumbered slightly for list clarity based on standard MI.
+    // The PDF has sub-items 12A, 12B, 18A, 18B. I flattened them to 26 items total for easier grid.
+    
+    // Helper to create scale HTML
+    function createScale(idPrefix, type) {
+        let html = `<div class="scale-container" id="${idPrefix}">`;
+        for(let i=1; i<=5; i++) {
+            const cls = type === 'alone' ? 'selected-alone' : 'selected';
+            html += `<div class="scale-opt" onclick="selectOpt(this, '${cls}')">${i}</div>`;
+        }
+        html += `<input type="hidden" value=""></div>`;
+        return html;
+    }
+
+    items.forEach((item, index) => {
+        const i = index + 1;
+        
+        const row = document.createElement('div');
+        row.className = 'mi-row';
+        row.innerHTML = `
+            <div class="item-text">${item}</div>
+            ${createScale(`acc-${i}`, 'acc')}
+            ${createScale(`alone-${i}`, 'alone')}
+        `;
+        container.appendChild(row);
+    });
+
+    // Global selector function
+    window.selectOpt = function(el, activeClass) {
+        const parent = el.parentElement;
+        const input = parent.querySelector('input');
+        
+        // Deselect siblings
+        parent.querySelectorAll('.scale-opt').forEach(opt => {
+            opt.classList.remove('selected');
+            opt.classList.remove('selected-alone');
+        });
+
+        // Select clicked
+        el.classList.add(activeClass);
+        input.value = el.innerText;
+    };
+
+    function calculateScore() {
+        let sumAcc = 0;
+        let countAcc = 0;
+        let sumAlone = 0;
+        let countAlone = 0;
+
+        for(let i=1; i<=items.length; i++) {
+            // Acc
+            const accDiv = document.getElementById(`acc-${i}`);
+            const valAcc = accDiv.querySelector('input').value;
+            if(valAcc) {
+                sumAcc += parseInt(valAcc);
+                countAcc++;
+            }
+
+            // Alone
+            const aloneDiv = document.getElementById(`alone-${i}`);
+            const valAlone = aloneDiv.querySelector('input').value;
+            if(valAlone) {
+                sumAlone += parseInt(valAlone);
+                countAlone++;
+            }
+        }
+
+        const avgAcc = countAcc > 0 ? (sumAcc / countAcc).toFixed(2) : "-";
+        const avgAlone = countAlone > 0 ? (sumAlone / countAlone).toFixed(2) : "-";
+
+        document.getElementById('res-acc').innerText = avgAcc;
+        document.getElementById('res-alone').innerText = avgAlone;
+
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        if(confirm("Slette data?")) location.reload();
+    }
+
+    async function exportPDF() {
+        const btn = document.getElementById('pdfBtn');
+        btn.innerText = "Genererer...";
+        btn.disabled = true;
+
+        const element = document.getElementById('doc-content');
+        const name = document.getElementById('pName').value || "Ukjent";
+
+        try {
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            const imgWidth = 190;
+            const pageHeight = 295;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 10;
+
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pageHeight - 20);
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight + 10;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - 20);
+            }
+
+            pdf.save(`MI_Unngåelse_${name}.pdf`);
+        } catch(e) {
+            alert("Feil ved PDF");
+        } finally {
+            btn.innerText = "📄 Lagre til PDF";
+            btn.disabled = false;
+        }
+    }
+
+    function exportWord() {
+        const name = document.getElementById('pName').value || "Ukjent";
+        const content = document.getElementById('doc-content').cloneNode(true);
+        
+        // Transform inputs
+        content.querySelectorAll('input[type="text"], input[type="date"]').forEach(inp => {
+            const span = document.createElement('span');
+            span.innerHTML = inp.value ? `<b>${inp.value}</b>` : "______";
+            inp.parentNode.replaceChild(span, inp);
+        });
+
+        // Transform Grid
+        // We need to iterate over original items logic to rebuild simple table rows in Word
+        // Or transform the grid structure to table
+        
+        const grid = content.querySelector('.mi-grid');
+        const rows = grid.querySelectorAll('.mi-row');
+        
+        rows.forEach((row, idx) => {
+            const i = idx + 1;
+            // Get values from original DOM, not clone (clone values might be empty if not synced?)
+            // Actually cloneNode(true) copies values for inputs if set by attribute? No, value property not always cloned.
+            // Better to read values from LIVE dom and inject text.
+            
+            const valAcc = document.querySelector(`#acc-${i} input`).value || "-";
+            const valAlone = document.querySelector(`#alone-${i} input`).value || "-";
+            
+            const itemText = items[idx];
+            
+            // Replace row content with simple text
+            row.innerHTML = `
+                <div style="border-bottom:1px solid #ccc; padding:5px; margin-bottom:5px;">
+                    <strong>${itemText}</strong><br>
+                    I følge: <b>${valAcc}</b> &nbsp;|&nbsp; Alene: <b style="color:red">${valAlone}</b>
+                </div>
+            `;
+            row.style.display = "block"; 
+        });
+        
+        // Remove header
+        const header = grid.querySelector('.mi-header');
+        if(header) header.remove();
+
+        // Change grid display to block for word
+        grid.style.display = "block";
+
+        const htmlHead = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>MI Resultat</title>
+            <style>
+                body { font-family: Arial; }
+            </style>
+            </head><body>
+        `;
+        const htmlFoot = "</body></html>";
+        const html = htmlHead + content.innerHTML + htmlFoot;
+
+        const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `MI_Unngåelse_${name}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</body>
+</html>

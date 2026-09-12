@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCID-5-KV - Diagnostisk Oppsummering</title>
+    
+    <!-- PDF Generator - bruker jsPDF direkte -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --bg: #f4f7f6;
+            --paper: #ffffff;
+            --border: #dcdde1;
+            --header-bg: #ecf0f1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background-color: var(--paper);
+            padding: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid #e1e4e8;
+        }
+
+        /* Header Section */
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
+        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-weight: 300; }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        .form-item label { display: block; font-size: 11px; font-weight: bold; text-transform: uppercase; color: #95a5a6; margin-bottom: 3px; }
+        .form-item input { width: 95%; padding: 8px; border: 1px solid #ccc; border-radius: 3px; font-size: 14px; }
+
+        /* Diagnosis Summary Box */
+        .diagnosis-summary {
+            margin: 25px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border: 2px solid #3498db;
+            border-radius: 6px;
+            min-height: 60px;
+        }
+        
+        .diagnosis-summary h2 {
+            color: var(--primary);
+            font-size: 18px;
+            margin: 0 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .diagnosis-summary .empty-state {
+            color: #95a5a6;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .diagnosis-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: white;
+            border-left: 4px solid #3498db;
+            border-radius: 3px;
+        }
+        
+        .diagnosis-item.main-diagnosis {
+            border-left-color: #c0392b;
+            background: #fff5f5;
+            font-weight: 600;
+        }
+        
+        .diagnosis-item .diag-name {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .diagnosis-item .diag-code {
+            display: inline-block;
+            background: #ecf0f1;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        .diagnosis-item .diag-spec {
+            color: #7f8c8d;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        /* Module Sections */
+        .module-section { margin-bottom: 25px; page-break-inside: avoid; }
+        
+        .mod-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 8px 15px;
+            font-weight: bold;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #eee; text-align: left; padding: 8px; border-bottom: 2px solid #ccc; font-weight: 600; color: #555; }
+        td { border-bottom: 1px solid #eee; padding: 8px; vertical-align: top; }
+        
+        /* Columns */
+        .col-check { width: 30px; text-align: center; }
+        .col-diag { width: 40%; }
+        .col-code { width: 15%; }
+        .col-spec { width: 30%; }
+        .col-main { width: 10%; text-align: center; }
+
+        /* Inputs within table */
+        input[type="text"], input[type="date"] { width: 90%; padding: 5px; border: 1px solid #ddd; border-radius: 2px; }
+        input[type="checkbox"] { transform: scale(1.2); cursor: pointer; }
+
+        /* Highlight selected rows */
+        tr.selected { background-color: #f0f8ff; }
+        tr.selected input[type="text"] { background-color: white; border-color: #3498db; }
+
+        /* Comment Section */
+        .comments-box { margin-top: 20px; }
+        textarea { width: 100%; height: 100px; padding: 10px; border: 1px solid #ccc; font-family: inherit; resize: vertical; }
+
+        /* Buttons */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.1s;
+        }
+        button:hover { transform: translateY(-1px); }
+        button:disabled { opacity: 0.5; cursor: wait; }
+        .btn-word { background-color: #2b579a; }
+        .btn-pdf { background-color: #c0392b; }
+        .btn-reset { background-color: #95a5a6; }
+
+        @media print {
+            .controls { display: none; }
+            .container { box-shadow: none; border: none; padding: 20px; max-width: 100%; }
+            body { background: white; padding: 0; margin: 0; }
+            input[type="text"], input[type="date"] { border: none; background: transparent; }
+            .module-section { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="doc-content">
+    <h1>SCID-5-KV</h1>
+    <div class="subtitle">Diagnostisk Oppsummeringsark</div>
+
+    <div class="meta-grid">
+        <div class="form-item">
+            <label>Pasientnavn</label>
+            <input type="text" id="pName" placeholder="Navn...">
+        </div>
+        <div class="form-item">
+            <label>Fødselsdato / ID</label>
+            <input type="text" id="pID" placeholder="dd.mm.åå">
+        </div>
+        <div class="form-item">
+            <label>Dato for intervju</label>
+            <input type="date" id="pDate">
+        </div>
+        <div class="form-item">
+            <label>Intervjuer (Navn)</label>
+            <input type="text" id="pRater">
+        </div>
+        <div class="form-item">
+            <label>Henvisende instans</label>
+            <input type="text" id="pRef">
+        </div>
+    </div>
+
+    <!-- Diagnosis Summary -->
+    <div class="diagnosis-summary" id="diagnosisSummary">
+        <h2>DIAGNOSER</h2>
+        <div class="empty-state">Ingen diagnoser valgt ennå</div>
+    </div>
+
+    <!-- Headers for tables -->
+    <div style="font-size:12px; color:#666; margin-bottom:10px; text-align:right;">
+        * Merk av for hoveddiagnose
+    </div>
+
+    <!-- MODUL A -->
+    <div class="module-section">
+        <div class="mod-header">MODUL A: Affektive lidelser</div>
+        <table>
+            <thead>
+                <tr><th class="col-check">√</th><th class="col-diag">Diagnose</th><th class="col-code">ICD-10 Kode</th><th class="col-spec">Spesifikasjoner / Notater</th><th class="col-main">Hoved*</th></tr>
+            </thead>
+            <tbody>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Bipolar I lidelse</td><td><input type="text" placeholder="F31.x" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Bipolar II lidelse</td><td><input type="text" placeholder="F31.8" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Annen bipolar lidelse</td><td><input type="text" placeholder="F31.8/9" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Major Depressiv lidelse</td><td><input type="text" placeholder="F32.x / F33.x" onchange="updateSummary()"></td><td><input type="text" placeholder="Enkel/Tilbakevendende" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Vedvarende depressiv lidelse (Dystymi)</td><td><input type="text" placeholder="F34.1" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- MODUL B -->
+    <div class="module-section">
+        <div class="mod-header">MODUL B: Psykotiske lidelser</div>
+        <table>
+            <thead>
+                <tr><th class="col-check">√</th><th class="col-diag">Diagnose</th><th class="col-code">ICD-10 Kode</th><th class="col-spec">Spesifikasjoner</th><th class="col-main">Hoved*</th></tr>
+            </thead>
+            <tbody>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Schizofreni</td><td><input type="text" placeholder="F20.x" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Schizoaffektiv lidelse</td><td><input type="text" placeholder="F25.x" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Schizofreniform lidelse</td><td><input type="text" placeholder="F20.8" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Vrangforestillingslidelse</td><td><input type="text" placeholder="F22.0" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Kortvarig psykotisk lidelse</td><td><input type="text" placeholder="F23.x" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Annen psykoselidelse</td><td><input type="text" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- MODUL C -->
+    <div class="module-section">
+        <div class="mod-header">MODUL C: Rusmiddellidelser</div>
+        <table>
+            <thead>
+                <tr><th class="col-check">√</th><th class="col-diag">Diagnose</th><th class="col-code">ICD-10 Kode</th><th class="col-spec">Spesifikasjoner (Mild/Moderat/Alvorlig)</th><th class="col-main">Hoved*</th></tr>
+            </thead>
+            <tbody>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Alkoholbrukslidelse</td><td><input type="text" placeholder="F10.x" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Cannabisbrukslidelse</td><td><input type="text" placeholder="F12.x" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Sedativ/Hypnotika-brukslidelse</td><td><input type="text" placeholder="F13.x" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Sentralstimulerende brukslidelse</td><td><input type="text" placeholder="F14.x / F15.x" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Opioidbrukslidelse</td><td><input type="text" placeholder="F11.x" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Annen rusmiddellidelse</td><td><input type="text" placeholder="F1x.x" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- MODUL D -->
+    <div class="module-section">
+        <div class="mod-header">MODUL D: Angstlidelser</div>
+        <table>
+            <thead>
+                <tr><th class="col-check">√</th><th class="col-diag">Diagnose</th><th class="col-code">ICD-10 Kode</th><th class="col-spec">Spesifikasjoner</th><th class="col-main">Hoved*</th></tr>
+            </thead>
+            <tbody>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Panikklidelse</td><td><input type="text" placeholder="F41.0" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Agorafobi</td><td><input type="text" placeholder="F40.0" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Sosial angstlidelse</td><td><input type="text" placeholder="F40.1" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Generalisert angstlidelse (GAD)</td><td><input type="text" placeholder="F41.1" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Spesifikk fobi</td><td><input type="text" placeholder="F40.2" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- MODUL E-J -->
+    <div class="module-section">
+        <div class="mod-header">MODUL E – J: Andre lidelser</div>
+        <table>
+            <thead>
+                <tr><th class="col-check">√</th><th class="col-diag">Diagnose</th><th class="col-code">Kode</th><th class="col-spec">Spesifikasjoner</th><th class="col-main">Hoved*</th></tr>
+            </thead>
+            <tbody>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Obsessiv-kompulsiv lidelse (OCD)</td><td><input type="text" placeholder="F42" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Posttraumatisk stresslidelse (PTSD)</td><td><input type="text" placeholder="F43.1" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>ADHD (Voksen)</td><td><input type="text" placeholder="F90.x" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Anoreksi / Bulimi / Overspising</td><td><input type="text" placeholder="F50.x" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Somatisk symptomlidelse / Helseangst</td><td><input type="text" placeholder="F45.x" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Insomni</td><td><input type="text" placeholder="F51.0" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+                <tr onclick="toggleRow(this)"><td><input type="checkbox" onchange="updateSummary()"></td><td>Tilpasningsforstyrrelse</td><td><input type="text" placeholder="F43.2" onchange="updateSummary()"></td><td><input type="text" onchange="updateSummary()"></td><td style="text-align:center"><input type="radio" name="mainDiag" onchange="updateSummary()"></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="comments-box">
+        <label><strong>Kliniske kommentarer / Andre diagnoser:</strong></label>
+        <textarea id="comments" placeholder="Skriv ev. tilleggskommentarer her..."></textarea>
+    </div>
+    
+    <div style="margin-top:20px; text-align:right; font-size:12px; color:#999;">
+        Generert dato: <span id="genDate"></span>
+    </div>
+
+</div>
+
+<div class="controls">
+    <button class="btn-word" onclick="exportWord()">💾 Last ned Word</button>
+    <button class="btn-pdf" onclick="exportPDF()" id="pdfBtn">📄 Last ned PDF</button>
+    <button class="btn-reset" onclick="location.reload()">🔄 Nullstill</button>
+</div>
+
+<script>
+    // Sett dagens dato
+    document.getElementById('pDate').valueAsDate = new Date();
+    document.getElementById('genDate').innerText = new Date().toLocaleDateString();
+
+    function toggleRow(row) {
+        const chk = row.querySelector('input[type="checkbox"]');
+        
+        if (event.target.tagName === 'INPUT') {
+            if (event.target.type === 'checkbox') {
+                 if(chk.checked) row.classList.add('selected');
+                 else row.classList.remove('selected');
+            }
+            return;
+        }
+        
+        chk.checked = !chk.checked;
+        if(chk.checked) row.classList.add('selected');
+        else row.classList.remove('selected');
+        updateSummary();
+    }
+
+    function updateSummary() {
+        const summaryBox = document.getElementById('diagnosisSummary');
+        const allRows = document.querySelectorAll('tbody tr');
+        
+        let diagnoses = [];
+        let mainDiagIndex = -1;
+        
+        allRows.forEach((row, index) => {
+            const checkbox = row.querySelector('input[type="checkbox"]');
+            if (checkbox && checkbox.checked) {
+                const diagName = row.cells[1].textContent;
+                const codeInput = row.querySelector('input[type="text"]');
+                const specInput = row.querySelectorAll('input[type="text"]')[1];
+                const mainRadio = row.querySelector('input[type="radio"]');
+                
+                const diagObj = {
+                    name: diagName,
+                    code: codeInput ? codeInput.value : '',
+                    spec: specInput ? specInput.value : '',
+                    isMain: mainRadio ? mainRadio.checked : false
+                };
+                
+                if (diagObj.isMain) {
+                    mainDiagIndex = diagnoses.length;
+                }
+                
+                diagnoses.push(diagObj);
+            }
+        });
+        
+        // Sorter slik at hoveddiagnose kommer først
+        if (mainDiagIndex > -1) {
+            const mainDiag = diagnoses.splice(mainDiagIndex, 1)[0];
+            diagnoses.unshift(mainDiag);
+        }
+        
+        // Bygg HTML
+        if (diagnoses.length === 0) {
+            summaryBox.innerHTML = '<h2>DIAGNOSER</h2><div class="empty-state">Ingen diagnoser valgt ennå</div>';
+        } else {
+            let html = '<h2>DIAGNOSER</h2>';
+            diagnoses.forEach(diag => {
+                const mainClass = diag.isMain ? ' main-diagnosis' : '';
+                const mainLabel = diag.isMain ? ' <strong>[HOVEDDIAGNOSE]</strong>' : '';
+                
+                html += `<div class="diagnosis-item${mainClass}">
+                    <div>
+                        <span class="diag-name">${diag.name}</span>${mainLabel}
+                        ${diag.code ? `<span class="diag-code">${diag.code}</span>` : ''}
+                    </div>
+                    ${diag.spec ? `<div class="diag-spec">${diag.spec}</div>` : ''}
+                </div>`;
+            });
+            summaryBox.innerHTML = html;
+        }
+    }
+
+    async function exportPDF() {
+        const name = document.getElementById('pName').value || "Ukjent";
+        const btn = document.getElementById('pdfBtn');
+        
+        // Disable button
+        btn.disabled = true;
+        btn.textContent = '⏳ Genererer PDF...';
+        
+        try {
+            // Skjul kontroller
+            document.querySelector('.controls').style.display = 'none';
+            
+            // Juster textarea
+            const txt = document.getElementById('comments');
+            const origHeight = txt.style.height;
+            txt.style.height = (txt.scrollHeight + 10) + 'px';
+            
+            const element = document.getElementById('doc-content');
+            
+            // Bruk html2canvas
+            const canvas = await html2canvas(element, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                windowWidth: 1024,
+                backgroundColor: '#ffffff'
+            });
+            
+            // Konverter til PDF
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            
+            // A4 dimensjoner
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+            
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            
+            // Beregn størrelse
+            const imgWidth = pageWidth - 20; // 10mm margin på hver side
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            
+            let heightLeft = imgHeight;
+            let position = 10; // 10mm top margin
+            
+            // Legg til første side
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pageHeight - 20);
+            
+            // Legg til flere sider om nødvendig
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight + 10;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - 20);
+            }
+            
+            // Last ned
+            pdf.save(`SCID-Oppsummering_${name}.pdf`);
+            
+            // Gjenopprett
+            txt.style.height = origHeight;
+            document.querySelector('.controls').style.display = 'flex';
+            
+        } catch (error) {
+            console.error('PDF generering feilet:', error);
+            alert('Det oppsto en feil ved PDF-generering. Prøv igjen.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '📄 Last ned PDF';
+        }
+    }
+
+    function exportWord() {
+        const name = document.getElementById('pName').value || "Ukjent";
+        
+        let htmlContent = document.getElementById('doc-content').innerHTML;
+        const container = document.createElement('div');
+        container.innerHTML = htmlContent;
+
+        // Fyll inn tekstverdier
+        const inputs = document.getElementById('doc-content').querySelectorAll('input[type="text"], input[type="date"]');
+        const containerInputs = container.querySelectorAll('input[type="text"], input[type="date"]');
+        
+        for(let i=0; i<inputs.length; i++) {
+            const val = inputs[i].value;
+            const span = document.createElement('span');
+            span.innerText = val ? val : "______";
+            span.style.fontWeight = "bold";
+            containerInputs[i].parentNode.replaceChild(span, containerInputs[i]);
+        }
+        
+        // Fyll inn checkboxer
+        const checks = document.getElementById('doc-content').querySelectorAll('input[type="checkbox"]');
+        const containerChecks = container.querySelectorAll('input[type="checkbox"]');
+        
+        for(let i=0; i<checks.length; i++) {
+            const span = document.createElement('span');
+            span.innerHTML = checks[i].checked ? "<b>[&#160;X&#160;]</b>" : "[&#160;&#160;&#160;]";
+            containerChecks[i].parentNode.replaceChild(span, containerChecks[i]);
+        }
+
+        // Fyll inn radio
+        const radios = document.getElementById('doc-content').querySelectorAll('input[type="radio"]');
+        const containerRadios = container.querySelectorAll('input[type="radio"]');
+         for(let i=0; i<radios.length; i++) {
+            const span = document.createElement('span');
+            span.innerHTML = radios[i].checked ? "<b>(●)</b>" : "(○)";
+            containerRadios[i].parentNode.replaceChild(span, containerRadios[i]);
+        }
+        
+        // Fyll inn textarea
+        const txtVal = document.getElementById('comments').value;
+        const containerTxt = container.querySelector('textarea');
+        if(containerTxt) {
+            const p = document.createElement('p');
+            p.innerText = txtVal;
+            containerTxt.parentNode.replaceChild(p, containerTxt);
+        }
+
+        const header = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>SCID-5 Oppsummering</title>
+            <style>
+                body { font-family: Arial; }
+                table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+                td, th { border: 1px solid #ccc; padding: 5px; }
+                th { background: #eee; }
+                .diagnosis-summary { background: #f0f0f0; padding: 15px; border: 2px solid #3498db; margin: 20px 0; }
+                .diagnosis-item { background: white; padding: 8px; margin: 5px 0; border-left: 4px solid #3498db; }
+                .main-diagnosis { border-left-color: #c0392b; background: #fff5f5; font-weight: bold; }
+            </style>
+            </head><body>
+        `;
+        
+        const footer = "</body></html>";
+        const content = header + container.innerHTML + footer;
+
+        const blob = new Blob(['\ufeff', content], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `SCID-Oppsummering_${name}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</body>
+</html>

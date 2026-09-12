@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MID-60 - Multidimensional Inventory of Dissociation</title>
+    
+    <!-- PDF & Word Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Chart.js for graphical results -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #9b59b6;
+            --bg: #f4f7f6;
+            --paper: #ffffff;
+            --border: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: var(--paper);
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-radius: 8px;
+        }
+
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-style: italic; }
+
+        .instructions {
+            background: #e8f4fd;
+            padding: 15px;
+            border-left: 4px solid var(--secondary);
+            margin-bottom: 30px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* Patient Info */
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .form-group label { display: block; font-size: 12px; font-weight: bold; color: #7f8c8d; margin-bottom: 4px; }
+        .form-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+
+        /* Questions */
+        .question-item {
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: 30px 1fr 200px;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .question-item:nth-child(even) { background-color: #fafafa; }
+        .q-num { font-weight: bold; color: var(--secondary); }
+        .q-text { font-size: 15px; }
+        .q-input input { width: 60px; padding: 5px; text-align: center; }
+
+        /* Rating Scale Display */
+        .rating-scale {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #2c3e50;
+            color: white;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        .rating-step { text-align: center; flex: 1; }
+        .rating-step div:first-child { font-size: 18px; font-weight: bold; }
+
+        /* Results Section */
+        .results-section {
+            margin-top: 40px;
+            padding: 20px;
+            background: #fff;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            display: none; /* Hidden until calculated */
+        }
+
+        .results-header {
+            background: var(--primary);
+            color: white;
+            padding: 10px 15px;
+            margin: -20px -20px 20px -20px;
+            border-radius: 6px 6px 0 0;
+            font-weight: bold;
+        }
+
+        .score-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .score-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .total-score-box {
+            grid-column: 1 / -1;
+            background: #e8f4fd;
+            border-left-color: var(--accent);
+            text-align: center;
+            font-size: 18px;
+        }
+
+        table.results-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        table.results-table th { text-align: left; border-bottom: 2px solid #ddd; padding: 8px; }
+        table.results-table td { border-bottom: 1px solid #eee; padding: 8px; }
+        .highlight-score { font-weight: bold; color: var(--primary); }
+        .clinical-cutoff { color: #c0392b; font-weight: bold; font-size: 12px; }
+
+        /* Controls */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            transition: transform 0.1s;
+        }
+        button:hover { transform: translateY(-2px); }
+        .btn-calc { background-color: var(--success, #27ae60); font-size: 16px; }
+        .btn-pdf { background-color: #c0392b; }
+        .btn-reset { background-color: #95a5a6; }
+
+        @media print {
+            .controls { display: none; }
+            .container { box-shadow: none; margin: 0; max-width: 100%; }
+        }
+        
+        .error-msg { color: red; font-size: 12px; display: none; margin-top: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="doc-content">
+    <h1>MID-60</h1>
+    <div class="subtitle">Multidimensional Inventory of Dissociation – 60-item version</div>
+
+    <div class="meta-grid">
+        <div class="form-group">
+            <label>Navn / ID</label>
+            <input type="text" id="pName">
+        </div>
+        <div class="form-group">
+            <label>Dato</label>
+            <input type="date" id="pDate">
+        </div>
+    </div>
+
+    <div class="instructions">
+        <strong>Instruksjoner:</strong> Angi hvor ofte du opplever følgende symptomer når du <strong>IKKE</strong> er under påvirkning av alkohol eller andre rusmidler. Bruk skalaen fra 0 til 10.
+    </div>
+
+    <div class="rating-scale">
+        <div class="rating-step"><div>0</div>Aldri</div>
+        <div class="rating-step"><div>1</div></div>
+        <div class="rating-step"><div>2</div></div>
+        <div class="rating-step"><div>3</div></div>
+        <div class="rating-step"><div>4</div></div>
+        <div class="rating-step"><div>5</div></div>
+        <div class="rating-step"><div>6</div></div>
+        <div class="rating-step"><div>7</div></div>
+        <div class="rating-step"><div>8</div></div>
+        <div class="rating-step"><div>9</div></div>
+        <div class="rating-step"><div>10</div>Alltid</div>
+    </div>
+
+    <!-- Questions Container -->
+    <div id="questions-list"></div>
+
+    <div class="controls">
+        <button class="btn-calc" onclick="calculateScores()">📊 Beregn Skåre</button>
+        <button class="btn-reset" onclick="resetForm()">🔄 Nullstill</button>
+    </div>
+
+    <!-- Results Section -->
+    <div class="results-section" id="results">
+        <div class="results-header">Resultater & Tolkning</div>
+        
+        <div class="score-grid">
+            <div class="score-box total-score-box">
+                <strong>Total MID-60 Skåre (Gjennomsnitt):</strong>
+                <div id="total-score-val" style="font-size: 32px; color: #2c3e50;">-</div>
+                <div id="total-interpretation" style="font-size: 14px; margin-top:5px;"></div>
+            </div>
+
+            <div class="score-box" style="grid-column: 1 / -1;">
+                <canvas id="resultsChart" width="400" height="200"></canvas>
+            </div>
+
+            <div class="score-box" style="grid-column: 1 / -1;">
+                <h3>Underskalaer (Gjennomsnitt)</h3>
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Skala</th>
+                            <th>Skåre (0-10)</th>
+                            <th>Tolkning / Cut-off*</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subscale-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+                <div style="font-size: 11px; color: #666; margin-top: 10px;">
+                    *Cut-off verdier er basert på Dell (2006) og NovoPsych data for patologisk dissosiasjon.
+                    Merk at MID-60 er et screeningsverktøy og erstatter ikke klinisk intervju.
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-pdf" onclick="exportPDF()" id="pdfBtn">📄 Last ned PDF-rapport</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('pDate').valueAsDate = new Date();
+
+    // The 60 Items from MID-60
+    const questions = [
+        "Jeg har 'blackouts' eller hukommelsestap for tidspunkter da jeg var våken (ikke på grunn av alkohol eller rusmidler).",
+        "Jeg finner ting i mine eiendeler som jeg ikke kan huske å ha kjøpt eller anskaffet.",
+        "Jeg blir fortalt at jeg har gjort eller sagt ting jeg ikke husker.",
+        "Jeg føler meg frakoblet fra kroppen min.",
+        "Jeg føler meg som en observatør av mine egne handlinger.",
+        "Jeg har episoder der jeg føler at verden rundt meg er uvirkelig.",
+        "Jeg hører stemmer inni hodet mitt som snakker til meg eller om meg.",
+        "Jeg føler at det er en annen person inni meg.",
+        "Jeg har sterke impulser eller tanker som ikke føles som mine egne.",
+        "Jeg har fysiske symptomer (som smerter eller lammelser) som leger ikke finner noen medisinsk årsak til.",
+        "Jeg glemmer viktige personlige opplysninger (som navnet mitt eller hvor jeg bor) i korte perioder.",
+        "Jeg finner meg selv på steder uten å vite hvordan jeg kom dit.",
+        "Jeg mister tid (oppdager at timer har gått uten at jeg vet hva jeg har gjort).",
+        "Jeg ser på meg selv i speilet og kjenner ikke igjen refleksjonen som meg selv.",
+        "Kroppen min føles nummen eller livløs.",
+        "Folk og ting rundt meg virker forvrengte eller endret.",
+        "Jeg har indre samtaler eller diskusjoner som føles som om de er mellom forskjellige deler av meg.",
+        "Jeg føler at handlingene mine blir kontrollert av noen eller noe annet.",
+        "Jeg opplever plutselige endringer i mine ferdigheter eller kunnskaper (f.eks. kan plutselig spille et instrument eller snakke et språk jeg trodde jeg hadde glemt, eller mister evner jeg vanligvis har).",
+        "Jeg har anfall eller kramper som ikke er epilepsi.",
+        "Jeg kan ikke huske viktige hendelser fra barndommen min (mer enn hva som er vanlig å glemme).",
+        "Jeg finner notater eller tegninger jeg må ha laget, men ikke kjenner igjen.",
+        "Folk kaller meg ved navn jeg ikke kjenner eller insisterer på at de har møtt meg før når jeg ikke husker dem.",
+        "Jeg føler at jeg er to forskjellige personer samtidig.",
+        "Det føles som om tankene mine blir tatt ut av hodet mitt eller satt inn av noen andre.",
+        "Omgivelsene mine føles tåkete, drømmeaktige eller fjerne.",
+        "Jeg hører lyder eller musikk inni hodet som ingen andre kan høre.",
+        "Jeg føler meg i konflikt, som om forskjellige deler av meg vil forskjellige ting.",
+        "Jeg opplever plutselige og uforklarlige endringer i humør eller preferanser.",
+        "Jeg mister følelsen i deler av kroppen min.",
+        "Jeg har hull i hukommelsen for nylige hendelser.",
+        "Jeg kjøper ting jeg ikke trenger eller ikke har råd til, uten å huske at jeg gjorde det.",
+        "Jeg blir fortalt om oppførsel som er helt ulik min vanlige oppførsel.",
+        "Jeg føler meg som en robot eller automat.",
+        "Jeg ser på hendene mine og de føles ikke som mine.",
+        "Verden ser flat eller livløs ut.",
+        "Jeg hører stemmer som kommenterer det jeg gjør.",
+        "Jeg føler at en annen personlighet tar over kroppen min.",
+        "Jeg gjør ting jeg ikke vil gjøre, som om jeg blir tvunget.",
+        "Jeg har sensoriske opplevelser (lukt, smak, syn) som ikke har noen fysisk kilde.",
+        "Jeg glemmer ferdigheter jeg vet jeg har (f.eks. hvordan man kjører bil, bruker en datamaskin).",
+        "Jeg finner klær i skapet mitt som jeg ikke husker å ha kjøpt eller ikke liker.",
+        "Jeg blir anklaget for løgn når jeg forteller sannheten slik jeg husker den.",
+        "Jeg føler meg fremmed for meg selv.",
+        "Jeg føler at jeg flyter over kroppen min.",
+        "Objekter ser ut til å endre størrelse eller form.",
+        "Jeg hører krangling eller gråt inni hodet mitt.",
+        "Jeg føler meg som et lite barn inni meg.",
+        "Jeg har tanker som føles som om de kommer utenfra.",
+        "Jeg har smerter som flytter seg rundt i kroppen eller kommer og går uten medisinsk forklaring.",
+        "Jeg husker ikke store deler av livet mitt (f.eks. hele skoleår).",
+        "Jeg finner bevis på aktiviteter jeg ikke husker å ha deltatt i.",
+        "Fremmede hilser på meg som om de kjenner meg.",
+        "Jeg stirrer ut i luften og mister kontakten med omgivelsene i lange perioder.",
+        "Jeg føler at følelsene mine ikke er mine egne.",
+        "Tiden virker å gå for fort eller for sakte.",
+        "Jeg hører en stemme som sier meg hva jeg skal gjøre.",
+        "Jeg refererer til meg selv som 'vi' eller 'oss' uten å mene det.",
+        "Jeg opplever at kroppen min handler på egenhånd.",
+        "Jeg blir midlertidig blind, døv eller mister evnen til å snakke uten fysisk årsak."
+    ];
+
+    // Scales Mapping (Item Index is 1-based, need to adjust to 0-based in code)
+    // Basert på MID-60 domains
+    const subscales = {
+        "Hukommelse (Amnesia)": [1, 2, 3, 11, 12, 13, 21, 22, 23, 31, 32, 40, 41, 42, 51, 52, 53],
+        "Depersonalisering": [4, 5, 14, 15, 24, 33, 34, 43, 44, 54, 55],
+        "Derealisasjon": [6, 16, 25, 26, 35, 45, 56],
+        "Identitetsforvirring/Endring": [8, 9, 17, 18, 19, 28, 29, 37, 38, 47, 48, 58, 59],
+        "Somatoforme symptomer": [10, 20, 30, 39, 49, 50, 60],
+        "Stemmer/Intrusjon": [7, 27, 36, 46, 57]
+    };
+
+    // Render Questions
+    const list = document.getElementById('questions-list');
+    questions.forEach((q, index) => {
+        const div = document.createElement('div');
+        div.className = 'question-item';
+        div.innerHTML = `
+            <div class="q-num">${index + 1}.</div>
+            <div class="q-text">${q}</div>
+            <div class="q-input">
+                <input type="number" min="0" max="10" id="q${index}" class="score-input" placeholder="0-10" onchange="validateInput(this)">
+                <div class="error-msg">Må være 0-10</div>
+            </div>
+        `;
+        list.appendChild(div);
+    });
+
+    function validateInput(input) {
+        const val = parseFloat(input.value);
+        const error = input.nextElementSibling;
+        if (isNaN(val) || val < 0 || val > 10) {
+            input.style.borderColor = "red";
+            error.style.display = "block";
+            input.value = "";
+        } else {
+            input.style.borderColor = "#ccc";
+            error.style.display = "none";
+        }
+    }
+
+    let chartInstance = null;
+
+    function calculateScores() {
+        // Collect scores
+        const scores = [];
+        let missing = 0;
+        
+        for (let i = 0; i < 60; i++) {
+            const val = document.getElementById(`q${i}`).value;
+            if (val === "") {
+                missing++;
+                scores.push(0); // Treat missing as 0 for initial calc, but warn
+            } else {
+                scores.push(parseFloat(val));
+            }
+        }
+
+        if (missing > 0) {
+            alert(`Advarsel: ${missing} spørsmål er ikke besvart. Disse regnes som 0 i beregningen.`);
+        }
+
+        // Calculate Total
+        const totalSum = scores.reduce((a, b) => a + b, 0);
+        const totalMean = (totalSum / 60).toFixed(1);
+
+        // Display Total
+        document.getElementById('total-score-val').innerText = totalMean;
+        
+        // Interpretation of Total Score (based on Dell 2006 / general guidelines)
+        let interp = "";
+        let color = "";
+        if (totalMean >= 30) { 
+            interp = "Indikerer høy sannsynlighet for alvorlig dissosiativ lidelse (DID/OSDD)."; 
+            color = "#c0392b";
+        } else if (totalMean >= 20) {
+            interp = "Indikerer signifikante dissosiative symptomer. Vurder DID/OSDD eller PTSD med dissosiasjon.";
+            color = "#e67e22";
+        } else if (totalMean >= 10) {
+            interp = "Moderat nivå av symptomer. Kan indikere dissosiasjon, men også andre tilstander.";
+            color = "#f1c40f";
+        } else {
+            interp = "Lavt nivå. Innenfor normalområdet eller milde symptomer.";
+            color = "#27ae60";
+        }
+        
+        // Note: The thresholds above (10, 20, 30) are generic approximations for scale 0-100 converted to 0-10 mean, 
+        // strictly speaking MID uses mean score 0-100 scaled. Assuming user input 0-10, the mean is 0-10.
+        // Let's adjust interpretation thresholds for 0-10 scale:
+        // Clinical cut-off often cited around 15-20 on 0-100 scale, so 1.5 - 2.0 on 0-10 scale.
+        
+        if (totalMean >= 4.0) {
+            interp = "HØY SKÅRE: Sterk indikasjon på patologisk dissosiasjon (DID-nivå).";
+            color = "#c0392b";
+        } else if (totalMean >= 2.0) {
+            interp = "FORHØYET: Indikerer klinisk signifikante dissosiative symptomer.";
+            color = "#d35400";
+        } else if (totalMean >= 1.0) {
+            interp = "MILD: Noe forhøyet over befolkingsgjennomsnitt.";
+            color = "#f39c12";
+        } else {
+            interp = "LAV: Innenfor normalområdet.";
+            color = "#27ae60";
+        }
+
+        document.getElementById('total-interpretation').innerHTML = `<span style="color:${color}; font-weight:bold">${interp}</span>`;
+
+        // Calculate Subscales
+        const tbody = document.getElementById('subscale-table-body');
+        tbody.innerHTML = "";
+        
+        const labels = [];
+        const dataPoints = [];
+
+        for (const [name, indices] of Object.entries(subscales)) {
+            let sum = 0;
+            indices.forEach(idx => {
+                sum += scores[idx - 1]; // Adjust 1-based index to 0-based
+            });
+            const mean = (sum / indices.length).toFixed(1);
+            
+            // Determine styling
+            const style = mean >= 2.0 ? "font-weight:bold; color:#c0392b;" : "";
+            
+            const row = `
+                <tr>
+                    <td>${name}</td>
+                    <td class="highlight-score" style="${style}">${mean}</td>
+                    <td>${mean >= 2.0 ? "Klinisk signifikant" : "-"}</td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+
+            labels.push(name);
+            dataPoints.push(mean);
+        }
+
+        // Show Results
+        document.getElementById('results').style.display = "block";
+
+        // Chart
+        const ctx = document.getElementById('resultsChart').getContext('2d');
+        if (chartInstance) chartInstance.destroy();
+
+        chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Gjennomsnittsskåre (0-10)',
+                    data: dataPoints,
+                    backgroundColor: dataPoints.map(v => v >= 2.0 ? 'rgba(192, 57, 43, 0.6)' : 'rgba(52, 152, 219, 0.6)'),
+                    borderColor: dataPoints.map(v => v >= 2.0 ? 'rgba(192, 57, 43, 1)' : 'rgba(52, 152, 219, 1)'),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true, max: 10 }
+                },
+                plugins: {
+                    annotation: {
+                        annotations: {
+                            line1: {
+                                type: 'line',
+                                yMin: 2.0,
+                                yMax: 2.0,
+                                borderColor: 'red',
+                                borderWidth: 2,
+                                borderDash: [6, 6],
+                                label: { content: 'Klinisk Cut-off (ca)', enabled: true }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Scroll to results
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        if(confirm("Er du sikker? Alle data vil bli slettet.")) {
+            document.querySelectorAll('input').forEach(i => i.value = "");
+            document.getElementById('pDate').valueAsDate = new Date();
+            document.getElementById('results').style.display = "none";
+            window.scrollTo(0,0);
+        }
+    }
+
+    async function exportPDF() {
+        const btn = document.getElementById('pdfBtn');
+        btn.disabled = true;
+        btn.innerText = "Genererer PDF...";
+
+        const element = document.getElementById('doc-content');
+        const name = document.getElementById('pName').value || "Ukjent";
+
+        try {
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            const imgWidth = pageWidth - 20;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            
+            let heightLeft = imgHeight;
+            let position = 10;
+
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pageHeight - 20);
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight + 10;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - 20);
+            }
+
+            pdf.save(`MID-60_Rapport_${name}.pdf`);
+        } catch (err) {
+            console.error(err);
+            alert("Feil under generering av PDF.");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "📄 Last ned PDF-rapport";
+        }
+    }
+</script>
+
+</body>
+</html>

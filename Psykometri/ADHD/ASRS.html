@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASRS v1.1 - Klinisk Skjema</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --panel-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #cbd5e0;
+            --success-color: #27ae60;
+            --shaded-color: #e9ecef; /* Farge for signifikante felt */
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background-color: var(--panel-bg);
+            padding: 50px;
+            border-radius: 8px;
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e1e4e8;
+        }
+
+        /* Header & Info */
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 2.2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #636e72;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+            font-weight: 300;
+        }
+
+        .meta-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        .instruction {
+            background-color: #e3f2fd;
+            border-left: 5px solid var(--secondary-color);
+            padding: 15px 20px;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+            color: #2c3e50;
+        }
+
+        /* Tabeller */
+        .section-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px 4px 0 0;
+            margin-top: 40px;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            background: white;
+            border: 1px solid var(--border-color);
+        }
+
+        th, td {
+            padding: 12px 10px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: #f1f3f5;
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 0.9em;
+        }
+
+        /* Spørsmålskolonnen */
+        th:first-child, td:first-child {
+            text-align: left;
+            width: 55%;
+            padding-left: 15px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #fcfcfc;
+        }
+
+        /* Skraverte felt */
+        .shaded-zone {
+            background-color: var(--shaded-color) !important;
+            position: relative; /* For utskriftshåndtering */
+        }
+
+        /* Radio Buttons */
+        input[type="radio"] {
+            transform: scale(1.3);
+            cursor: pointer;
+            accent-color: var(--primary-color);
+        }
+
+        /* Resultatboks */
+        #results {
+            margin-top: 40px;
+            padding: 0;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            display: none;
+            overflow: hidden;
+            background-color: #fff;
+        }
+
+        .result-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .result-body {
+            padding: 20px;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 1.1em;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .positive-screen {
+            color: #c0392b; /* Mørk rød */
+            font-weight: bold;
+            background-color: #fdeea;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .negative-screen {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .interpretation {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #666;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        /* Knapper */
+        .controls {
+            margin-top: 50px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .btn-calc { background-color: var(--success-color); color: white; }
+        .btn-html { background-color: var(--secondary-color); color: white; }
+        .btn-word { background-color: #2b579a; color: white; }
+        .btn-pdf { background-color: #b30b00; color: white; }
+
+        /* Print & PDF Styles */
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+                font-size: 10pt;
+            }
+            .container {
+                box-shadow: none;
+                width: 100%;
+                max-width: 100%;
+                padding: 0;
+                border: none;
+                margin: 0;
+            }
+            .controls, .instruction { display: none !important; }
+            h1 { font-size: 18pt; margin-bottom: 5px; color: black; }
+            .subtitle { margin-bottom: 20px; color: black; }
+            .section-header {
+                background-color: #eee !important;
+                color: black !important;
+                border: 1px solid #ccc;
+                font-weight: bold;
+                margin-top: 20px;
+                page-break-after: avoid;
+            }
+            table { page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            th { background-color: #ddd !important; color: black !important; }
+            .shaded-zone {
+                background-color: #e0e0e0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            #results {
+                display: block !important;
+                border: 2px solid #000;
+                page-break-inside: avoid;
+            }
+            .result-header {
+                background-color: #ddd !important;
+                color: black !important;
+                border-bottom: 1px solid #000;
+            }
+            input[type="text"] {
+                border: none;
+                border-bottom: 1px solid #000;
+                width: 100%;
+            }
+            /* Vis valgte radiobuttons tydeligere på print */
+            input[type="radio"] { appearance: none; border: 1px solid #000; width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+            input[type="radio"]:checked { background: #000; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="document-content">
+    <h1>ASRS v1.1</h1>
+    <div class="subtitle">WHO Voksne Self-Report Scale (ASRS-v1.1) Symptom sjekkliste</div>
+
+    <div class="meta-info">
+        <div class="form-group">
+            <label for="patientName">Pasientnavn / ID:</label>
+            <input type="text" id="patientName" placeholder="Skriv inn navn eller ID...">
+        </div>
+        <div class="form-group">
+            <label for="assessmentDate">Dato:</label>
+            <input type="date" id="assessmentDate">
+        </div>
+    </div>
+
+    <div class="instruction">
+        <strong>Instruksjon:</strong> Vennligst svar på spørsmålene nedenfor ved å markere den boksen som best beskriver hvordan du har hatt det de siste 6 månedene.
+    </div>
+
+    <form id="asrsForm">
+        <!-- Part A -->
+        <div class="section-header">Del A: Screening (Symptom 1-6)</div>
+        <table id="tablePartA">
+            <thead>
+                <tr>
+                    <th>Spørsmål</th>
+                    <th>Aldri</th>
+                    <th>Sjelden</th>
+                    <th>I blant</th>
+                    <th>Ofte</th>
+                    <th>Svært ofte</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Q1 -->
+                <tr>
+                    <td>1. Hvor ofte har du problemer med å avslutte en oppgave etter at de interessante delene er unnagjort?</td>
+                    <td><input type="radio" name="q1" value="0"></td>
+                    <td><input type="radio" name="q1" value="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q1" value="2" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q1" value="3" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q1" value="4" data-sig="1"></td>
+                </tr>
+                <!-- Q2 -->
+                <tr>
+                    <td>2. Hvor ofte er det vanskelig for deg å få orden på ting når du skal utføre en oppgave som krever organisering?</td>
+                    <td><input type="radio" name="q2" value="0"></td>
+                    <td><input type="radio" name="q2" value="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q2" value="2" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q2" value="3" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q2" value="4" data-sig="1"></td>
+                </tr>
+                <!-- Q3 -->
+                <tr>
+                    <td>3. Hvor ofte har du problemer med å huske avtaler eller forpliktelser?</td>
+                    <td><input type="radio" name="q3" value="0"></td>
+                    <td><input type="radio" name="q3" value="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q3" value="2" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q3" value="3" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q3" value="4" data-sig="1"></td>
+                </tr>
+                <!-- Q4 -->
+                <tr>
+                    <td>4. Når du har en oppgave som krever at du tenker nøye igjennom det du skal gjøre, hvor ofte unngår eller utsetter du å begynne på den?</td>
+                    <td><input type="radio" name="q4" value="0"></td>
+                    <td><input type="radio" name="q4" value="1"></td>
+                    <td><input type="radio" name="q4" value="2"></td>
+                    <td class="shaded-zone"><input type="radio" name="q4" value="3" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q4" value="4" data-sig="1"></td>
+                </tr>
+                <!-- Q5 -->
+                <tr>
+                    <td>5. Hvor ofte sitter du og fikler med noe når du må sitte lenge i ro?</td>
+                    <td><input type="radio" name="q5" value="0"></td>
+                    <td><input type="radio" name="q5" value="1"></td>
+                    <td><input type="radio" name="q5" value="2"></td>
+                    <td class="shaded-zone"><input type="radio" name="q5" value="3" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q5" value="4" data-sig="1"></td>
+                </tr>
+                <!-- Q6 -->
+                <tr>
+                    <td>6. Hvor ofte føler du deg overaktiv og tvunget til å gjøre ting, som om du var drevet av en motor?</td>
+                    <td><input type="radio" name="q6" value="0"></td>
+                    <td><input type="radio" name="q6" value="1"></td>
+                    <td><input type="radio" name="q6" value="2"></td>
+                    <td class="shaded-zone"><input type="radio" name="q6" value="3" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q6" value="4" data-sig="1"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Part B -->
+        <div class="section-header">Del B: Tilleggssymptomer (Symptom 7-18)</div>
+        <table id="tablePartB">
+            <thead>
+                <tr>
+                    <th>Spørsmål</th>
+                    <th>Aldri</th>
+                    <th>Sjelden</th>
+                    <th>I blant</th>
+                    <th>Ofte</th>
+                    <th>Svært ofte</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Q7 -->
+                <tr>
+                    <td>7. Hvor ofte gjør du slurvefeil når du holder på med kjedelige eller vanskelige prosjekter?</td>
+                    <td><input type="radio" name="q7" value="0"></td>
+                    <td><input type="radio" name="q7" value="1"></td>
+                    <td><input type="radio" name="q7" value="2"></td>
+                    <td class="shaded-zone"><input type="radio" name="q7" value="3" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q7" value="4" data-sig="1"></td>
+                </tr>
+                <!-- Q8 -->
+                <tr>
+                    <td>8. Hvor ofte har du problemer med å holde oppmerksomheten oppe når du holder på med kjedelig eller ensformig arbeid?</td>
+                    <td><input type="radio" name="q8" value="0"></td>
+                    <td><input type="radio" name="q8" value="1"></td>
+                    <td><input type="radio" name="q8" value="2"></td>
+                    <td class="shaded-zone"><input type="radio" name="q8" value="3" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q8" value="4" data-sig="1"></td>
+                </tr>
+                <!-- Q9 -->
+                <tr>
+                    <td>9. Hvor ofte har du vansker med å konsentrere deg om hva folk sier, selv når de snakker direkte til deg?</td>
+                    <td><input type="radio" name="q9" value="0"></td>
+                    <td><input type="radio" name="q9" value="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q9" value="2" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q9" value="3" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q9" value="4" data-sig="1"></td>
+                </tr>
+                <!-- Q10 -->
+                <tr>
+                    <td>10. Hvor ofte har du vanskeligheter med å finne igjen ting hjemme eller på jobb?</td>
+                    <td><input type="radio" name="q10" value="0"></td>
+                    <td><input type="radio" name="q10" value="1"></td>
+                    <td><input type="radio" name="q10" value="2"></td>
+                    <td class="shaded-zone"><input type="radio" name="q10" value="3" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q10" value="4" data-sig="1"></td>
+                </tr>
+                <!-- Q11 -->
+                <tr>
+                    <td>11. Hvor ofte blir du distrahert av aktiviteter eller lyder rundt deg?</td>
+                    <td><input type="radio" name="q11" value="0"></td>
+                    <td><input type="radio" name="q11" value="1"></td>
+                    <td><input type="radio" name="q11" value="2"></td>
+                    <td class="shaded-zone"><input type="radio" name="q11" value="3" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q11" value="4" data-sig="1"></td>
+                </tr>
+                <!-- Q12 -->
+                <tr>
+                    <td>12. Hvor ofte forlater du plassen din i situasjoner der det forventes at du blir sittende?</td>
+                    <td><input type="radio" name="q12" value="0"></td>
+                    <td><input type="radio" name="q12" value="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q12" value="2" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q12" value="3" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q12" value="4" data-sig="1"></td>
+                </tr>
+                <!-- Q13 -->
+                <tr>
+                    <td>13. Hvor ofte føler du deg urolig eller vrir deg i stolen?</td>
+                    <td><input type="radio" name="q13" value="0"></td>
+                    <td><input type="radio" name="q13" value="1"></td>
+                    <td><input type="radio" name="q13" value="2"></td>
+                    <td class="shaded-zone"><input type="radio" name="q13" value="3" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q13" value="4" data-sig="1"></td>
+                </tr>
+                <!-- Q14 -->
+                <tr>
+                    <td>14. Hvor ofte har du vanskelig for å slappe av og koble av på fritiden?</td>
+                    <td><input type="radio" name="q14" value="0"></td>
+                    <td><input type="radio" name="q14" value="1"></td>
+                    <td><input type="radio" name="q14" value="2"></td>
+                    <td class="shaded-zone"><input type="radio" name="q14" value="3" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q14" value="4" data-sig="1"></td>
+                </tr>
+                <!-- Q15 -->
+                <tr>
+                    <td>15. Hvor ofte opplever du å snakke for mye i sosiale sammenhenger?</td>
+                    <td><input type="radio" name="q15" value="0"></td>
+                    <td><input type="radio" name="q15" value="1"></td>
+                    <td><input type="radio" name="q15" value="2"></td>
+                    <td class="shaded-zone"><input type="radio" name="q15" value="3" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q15" value="4" data-sig="1"></td>
+                </tr>
+                <!-- Q16 -->
+                <tr>
+                    <td>16. Hvor ofte opplever du at du fullfører setninger for andre før de rekker å fullføre dem selv?</td>
+                    <td><input type="radio" name="q16" value="0"></td>
+                    <td><input type="radio" name="q16" value="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q16" value="2" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q16" value="3" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q16" value="4" data-sig="1"></td>
+                </tr>
+                <!-- Q17 -->
+                <tr>
+                    <td>17. Hvor ofte har du problemer med å vente på tur i situasjoner der dette er nødvendig?</td>
+                    <td><input type="radio" name="q17" value="0"></td>
+                    <td><input type="radio" name="q17" value="1"></td>
+                    <td><input type="radio" name="q17" value="2"></td>
+                    <td class="shaded-zone"><input type="radio" name="q17" value="3" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q17" value="4" data-sig="1"></td>
+                </tr>
+                <!-- Q18 -->
+                <tr>
+                    <td>18. Hvor ofte avbryter du andre når de holder på med noe?</td>
+                    <td><input type="radio" name="q18" value="0"></td>
+                    <td><input type="radio" name="q18" value="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q18" value="2" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q18" value="3" data-sig="1"></td>
+                    <td class="shaded-zone"><input type="radio" name="q18" value="4" data-sig="1"></td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+
+    <div id="results">
+        <div class="result-header">Oppsummering og Resultat</div>
+        <div class="result-body">
+            <div class="result-row">
+                <span><strong>Del A (Screening)</strong> - Antall signifikante svar:</span>
+                <span id="screenCount" style="font-weight:bold; font-size: 1.2em;">0 av 6</span>
+            </div>
+            <div class="result-row">
+                <span>Konklusjon (Del A):</span>
+                <span id="screenResult">-</span>
+            </div>
+            
+            <div class="result-row" style="margin-top:20px; border-top: 1px solid #ddd; padding-top:20px;">
+                <span><strong>Del B (Tillegg)</strong> - Antall signifikante svar:</span>
+                <span id="partBCount" style="font-weight:bold; font-size: 1.2em;">0 av 12</span>
+            </div>
+            
+            <div class="interpretation">
+                <strong>Tolkning:</strong><br>
+                • <strong>Del A:</strong> Hvis respondenten har <strong>4 eller flere</strong> treff i de grå (skraverte) feltene i Del A, er resultatet forenlig med ADHD hos voksne og bør følges opp klinisk.<br>
+                • <strong>Del B:</strong> Gir ytterligere informasjon om symptomprofilen, men brukes ikke diagnostisk alene i screeningsammenheng.
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button type="button" class="btn-calc" onclick="calculateScore()">
+            <span>🔢</span> Regn ut
+        </button>
+        <button type="button" class="btn-html" onclick="exportHTML()">
+            <span>💾</span> Lagre som HTML
+        </button>
+        <button type="button" class="btn-word" onclick="exportWord()">
+            <span>📝</span> Lagre til Word
+        </button>
+        <button type="button" class="btn-pdf" onclick="window.print()">
+            <span>🖨️</span> Skriv ut / PDF
+        </button>
+    </div>
+</div>
+
+<script>
+    // Sett dagens dato automatisk hvis feltet er tomt
+    document.addEventListener('DOMContentLoaded', function() {
+        if (!document.getElementById('assessmentDate').value) {
+            document.getElementById('assessmentDate').valueAsDate = new Date();
+        }
+    });
+
+    function calculateScore() {
+        // Beregn Del A (q1-q6)
+        let partACount = 0;
+        for (let i = 1; i <= 6; i++) {
+            const radios = document.getElementsByName('q' + i);
+            for (let radio of radios) {
+                if (radio.checked && radio.hasAttribute('data-sig')) {
+                    partACount++;
+                }
+            }
+        }
+
+        // Beregn Del B (q7-q18)
+        let partBCount = 0;
+        for (let i = 7; i <= 18; i++) {
+            const radios = document.getElementsByName('q' + i);
+            for (let radio of radios) {
+                if (radio.checked && radio.hasAttribute('data-sig')) {
+                    partBCount++;
+                }
+            }
+        }
+
+        const resultDiv = document.getElementById('results');
+        const screenCountSpan = document.getElementById('screenCount');
+        const screenResultSpan = document.getElementById('screenResult');
+        const partBSpan = document.getElementById('partBCount');
+
+        // Vis resultater
+        resultDiv.style.display = 'block';
+
+        // Oppdater Del A
+        screenCountSpan.innerText = partACount + " av 6";
+        if (partACount >= 4) {
+            screenResultSpan.innerText = "POSITIV SCREENING (Indikasjon på ADHD)";
+            screenResultSpan.className = "positive-screen";
+        } else {
+            screenResultSpan.innerText = "Negativ Screening";
+            screenResultSpan.className = "negative-screen";
+        }
+
+        // Oppdater Del B
+        partBSpan.innerText = partBCount + " av 12";
+
+        // Scroll til resultat
+        resultDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    /* -------------------------------------------------------------
+       Eksportfunksjoner
+    ------------------------------------------------------------- */
+    
+    // Hjelpefunksjon: Generer filnavn basert på pasientnavn
+    function getFilename(suffix) {
+        const name = document.getElementById('patientName').value.trim();
+        const date = document.getElementById('assessmentDate').value || new Date().toISOString().slice(0, 10);
+        let cleanName = name ? name.replace(/[^a-zA-Z0-9æøåÆØÅ ]/g, "").replace(/\s+/g, "_") : "Uten_Navn";
+        return `ASRS_${cleanName}_${date}.${suffix}`;
+    }
+
+    // HTML Eksport: "Fryser" tilstanden inn i selve filkoden
+    function exportHTML() {
+        // Oppdater DOM med 'value' for inputs slik at de lagres riktig
+        const docClone = document.documentElement.cloneNode(true);
+        
+        // Håndter tekst-inputs (navn, dato)
+        const originalTextInputs = document.querySelectorAll('input[type="text"], input[type="date"]');
+        const clonedTextInputs = docClone.querySelectorAll('input[type="text"], input[type="date"]');
+        
+        for (let i = 0; i < originalTextInputs.length; i++) {
+            clonedTextInputs[i].setAttribute('value', originalTextInputs[i].value);
+        }
+
+        // Håndter radio buttons (checked state)
+        const originalRadios = document.querySelectorAll('input[type="radio"]');
+        const clonedRadios = docClone.querySelectorAll('input[type="radio"]');
+        
+        for (let i = 0; i < originalRadios.length; i++) {
+            if (originalRadios[i].checked) {
+                clonedRadios[i].setAttribute('checked', 'checked');
+            } else {
+                clonedRadios[i].removeAttribute('checked');
+            }
+        }
+        
+        // Sørg for at resultat-diven er synlig hvis den er utregnet
+        const resultsDiv = document.getElementById('results');
+        const clonedResultsDiv = docClone.querySelector('#results');
+        if (resultsDiv.style.display === 'block') {
+            clonedResultsDiv.style.display = 'block';
+            // Kopier indre tekst fra resultatene da disse er dynamiske
+            clonedResultsDiv.innerHTML = resultsDiv.innerHTML;
+        }
+
+        const htmlContent = "<!DOCTYPE html>\n" + docClone.outerHTML;
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = getFilename('html');
+        link.click();
+    }
+
+    // Word Eksport
+    function exportWord() {
+        // Vi lager en forenklet versjon for Word for å unngå layout-problemer
+        const contentClone = document.getElementById('document-content').cloneNode(true);
+        
+        // Fjern knapper
+        const controls = contentClone.querySelector('.controls');
+        if (controls) controls.remove();
+
+        // Erstatt Inputs med tekst for Word
+        const inputs = contentClone.querySelectorAll('input');
+        inputs.forEach(input => {
+            if (input.type === 'radio') {
+                const parent = input.parentElement;
+                if (input.checked) {
+                    const span = document.createElement('span');
+                    span.innerHTML = "<strong>[ X ]</strong>"; // Markert
+                    parent.appendChild(span);
+                    parent.style.backgroundColor = "#d4edda"; // Farge i Word
+                } else {
+                    // Fjern ikke-valgte eller erstatt med tom parentes
+                     const span = document.createElement('span');
+                    span.innerHTML = "( )"; 
+                    parent.appendChild(span);
+                }
+                input.remove(); // Fjern selve HTML-inputen
+            } else if (input.type === 'text' || input.type === 'date') {
+                const span = document.createElement('span');
+                span.innerText = input.value;
+                span.style.fontWeight = "bold";
+                input.replaceWith(span);
+            }
+        });
+
+        // Legg til Word-spesifikk XML header for å sikre UTF-8 og layout
+        const header = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' 
+                  xmlns:w='urn:schemas-microsoft-com:office:word' 
+                  xmlns='http://www.w3.org/TR/REC-html40'>
+            <head>
+                <meta charset='utf-8'>
+                <title>ASRS Resultat</title>
+                <style>
+                    body { font-family: Arial, sans-serif; font-size: 11pt; }
+                    table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+                    td, th { border: 1px solid #999; padding: 5px; text-align: center; }
+                    th { background-color: #eee; }
+                    td:first-child { text-align: left; }
+                    .section-header { background-color: #2c3e50; color: white; padding: 10px; font-weight: bold; margin-top: 20px;}
+                    .result-header { background-color: #eee; font-weight: bold; padding: 10px; border: 1px solid #000; margin-top: 20px;}
+                </style>
+            </head><body>`;
+            
+        const footer = "</body></html>";
+        const sourceHTML = header + contentClone.innerHTML + footer;
+
+        const blob = new Blob(['\ufeff', sourceHTML], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = getFilename('doc');
+        link.click();
+    }
+</script>
+
+</body>
+</html>

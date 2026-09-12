@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Y-BOCS - Yale-Brown Obsessive Compulsive Scale</title>
+    
+    <!-- PDF & Word Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e67e22;
+            --bg: #f4f7f6;
+            --paper: #ffffff;
+            --border: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 30px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: var(--paper);
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-radius: 8px;
+        }
+
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-weight: 300; }
+
+        .section-header {
+            background: var(--primary);
+            color: white;
+            padding: 10px 15px;
+            margin: 30px 0 15px 0;
+            border-radius: 4px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .sub-header {
+            background: #ecf0f1;
+            padding: 8px 12px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-top: 15px;
+            border-left: 4px solid var(--secondary);
+        }
+
+        /* Meta Info */
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .form-group label { display: block; font-size: 12px; font-weight: bold; color: #7f8c8d; margin-bottom: 4px; }
+        .form-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+
+        /* Checklist Items */
+        .checklist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .check-item {
+            background: #fff;
+            border: 1px solid #eee;
+            padding: 8px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .check-item:hover { background: #f9f9f9; }
+        .check-item input { margin-right: 10px; transform: scale(1.2); }
+
+        /* Target Symptoms Box */
+        .target-box {
+            border: 2px dashed var(--secondary);
+            padding: 15px;
+            background: #fdfdfd;
+            margin: 20px 0;
+        }
+        .target-row { margin-bottom: 10px; }
+        .target-row input { width: 100%; padding: 8px; border: 1px solid #ccc; }
+
+        /* Severity Scale Questions */
+        .rating-box {
+            margin-bottom: 25px;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            padding: 15px;
+            break-inside: avoid;
+        }
+
+        .rating-q { font-weight: bold; font-size: 16px; margin-bottom: 10px; color: var(--primary); }
+        .rating-desc { font-style: italic; font-size: 13px; color: #666; margin-bottom: 15px; }
+
+        .scale-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .scale-opt {
+            display: flex;
+            align-items: flex-start;
+            padding: 8px;
+            border: 1px solid #f0f0f0;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .scale-opt:hover { background-color: #f0f0f0; }
+        .scale-opt.selected { background-color: #e8f4fd; border-color: var(--secondary); }
+        
+        .scale-opt input { margin-top: 4px; margin-right: 10px; }
+        .opt-val { font-weight: bold; min-width: 20px; color: var(--secondary); }
+        .opt-text { font-size: 14px; }
+
+        /* Results */
+        .results-section {
+            margin-top: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            display: none;
+        }
+
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            text-align: center;
+        }
+
+        .score-card { background: white; padding: 15px; border-radius: 6px; border: 1px solid #ddd; }
+        .score-num { font-size: 32px; font-weight: bold; color: var(--secondary); }
+        .score-label { font-size: 12px; color: #777; text-transform: uppercase; }
+
+        /* Controls */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            transition: transform 0.1s;
+            font-size: 14px;
+        }
+        button:hover { transform: translateY(-2px); }
+        .btn-calc { background-color: var(--secondary); }
+        .btn-word { background-color: #2980b9; }
+        .btn-pdf { background-color: #c0392b; }
+        .btn-reset { background-color: #95a5a6; }
+
+        @media print {
+            .controls { display: none; }
+            .container { box-shadow: none; margin: 0; padding: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="doc-content">
+    <h1>Y-BOCS</h1>
+    <div class="subtitle">Yale-Brown Obsessive Compulsive Scale</div>
+
+    <div class="meta-grid">
+        <div class="form-group">
+            <label>Navn</label>
+            <input type="text" id="pName" placeholder="Navn...">
+        </div>
+        <div class="form-group">
+            <label>Dato</label>
+            <input type="date" id="pDate">
+        </div>
+        <div class="form-group">
+            <label>Intervjuer</label>
+            <input type="text" id="pInt">
+        </div>
+    </div>
+
+    <!-- DEL 1: SJEKKLISTE -->
+    <div class="section-header">Del 1: Sjekkliste for symptomer</div>
+    <div style="font-size:14px; margin-bottom:20px;">
+        Merk av for symptomer som er aktuelle nå (siste uke).
+    </div>
+
+    <div id="checklist-container">
+        <!-- Genereres av JS -->
+    </div>
+
+    <!-- MÅLSYMPTOMER -->
+    <div class="section-header">Målsymptomer</div>
+    <div class="target-box">
+        <div style="margin-bottom:10px; font-weight:bold;">List opp de 3 viktigste tvangstankene:</div>
+        <div class="target-row">1. <input type="text" id="obs1"></div>
+        <div class="target-row">2. <input type="text" id="obs2"></div>
+        <div class="target-row">3. <input type="text" id="obs3"></div>
+        
+        <div style="margin:20px 0 10px 0; font-weight:bold;">List opp de 3 viktigste tvangshandlingene:</div>
+        <div class="target-row">1. <input type="text" id="comp1"></div>
+        <div class="target-row">2. <input type="text" id="comp2"></div>
+        <div class="target-row">3. <input type="text" id="comp3"></div>
+    </div>
+
+    <!-- DEL 2: GRADERINGS SKALA -->
+    <div class="section-header">Del 2: Graderingsskala (Y-BOCS)</div>
+    <div style="font-size:14px; margin-bottom:20px;">
+        Vurder alvorlighetsgraden av målsymptomene den siste uken.
+        Spørsmål 1-5 gjelder tvangstanker. Spørsmål 6-10 gjelder tvangshandlinger.
+    </div>
+
+    <div id="rating-container">
+        <!-- Genereres av JS -->
+    </div>
+
+    <!-- RESULTATER -->
+    <div class="results-section" id="results">
+        <h3>Resultater</h3>
+        <div class="score-grid">
+            <div class="score-card">
+                <div class="score-label">Tvangstanker (1-5)</div>
+                <div class="score-num" id="scoreObs">0</div>
+                <div>/ 20</div>
+            </div>
+            <div class="score-card">
+                <div class="score-label">Tvangshandlinger (6-10)</div>
+                <div class="score-num" id="scoreComp">0</div>
+                <div>/ 20</div>
+            </div>
+            <div class="score-card" style="border-color: var(--secondary); background: #e8f4fd;">
+                <div class="score-label">TOTAL SKÅRE</div>
+                <div class="score-num" id="scoreTotal">0</div>
+                <div>/ 40</div>
+            </div>
+        </div>
+        <div style="margin-top:20px; font-size:13px; color:#555;">
+            <strong>Tolkning (veiledende):</strong><br>
+            0-7: Subklinisk<br>
+            8-15: Mild<br>
+            16-23: Moderat<br>
+            24-31: Alvorlig<br>
+            32-40: Ekstrem
+        </div>
+    </div>
+
+</div>
+
+<div class="controls">
+    <button class="btn-calc" onclick="calculateScore()">📊 Beregn Skåre</button>
+    <button class="btn-word" onclick="exportWord()">💾 Lagre til Word</button>
+    <button class="btn-pdf" onclick="exportPDF()" id="pdfBtn">📄 Lagre til PDF</button>
+    <button class="btn-reset" onclick="resetForm()">🔄 Nullstill</button>
+</div>
+
+<script>
+    document.getElementById('pDate').valueAsDate = new Date();
+
+    // --- SJEKKLISTE DATA ---
+    const checklists = [
+        {
+            category: "Aggresjon",
+            items: [
+                "Frykt for å skade seg selv",
+                "Frykt for å skade andre",
+                "Voldsomme eller skremmende bilder",
+                "Frykt for å si noe obskønt eller fornærmende",
+                "Frykt for å gjøre noe flaut",
+                "Frykt for å handle på uønskede impulser (f.eks. knivstikke)",
+                "Frykt for å stjele ting"
+            ]
+        },
+        {
+            category: "Smitte / Forurensning",
+            items: [
+                "Ubehag ved kroppsvesker (urin, avføring, spytt)",
+                "Frykt for skitt, bakterier eller virus",
+                "Frykt for miljøgifter eller kjemikalier",
+                "Overdreven bekymring for å bli syk av smitte",
+                "Vemme ved klissete stoffer eller rester"
+            ]
+        },
+        {
+            category: "Seksuelle tanker",
+            items: [
+                "Forbudte eller perverse seksuelle tanker/bilder",
+                "Seksuelle tanker om barn eller incest",
+                "Seksuelle tanker om vold"
+            ]
+        },
+        {
+            category: "Samle / Spare",
+            items: [
+                "Frykt for å kaste ting",
+                "Samler på unyttige gjenstander (aviser, søppel)",
+                "Klarer ikke kaste noe i tilfelle det trengs"
+            ]
+        },
+        {
+            category: "Religiøse / Moralske",
+            items: [
+                "Overdreven bekymring for rett og galt",
+                "Frykt for å ha syndet eller spottet Gud",
+                "Overdreven skyldfølelse"
+            ]
+        },
+        {
+            category: "Symmetri / Orden",
+            items: [
+                "Ting må stå 'akkurat riktig'",
+                "Frykt for at noe ikke er symmetrisk",
+                "Tvangsmessig behov for å rette på ting"
+            ]
+        },
+        {
+            category: "Tvangshandlinger (Vasking/Rensing)",
+            items: [
+                "Overdreven håndvask",
+                "Overdreven dusjing/bading",
+                "Overdreven rengjøring av hus/gjenstander",
+                "Ritualer for å unngå smitte"
+            ]
+        },
+        {
+            category: "Tvangshandlinger (Sjekking)",
+            items: [
+                "Sjekke låser, komfyr, elektriske apparater",
+                "Sjekke om man har skadet noen",
+                "Sjekke om man har gjort feil",
+                "Sjekke kroppen for sykdomstegn"
+            ]
+        },
+        {
+            category: "Tvangshandlinger (Gjentakelse/Telling)",
+            items: [
+                "Lese eller skrive om igjen",
+                "Gjenta rutinehandlinger (gå inn/ut av dør)",
+                "Telle gjenstander eller i hodet",
+                "Ordne/sortere ting i rekkefølge"
+            ]
+        }
+    ];
+
+    // --- GRADERINGS SPØRSMÅL ---
+    const ratingQuestions = [
+        {
+            id: 1,
+            title: "1. Tidsbruk på tvangstanker",
+            desc: "Hvor mye av din tid opptas av tvangstanker?",
+            opts: [
+                "Ingen",
+                "Mindre enn 1 time/dag, eller forekommer sjelden.",
+                "1 til 3 timer/dag, eller forekommer ofte.",
+                "3 til 8 timer/dag, eller forekommer svært ofte.",
+                "Mer enn 8 timer/dag, eller nesten konstant."
+            ]
+        },
+        {
+            id: 2,
+            title: "2. Hindring fra tvangstanker",
+            desc: "Hvor mye forstyrrer tvangstankene dine sosiale eller arbeidsmessige funksjon?",
+            opts: [
+                "Ingen hindring.",
+                "Mild, liten forstyrrelse i sosiale eller andre aktiviteter.",
+                "Moderat, klar forstyrrelse, men håndterbar.",
+                "Alvorlig, vesentlig svikt i funksjon.",
+                "Ekstrem, invalidiserende."
+            ]
+        },
+        {
+            id: 3,
+            title: "3. Ubehag ved tvangstanker",
+            desc: "Hvor mye ubehag føler du hvis du ikke får utført tvangshandlinger, eller pga tankene?",
+            opts: [
+                "Ingen.",
+                "Mildt, ikke for hyppig.",
+                "Moderat, hyppig og forstyrrende, men håndterbart.",
+                "Alvorlig, svært hyppig og forstyrrende.",
+                "Ekstremt, nesten konstant og invalidiserende ubehag."
+            ]
+        },
+        {
+            id: 4,
+            title: "4. Motstand mot tvangstanker",
+            desc: "Hvor mye anstrenger du deg for å motstå tvangstankene?",
+            opts: [
+                "Gjør alltid en innsats for å motstå.",
+                "Prøver å motstå det meste av tiden.",
+                "Gjør noen innsats for å motstå.",
+                "Gir etter for alle tvangstanker uten mye motstand.",
+                "Gir fullstendig etter for alle tvangstanker."
+            ]
+        },
+        {
+            id: 5,
+            title: "5. Kontroll over tvangstanker",
+            desc: "Hvor mye kontroll har du over tvangstankene?",
+            opts: [
+                "Full kontroll.",
+                "Mye kontroll, kan vanligvis stoppe eller avlede.",
+                "Moderat kontroll, kan noen ganger stoppe.",
+                "Lite kontroll, sjelden i stand til å stoppe.",
+                "Ingen kontroll, opplever tankene som helt ufrivillige."
+            ]
+        },
+        // Tvangshandlinger
+        {
+            id: 6,
+            title: "6. Tidsbruk på tvangshandlinger",
+            desc: "Hvor mye tid bruker du på tvangshandlinger?",
+            opts: [
+                "Ingen.",
+                "Mindre enn 1 time/dag.",
+                "1 til 3 timer/dag.",
+                "3 til 8 timer/dag.",
+                "Mer enn 8 timer/dag."
+            ]
+        },
+        {
+            id: 7,
+            title: "7. Hindring fra tvangshandlinger",
+            desc: "Hvor mye forstyrrer tvangshandlingene ditt daglige liv?",
+            opts: [
+                "Ingen hindring.",
+                "Mild, liten forstyrrelse.",
+                "Moderat, klar forstyrrelse.",
+                "Alvorlig, vesentlig nedsatt funksjon.",
+                "Ekstrem, invalidiserende."
+            ]
+        },
+        {
+            id: 8,
+            title: "8. Ubehag ved avbrytelse",
+            desc: "Hvor engstelig ville du blitt hvis du ble hindret i å utføre handlingene?",
+            opts: [
+                "Ingen angst.",
+                "Mild, litt ubehag.",
+                "Moderat, men håndterbar angst.",
+                "Alvorlig, betydelig angst.",
+                "Ekstrem angst/panikk."
+            ]
+        },
+        {
+            id: 9,
+            title: "9. Motstand mot tvangshandlinger",
+            desc: "Hvor mye prøver du å motstå tvangshandlingene?",
+            opts: [
+                "Prøver alltid å motstå.",
+                "Prøver det meste av tiden.",
+                "Gjør noe innsats.",
+                "Gir etter uten mye motstand.",
+                "Gir fullstendig etter."
+            ]
+        },
+        {
+            id: 10,
+            title: "10. Kontroll over tvangshandlinger",
+            desc: "Hvor mye kontroll har du over tvangshandlingene?",
+            opts: [
+                "Full kontroll.",
+                "Mye kontroll.",
+                "Moderat kontroll.",
+                "Lite kontroll, kan bare utsette det litt.",
+                "Ingen kontroll."
+            ]
+        }
+    ];
+
+    // --- RENDER SJEKKLISTE ---
+    const clContainer = document.getElementById('checklist-container');
+    clContainer.innerHTML = ''; // Edge fix
+
+    checklists.forEach(cat => {
+        const header = document.createElement('div');
+        header.className = 'sub-header';
+        header.innerText = cat.category;
+        clContainer.appendChild(header);
+
+        const grid = document.createElement('div');
+        grid.className = 'checklist-grid';
+
+        cat.items.forEach(item => {
+            const label = document.createElement('label');
+            label.className = 'check-item';
+            label.innerHTML = `
+                <input type="checkbox" name="cl-item" value="${item}">
+                <span>${item}</span>
+            `;
+            grid.appendChild(label);
+        });
+        clContainer.appendChild(grid);
+    });
+
+    // --- RENDER GRADERINGS SPØRSMÅL ---
+    const rContainer = document.getElementById('rating-container');
+    rContainer.innerHTML = ''; // Edge fix
+
+    ratingQuestions.forEach(q => {
+        const div = document.createElement('div');
+        div.className = 'rating-box';
+        
+        let optsHTML = '<div class="scale-options">';
+        q.opts.forEach((txt, val) => {
+            optsHTML += `
+                <label class="scale-opt" onclick="selectOpt(this)">
+                    <input type="radio" name="q${q.id}" value="${val}">
+                    <span class="opt-val">${val}</span>
+                    <span class="opt-text">${txt}</span>
+                </label>
+            `;
+        });
+        optsHTML += '</div>';
+
+        div.innerHTML = `
+            <div class="rating-q">${q.title}</div>
+            <div class="rating-desc">${q.desc}</div>
+            ${optsHTML}
+        `;
+        rContainer.appendChild(div);
+    });
+
+    function selectOpt(label) {
+        // Visuell effekt for radio
+        const container = label.parentElement;
+        container.querySelectorAll('.scale-opt').forEach(el => el.classList.remove('selected'));
+        label.classList.add('selected');
+        label.querySelector('input').checked = true;
+    }
+
+    function calculateScore() {
+        let obsScore = 0;
+        let compScore = 0;
+        let missing = 0;
+
+        for (let i = 1; i <= 10; i++) {
+            const el = document.querySelector(`input[name="q${i}"]:checked`);
+            if (el) {
+                const val = parseInt(el.value);
+                if (i <= 5) obsScore += val;
+                else compScore += val;
+            } else {
+                missing++;
+            }
+        }
+
+        document.getElementById('scoreObs').innerText = obsScore;
+        document.getElementById('scoreComp').innerText = compScore;
+        document.getElementById('scoreTotal').innerText = obsScore + compScore;
+
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+
+        if (missing > 0) alert(`Obs: Du har ikke besvart ${missing} spørsmål.`);
+    }
+
+    function resetForm() {
+        if(confirm("Slette data?")) location.reload();
+    }
+
+    async function exportPDF() {
+        const btn = document.getElementById('pdfBtn');
+        btn.innerText = "Genererer...";
+        btn.disabled = true;
+
+        const element = document.getElementById('doc-content');
+        const name = document.getElementById('pName').value || "Ukjent";
+
+        try {
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            const imgWidth = 190;
+            const pageHeight = 295;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 10;
+
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pageHeight - 20);
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight + 10;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - 20);
+            }
+
+            pdf.save(`YBOCS_${name}.pdf`);
+        } catch(e) {
+            alert("Feil ved PDF");
+        } finally {
+            btn.innerText = "📄 Lagre til PDF";
+            btn.disabled = false;
+        }
+    }
+
+    function exportWord() {
+        const name = document.getElementById('pName').value || "Ukjent";
+        const content = document.getElementById('doc-content').cloneNode(true);
+        
+        // Inputs to Text
+        content.querySelectorAll('input[type="text"], input[type="date"]').forEach(inp => {
+            const span = document.createElement('span');
+            span.innerHTML = inp.value ? `<b>${inp.value}</b>` : "______";
+            inp.parentNode.replaceChild(span, inp);
+        });
+
+        // Checkboxes in checklist
+        content.querySelectorAll('input[type="checkbox"]').forEach(chk => {
+            const parent = chk.parentElement;
+            if(chk.checked) {
+                parent.innerHTML = `<b>[X] ${parent.innerText}</b>`;
+                parent.style.backgroundColor = "#e8f4fd";
+            } else {
+                parent.innerHTML = `[ ] ${parent.innerText}`;
+            }
+        });
+
+        // Radio buttons in grading
+        for (let i = 1; i <= 10; i++) {
+            const selected = document.querySelector(`input[name="q${i}"]:checked`);
+            if (selected) {
+                // Find correct box in clone
+                const boxes = content.getElementsByClassName('rating-box');
+                const box = boxes[i-1];
+                const opts = box.querySelector('.scale-options');
+                
+                const res = document.createElement('div');
+                res.innerHTML = `<b>Skåre: ${selected.value}</b>`;
+                res.style.color = "#2980b9";
+                res.style.marginTop = "10px";
+                
+                opts.parentNode.replaceChild(res, opts);
+            }
+        }
+
+        const header = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>YBOCS Resultat</title>
+            <style>
+                body { font-family: Arial; }
+                .sub-header { background: #eee; font-weight: bold; margin-top: 10px; padding: 5px; }
+                .check-item { margin-bottom: 2px; }
+                .rating-box { border-bottom: 1px solid #ccc; margin-bottom: 10px; padding-bottom: 5px; }
+            </style>
+            </head><body>
+        `;
+        const footer = "</body></html>";
+        const html = header + content.innerHTML + footer;
+
+        const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `YBOCS_${name}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</body>
+</html>

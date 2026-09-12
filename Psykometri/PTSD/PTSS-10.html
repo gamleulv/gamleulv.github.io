@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTSS-10 Screening</title>
+    
+    <!-- PDF & Word Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --bg: #f4f7f6;
+            --paper: #ffffff;
+            --border: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 30px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: var(--paper);
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-radius: 8px;
+        }
+
+        /* Header */
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-weight: 300; }
+
+        .instructions {
+            background: #e8f4fd;
+            padding: 15px;
+            border-left: 4px solid var(--secondary);
+            margin-bottom: 30px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* Meta Info */
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .form-group label { display: block; font-size: 12px; font-weight: bold; color: #7f8c8d; margin-bottom: 4px; }
+        .form-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+
+        /* Question Item */
+        .question-box {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .question-text {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        /* Likert Scale Styling */
+        .likert-scale {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            background: #fdfdfd;
+            padding: 10px;
+            border-radius: 50px;
+            border: 1px solid #eee;
+        }
+
+        .likert-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            flex: 1;
+        }
+
+        .likert-option input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .circle {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 2px solid #bdc3c7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #7f8c8d;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        /* Hover & Checked States */
+        .likert-option:hover .circle { border-color: var(--secondary); color: var(--secondary); background: #ebf5fb; }
+        
+        .likert-option input:checked + .circle {
+            background-color: var(--secondary);
+            border-color: var(--secondary);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .anchors {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            padding: 0 15px;
+            font-size: 12px;
+            color: #95a5a6;
+            font-style: italic;
+        }
+
+        /* Results Box */
+        .results-section {
+            margin-top: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+
+        .total-score { font-size: 36px; font-weight: bold; color: var(--secondary); margin: 10px 0; }
+        .interpretation { font-size: 16px; margin-top: 10px; padding: 10px; border-radius: 4px; display: inline-block; }
+        
+        .interp-low { background: #e8f8f5; color: #27ae60; border: 1px solid #27ae60; }
+        .interp-high { background: #fdedec; color: #c0392b; border: 1px solid #c0392b; font-weight: bold; }
+
+        /* Controls */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            transition: transform 0.1s;
+            font-size: 14px;
+        }
+        button:hover { transform: translateY(-2px); }
+        .btn-calc { background-color: var(--secondary); }
+        .btn-word { background-color: #2980b9; }
+        .btn-pdf { background-color: #c0392b; }
+        .btn-reset { background-color: #95a5a6; }
+
+        /* Error message */
+        .error-msg {
+            color: #c0392b;
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            display: none;
+        }
+
+        @media print {
+            .controls { display: none; }
+            .container { box-shadow: none; margin: 0; padding: 0; width: 100%; }
+            body { background: white; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="doc-content">
+    <h1>PTSS-10</h1>
+    <div class="subtitle">Screening for Posttraumatiske Stress-Symptomer</div>
+
+    <div class="meta-grid">
+        <div class="form-group">
+            <label>Pasientnavn</label>
+            <input type="text" id="pName" placeholder="Navn...">
+        </div>
+        <div class="form-group">
+            <label>Dato</label>
+            <input type="date" id="pDate">
+        </div>
+    </div>
+
+    <div class="instructions">
+        <strong>Instruksjon:</strong> I løpet av de <strong>siste syv dager</strong>, hvor ofte har du vært plaget av følgende?
+        <br>Marker tallet som best beskriver din tilstand (1 = Aldri/Sjelden, 7 = Meget ofte/Svært mye).
+    </div>
+
+    <div id="questions-container">
+        <!-- Spørsmål genereres dynamisk via JavaScript -->
+    </div>
+
+    <div class="error-msg" id="errorMsg">Vennligst besvar alle spørsmålene før beregning.</div>
+
+    <div class="results-section" id="results">
+        <h3>Resultat</h3>
+        <div>Total PTSS-10 Skåre:</div>
+        <div class="total-score" id="scoreDisplay">-</div>
+        <div id="interpretationBox" class="interpretation"></div>
+        <div style="margin-top: 15px; font-size: 12px; color: #7f8c8d;">
+            * En skåre over 35 indikerer ofte behov for videre klinisk utredning for PTSD. 
+            Dette er et screeningsverktøy og ikke en diagnose.
+        </div>
+    </div>
+
+</div>
+
+<div class="controls">
+    <button class="btn-calc" onclick="calculateScore()">📊 Beregn Skåre</button>
+    <button class="btn-word" onclick="exportWord()">💾 Lagre til Word</button>
+    <button class="btn-pdf" onclick="exportPDF()" id="pdfBtn">📄 Lagre til PDF</button>
+    <button class="btn-reset" onclick="resetForm()">🔄 Nullstill</button>
+</div>
+
+<script>
+    // 1. Initialisering
+    document.getElementById('pDate').valueAsDate = new Date();
+
+    const questions = [
+        "1. Søvnproblemer",
+        "2. Drømmer med mareritt om hendelsen",
+        "3. Depresjon, føler meg nedtrykt",
+        "4. Skvettenhet ved plutselige lyder eller brå bevegelser",
+        "5. Tendens til å isolere meg fra andre",
+        "6. Irritabilitet (blir lett irritert eller rasende)",
+        "7. At følelsene svinger mye opp og ned",
+        "8. Dårlig samvittighet, selvbebreidelser, skyldfølelse",
+        "9. Frykt for steder eller situasjoner som kan minne om hendelsen",
+        "10. Anspenthet i kroppen"
+    ];
+
+    // 2. Generer spørsmål (Med fiks for duplikater)
+    const container = document.getElementById('questions-container');
+    
+    // VIKTIG: Tøm containeren før vi legger til noe for å unngå dobling
+    container.innerHTML = '';
+
+    questions.forEach((q, index) => {
+        const div = document.createElement('div');
+        div.className = 'question-box';
+        
+        let html = `<div class="question-text">${q}</div>
+                    <div class="anchors">
+                        <span>Aldri / Overhodet ikke</span>
+                        <span>Svært mye / Meget ofte</span>
+                    </div>
+                    <div class="likert-scale">`;
+        
+        for (let i = 1; i <= 7; i++) {
+            html += `
+                <label class="likert-option">
+                    <input type="radio" name="q${index}" value="${i}">
+                    <div class="circle">${i}</div>
+                </label>
+            `;
+        }
+        
+        html += `</div>`;
+        div.innerHTML = html;
+        container.appendChild(div);
+    });
+
+    // 3. Beregningsfunksjon
+    function calculateScore() {
+        let totalScore = 0;
+        let answeredCount = 0;
+        const totalQuestions = questions.length;
+
+        for (let i = 0; i < totalQuestions; i++) {
+            const selected = document.querySelector(`input[name="q${i}"]:checked`);
+            if (selected) {
+                totalScore += parseInt(selected.value);
+                answeredCount++;
+            }
+        }
+
+        const errorMsg = document.getElementById('errorMsg');
+        
+        if (answeredCount < totalQuestions) {
+            errorMsg.style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            return;
+        } else {
+            errorMsg.style.display = 'none';
+        }
+
+        // Vis resultat
+        const resSection = document.getElementById('results');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const interpBox = document.getElementById('interpretationBox');
+
+        scoreDisplay.innerText = totalScore;
+        resSection.style.display = 'block';
+
+        // Tolkning
+        if (totalScore >= 35) {
+            interpBox.className = 'interpretation interp-high';
+            interpBox.innerText = "HØY RISIKO: Skåren indikerer signifikante posttraumatiske plager.";
+        } else {
+            interpBox.className = 'interpretation interp-low';
+            interpBox.innerText = "LAV RISIKO: Skåren er under vanlig grenseverdi for klinisk bekymring.";
+        }
+
+        // Scroll til resultat
+        resSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 4. Nullstill
+    function resetForm() {
+        if(confirm("Vil du nullstille skjemaet?")) {
+            document.querySelectorAll('input[type="radio"]').forEach(el => el.checked = false);
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('errorMsg').style.display = 'none';
+            document.getElementById('pName').value = "";
+            window.scrollTo(0, 0);
+        }
+    }
+
+    // 5. PDF Eksport
+    async function exportPDF() {
+        const btn = document.getElementById('pdfBtn');
+        btn.innerText = "Genererer...";
+        btn.disabled = true;
+
+        const element = document.getElementById('doc-content');
+        const name = document.getElementById('pName').value || "Ukjent";
+
+        try {
+            const canvas = await html2canvas(element, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff'
+            });
+
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            const imgWidth = pageWidth - 20;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            
+            let heightLeft = imgHeight;
+            let position = 10;
+
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pageHeight - 20);
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight + 10;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - 20);
+            }
+
+            pdf.save(`PTSS-10_${name}.pdf`);
+        } catch(e) {
+            alert("Feil ved PDF generering");
+        } finally {
+            btn.innerText = "📄 Lagre til PDF";
+            btn.disabled = false;
+        }
+    }
+
+    // 6. Word Eksport
+    function exportWord() {
+        const name = document.getElementById('pName').value || "Ukjent";
+        
+        // Klon innhold for å endre for utskrift uten å ødelegge skjemaet
+        const content = document.getElementById('doc-content').cloneNode(true);
+        
+        // Fiks input-felt til tekst
+        content.querySelectorAll('input[type="text"], input[type="date"]').forEach(inp => {
+            const span = document.createElement('span');
+            span.innerHTML = inp.value ? `<b>${inp.value}</b>` : "______";
+            inp.parentNode.replaceChild(span, inp);
+        });
+
+        // Fiks radio buttons (vis valgt verdi som tekst)
+        for (let i = 0; i < questions.length; i++) {
+            const selected = document.querySelector(`input[name="q${i}"]:checked`);
+            // Vi må finne riktig boks i klonen, ikke i originalen
+            const qBox = content.getElementsByClassName('question-box')[i];
+            const scaleDiv = qBox.querySelector('.likert-scale');
+            
+            const resultText = document.createElement('div');
+            resultText.style.fontWeight = 'bold';
+            resultText.style.marginTop = '10px';
+            resultText.style.color = '#2980b9';
+            
+            if (selected) {
+                resultText.innerText = `Pasientens svar: ${selected.value}`;
+            } else {
+                resultText.innerText = `Pasientens svar: [Ikke besvart]`;
+            }
+            
+            // Erstatt hele skalaen med teksten for Word
+            scaleDiv.parentNode.replaceChild(resultText, scaleDiv);
+        }
+
+        // Fjern error message i export
+        const errMsg = content.querySelector('.error-msg');
+        if(errMsg) errMsg.remove();
+
+        const header = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>PTSS-10 Resultat</title>
+            <style>
+                body { font-family: Arial, sans-serif; }
+                .question-box { border-bottom: 1px solid #ccc; padding: 10px 0; margin-bottom: 10px; }
+                .question-text { font-weight: bold; }
+                .total-score { font-size: 24px; color: #2c3e50; font-weight: bold; }
+                .interpretation { background: #eee; padding: 10px; border: 1px solid #999; margin-top: 10px; }
+            </style>
+            </head><body>
+        `;
+        const footer = "</body></html>";
+        const html = header + content.innerHTML + footer;
+
+        const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `PTSS-10_${name}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCID-5-PF - Strukturert Klinisk Intervju for Personlighetsforstyrrelser</title>
+<style>
+    :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #3498db;
+        --accent-color: #e74c3c;
+        --bg-color: #f8f9fa;
+        --panel-bg: #ffffff;
+        --text-color: #333333;
+        --border-color: #e0e0e0;
+        --success-color: #27ae60;
+    }
+    body {
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        line-height: 1.55;
+        margin: 0;
+        padding: 40px 20px;
+    }
+    .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        background-color: var(--panel-bg);
+        padding: 40px;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+    h1 { color: var(--primary-color); text-align: center; margin-bottom: 5px; font-weight: 300; }
+    .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 10px; font-size: 1.05em; font-weight: 500; }
+    .translator-note { text-align: center; color: #999; font-size: 0.8em; margin-bottom: 30px; }
+
+    .meta-info { display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; justify-content: center; }
+    .meta-field { display: flex; align-items: center; gap: 8px; }
+    .meta-field label { font-weight: 600; color: var(--primary-color); font-size: 0.9em; }
+    .meta-field input { padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; }
+
+    .instruction {
+        background-color: #e8f4fc;
+        border-left: 4px solid var(--secondary-color);
+        padding: 15px; margin-bottom: 25px; font-size: 0.92em;
+    }
+    .general-criteria {
+        background: #fdf6e3;
+        border-left: 4px solid #d4a72c;
+        padding: 15px;
+        margin-bottom: 30px;
+        font-size: 0.88em;
+    }
+    .general-criteria summary { cursor: pointer; font-weight: 600; color: var(--primary-color); }
+
+    .disorder-header {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 4px;
+        margin-top: 45px;
+        margin-bottom: 5px;
+        font-size: 1.15em;
+        letter-spacing: 0.3px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .disorder-code { font-size: 0.75em; opacity: 0.8; font-weight: 400; }
+    .disorder-criteria-text {
+        font-size: 0.85em;
+        color: #555;
+        background: #f4f4f4;
+        padding: 10px 15px;
+        margin-bottom: 15px;
+        border-radius: 0 0 4px 4px;
+    }
+
+    table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 0.92em; }
+    th, td { padding: 8px 10px; border-bottom: 1px solid var(--border-color); text-align: center; vertical-align: top; }
+    th { background-color: #f1f1f1; font-weight: 600; color: var(--primary-color); font-size: 0.85em; }
+    th:first-child, td:first-child { text-align: left; width: 55%; }
+    tr:hover { background-color: #fafafa; }
+
+    .q-text { font-size: 0.85em; color: #555; display: block; margin-bottom: 4px; }
+    .crit-text { font-weight: 500; color: #000; }
+
+    input[type="radio"] { transform: scale(1.15); cursor: pointer; }
+    .score-cell { width: 45px; }
+
+    .subtotal-row td {
+        font-weight: bold;
+        background: #eef6fc;
+        border-top: 2px solid var(--secondary-color);
+    }
+
+    .controls {
+        margin-top: 50px; display: flex; gap: 15px; justify-content: center;
+        flex-wrap: wrap; padding-top: 25px; border-top: 1px solid #eee;
+    }
+    button {
+        padding: 12px 24px; border: none; border-radius: 4px; font-size: 1em;
+        cursor: pointer; transition: background-color 0.2s, transform 0.1s;
+        font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    button:active { transform: translateY(1px); }
+    .btn-calc { background-color: var(--success-color); color: white; font-size: 1.1em; }
+    .btn-export { background-color: var(--secondary-color); color: white; }
+    .btn-word { background-color: #2b579a; color: white; }
+    .btn-pdf { background-color: #b30b00; color: white; }
+
+    #results {
+        margin-top: 40px; padding: 25px; border: 2px solid var(--border-color);
+        border-radius: 8px; display: none; background-color: #fff;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    .result-header {
+        font-size: 1.4em; font-weight: bold; margin-bottom: 20px;
+        color: var(--primary-color); border-bottom: 2px solid #eee; padding-bottom: 10px;
+    }
+    .result-table { width: 100%; border-collapse: collapse; }
+    .result-table th, .result-table td { text-align: left; padding: 10px; border-bottom: 1px solid #eee; }
+    .result-table th { background: #f7f7f7; }
+    .result-table td.num { text-align: center; }
+    .positive-result { color: var(--accent-color); font-weight: bold; }
+    .negative-result { color: var(--success-color); font-weight: bold; }
+    .note-row td { font-size: 0.8em; color: #888; font-style: italic; border-bottom: none; padding-top:0;}
+
+    @media print {
+        body { background-color: white; padding: 0; }
+        .container { box-shadow: none; width: 100%; max-width: 100%; padding: 0; margin: 0; }
+        .controls, .instruction, .general-criteria { display: none; }
+        h1 { font-size: 16pt; margin: 0; }
+        td, th { padding: 3px 5px; font-size: 8.5pt; }
+        .disorder-header { margin-top: 15px; padding: 4px 10px; font-size: 11pt; background-color: #ddd !important; color: #000 !important; -webkit-print-color-adjust: exact;}
+        .disorder-criteria-text { font-size: 7.5pt; }
+        #results { display: block !important; border: 1px solid #000; break-inside: avoid; }
+        table { page-break-inside: auto; }
+        tr { page-break-inside: avoid; }
+        input[type="radio"]:checked:after {
+            content: "X"; font-weight: bold; font-size: 11pt; position: relative; top: -4px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="container" id="document-content">
+    <h1>SCID-5-PF</h1>
+    <div class="subtitle">Strukturert Klinisk Intervju for Personlighetsforstyrrelser – DSM-5 (Protokoll)</div>
+    <div class="translator-note">Norsk oversettelse (2017): Øyvind Urnes og Christian Schlüter</div>
+
+    <div class="meta-info">
+        <div class="meta-field"><label>Pasient:</label><input type="text" id="patientName" style="width:180px;"></div>
+        <div class="meta-field"><label>Intervjuer:</label><input type="text" id="interviewerName" style="width:180px;"></div>
+        <div class="meta-field"><label>Dato:</label><input type="text" id="testDate" style="width:100px;"></div>
+    </div>
+
+    <div class="instruction">
+        <strong>Skåringsnøkkel per kriterium:</strong> ? = Utilstrekkelig informasjon &nbsp;|&nbsp; 0 = Fraværende/usant &nbsp;|&nbsp; 1 = Underterskel/muligens til stede &nbsp;|&nbsp; 2 = Til stede/terskel oppfylt.
+        <br>Kun skår <strong>2</strong> teller som positivt kriterium ved beregning av delskåre og sammenligning mot terskelverdi for diagnose.
+    </div>
+
+    <details class="general-criteria">
+        <summary>Generelle kriterier for personlighetsforstyrrelse (klikk for å vise)</summary>
+        <p style="margin-top:10px;"><strong>A.</strong> Et vedvarende mønster av indre opplevelse og atferd som avviker markert fra forventningene i personens kultur.</p>
+        <p><strong>B.</strong> Det vedvarende mønsteret er lite fleksibelt og gjennomgripende i et bredt omfang av personlige og sosiale situasjoner.</p>
+        <p><strong>C.</strong> Det vedvarende mønsteret fører til klinisk signifikant lidelse eller vansker med å fungere i sosiale, yrkesmessige eller andre viktige funksjonsområder.</p>
+        <p><strong>D.</strong> Mønsteret er stabilt og av lang varighet, og starten kan spores minst tilbake til ungdomsårene eller tidlig voksen alder.</p>
+        <p><strong>E.</strong> Det vedvarende mønsteret kan ikke bedre forklares som en manifestasjon eller konsekvens av en annen psykisk lidelse.</p>
+        <p><strong>F.</strong> Det vedvarende mønsteret skyldes ikke fysiologiske effekter av et stoff eller en annen medisinsk tilstand.</p>
+    </details>
+
+    <form id="scidForm">
+
+    <!-- ===================== UNNVIKENDE ===================== -->
+    <div class="disorder-header">Unnvikende personlighetsforstyrrelse <span class="disorder-code">DSM-5: 301.82 · Terskel: ≥ 4 av 7</span></div>
+    <div class="disorder-criteria-text">A: Gjennomgripende mønster av sosial hemning, følelse av utilstrekkelighet og overfølsomhet for negativ vurdering fra tidlig voksen alder, vist ved minst 4 av 7 kriterier.</div>
+    <table data-disorder="AVOID" data-threshold="4" data-total="7">
+        <thead><tr><th>Kriterium</th><th>?</th><th>0</th><th>1</th><th>2</th></tr></thead>
+        <tbody>
+            <tr><td><span class="q-text">Unngår du jobber/oppgaver med mye mellommenneskelig kontakt?</span><span class="crit-text">1. Unngår yrkesmessige aktiviteter med mye mellommenneskelig kontakt, av frykt for kritikk/avvisning.</span></td>
+                <td><input type="radio" name="c1" value="?"></td><td><input type="radio" name="c1" value="0"></td><td><input type="radio" name="c1" value="1"></td><td><input type="radio" name="c1" value="2" data-crit="AVOID"></td></tr>
+            <tr><td><span class="q-text">Unngår du å bli kjent med folk med mindre du er sikker på at de liker deg?</span><span class="crit-text">2. Uvillig til å involvere seg med andre uten sikkerhet for å bli likt.</span></td>
+                <td><input type="radio" name="c2" value="?"></td><td><input type="radio" name="c2" value="0"></td><td><input type="radio" name="c2" value="1"></td><td><input type="radio" name="c2" value="2" data-crit="AVOID"></td></tr>
+            <tr><td><span class="q-text">Er det vanskelig å være åpen selv med nære personer?</span><span class="crit-text">3. Tilbakeholden i intime forhold av frykt for å bli beskjemmet/latterliggjort.</span></td>
+                <td><input type="radio" name="c3" value="?"></td><td><input type="radio" name="c3" value="0"></td><td><input type="radio" name="c3" value="1"></td><td><input type="radio" name="c3" value="2" data-crit="AVOID"></td></tr>
+            <tr><td><span class="q-text">Bekymrer du deg for kritikk/avvisning i sosiale situasjoner?</span><span class="crit-text">4. Opptatt av frykten for kritikk/avvisning i sosiale situasjoner.</span></td>
+                <td><input type="radio" name="c4" value="?"></td><td><input type="radio" name="c4" value="0"></td><td><input type="radio" name="c4" value="1"></td><td><input type="radio" name="c4" value="2" data-crit="AVOID"></td></tr>
+            <tr><td><span class="q-text">Er du stille når du møter andre, pga. følelse av utilstrekkelighet?</span><span class="crit-text">5. Hemmet i nye mellommenneskelige situasjoner grunnet følelse av utilstrekkelighet.</span></td>
+                <td><input type="radio" name="c5" value="?"></td><td><input type="radio" name="c5" value="0"></td><td><input type="radio" name="c5" value="1"></td><td><input type="radio" name="c5" value="2" data-crit="AVOID"></td></tr>
+            <tr><td><span class="q-text">Tror du at du er mindre dyktig/attraktiv enn de fleste?</span><span class="crit-text">6. Ser på seg selv som sosialt udugelig eller mindre verdt enn andre.</span></td>
+                <td><input type="radio" name="c6" value="?"></td><td><input type="radio" name="c6" value="0"></td><td><input type="radio" name="c6" value="1"></td><td><input type="radio" name="c6" value="2" data-crit="AVOID"></td></tr>
+            <tr><td><span class="q-text">Er du redd for å prøve nye ting av frykt for å bli flau?</span><span class="crit-text">7. Uvanlig nølende med personlige sjanser/nye aktiviteter av frykt for forlegenhet.</span></td>
+                <td><input type="radio" name="c7" value="?"></td><td><input type="radio" name="c7" value="0"></td><td><input type="radio" name="c7" value="1"></td><td><input type="radio" name="c7" value="2" data-crit="AVOID"></td></tr>
+            <tr class="subtotal-row"><td>Delsum (antall kriterier skåret 2)</td><td colspan="4" id="sum-AVOID">0 / 7</td></tr>
+        </tbody>
+    </table>
+
+    <!-- ===================== AVHENGIG ===================== -->
+    <div class="disorder-header">Avhengig personlighetsforstyrrelse <span class="disorder-code">DSM-5: 301.60 · Terskel: ≥ 5 av 8</span></div>
+    <div class="disorder-criteria-text">A: Gjennomgripende og overdrevent behov for å bli tatt vare på, fra tidlig voksen alder, vist ved minst 5 av 8 kriterier.</div>
+    <table data-disorder="DEP" data-threshold="5" data-total="8">
+        <thead><tr><th>Kriterium</th><th>?</th><th>0</th><th>1</th><th>2</th></tr></thead>
+        <tbody>
+            <tr><td><span class="crit-text">1. Vansker med dagligdagse avgjørelser uten overdreven mengde råd/forsikring.</span></td><td><input type="radio" name="c8" value="?"></td><td><input type="radio" name="c8" value="0"></td><td><input type="radio" name="c8" value="1"></td><td><input type="radio" name="c8" value="2" data-crit="DEP"></td></tr>
+            <tr><td><span class="crit-text">2. Trenger andre til å ta ansvar for vesentlige livsområder.</span></td><td><input type="radio" name="c9" value="?"></td><td><input type="radio" name="c9" value="0"></td><td><input type="radio" name="c9" value="1"></td><td><input type="radio" name="c9" value="2" data-crit="DEP"></td></tr>
+            <tr><td><span class="crit-text">3. Vansker med å uttrykke uenighet av frykt for å miste støtte.</span></td><td><input type="radio" name="c10" value="?"></td><td><input type="radio" name="c10" value="0"></td><td><input type="radio" name="c10" value="1"></td><td><input type="radio" name="c10" value="2" data-crit="DEP"></td></tr>
+            <tr><td><span class="crit-text">4. Vansker med å sette i gang prosjekter/gjøre ting alene.</span></td><td><input type="radio" name="c11" value="?"></td><td><input type="radio" name="c11" value="0"></td><td><input type="radio" name="c11" value="1"></td><td><input type="radio" name="c11" value="2" data-crit="DEP"></td></tr>
+            <tr><td><span class="crit-text">5. Går ekstremt langt for å oppnå omsorg og støtte fra andre.</span></td><td><input type="radio" name="c12" value="?"></td><td><input type="radio" name="c12" value="0"></td><td><input type="radio" name="c12" value="1"></td><td><input type="radio" name="c12" value="2" data-crit="DEP"></td></tr>
+            <tr><td><span class="crit-text">6. Føler seg uvel/hjelpeløs alene grunnet overdreven frykt for å ikke klare seg selv.</span></td><td><input type="radio" name="c13" value="?"></td><td><input type="radio" name="c13" value="0"></td><td><input type="radio" name="c13" value="1"></td><td><input type="radio" name="c13" value="2" data-crit="DEP"></td></tr>
+            <tr><td><span class="crit-text">7. Søker umiddelbart nytt forhold for omsorg/støtte når et forhold tar slutt.</span></td><td><input type="radio" name="c14" value="?"></td><td><input type="radio" name="c14" value="0"></td><td><input type="radio" name="c14" value="1"></td><td><input type="radio" name="c14" value="2" data-crit="DEP"></td></tr>
+            <tr><td><span class="crit-text">8. Urealistisk opptatt av frykt for å bli forlatt og måtte ta vare på seg selv.</span></td><td><input type="radio" name="c15" value="?"></td><td><input type="radio" name="c15" value="0"></td><td><input type="radio" name="c15" value="1"></td><td><input type="radio" name="c15" value="2" data-crit="DEP"></td></tr>
+            <tr class="subtotal-row"><td>Delsum</td><td colspan="4" id="sum-DEP">0 / 8</td></tr>
+        </tbody>
+    </table>
+
+    <!-- ===================== TVANGSPREGET ===================== -->
+    <div class="disorder-header">Tvangspreget personlighetsforstyrrelse <span class="disorder-code">DSM-5: 301.40 · Terskel: ≥ 4 av 8</span></div>
+    <div class="disorder-criteria-text">A: Gjennomgripende mønster av orden, perfeksjonisme og kontroll på bekostning av fleksibilitet, fra tidlig voksen alder, vist ved minst 4 av 8 kriterier.</div>
+    <table data-disorder="OCPD" data-threshold="4" data-total="8">
+        <thead><tr><th>Kriterium</th><th>?</th><th>0</th><th>1</th><th>2</th></tr></thead>
+        <tbody>
+            <tr><td><span class="crit-text">1. Opptatt av detaljer/regler/lister i en grad at hensikten med aktiviteten går tapt.</span></td><td><input type="radio" name="c16" value="?"></td><td><input type="radio" name="c16" value="0"></td><td><input type="radio" name="c16" value="1"></td><td><input type="radio" name="c16" value="2" data-crit="OCPD"></td></tr>
+            <tr><td><span class="crit-text">2. Perfeksjonisme som hindrer fullføring av oppgaver.</span></td><td><input type="radio" name="c17" value="?"></td><td><input type="radio" name="c17" value="0"></td><td><input type="radio" name="c17" value="1"></td><td><input type="radio" name="c17" value="2" data-crit="OCPD"></td></tr>
+            <tr><td><span class="crit-text">3. Overdrevent dedikert til arbeid/produktivitet på bekostning av fritid/vennskap.</span></td><td><input type="radio" name="c18" value="?"></td><td><input type="radio" name="c18" value="0"></td><td><input type="radio" name="c18" value="1"></td><td><input type="radio" name="c18" value="2" data-crit="OCPD"></td></tr>
+            <tr><td><span class="crit-text">4. Oversamvittighetsfull og rigid mht. moral/etikk/verdier.</span></td><td><input type="radio" name="c19" value="?"></td><td><input type="radio" name="c19" value="0"></td><td><input type="radio" name="c19" value="1"></td><td><input type="radio" name="c19" value="2" data-crit="OCPD"></td></tr>
+            <tr><td><span class="crit-text">5. Ute av stand til å kassere utslitte/verdiløse gjenstander.</span></td><td><input type="radio" name="c20" value="?"></td><td><input type="radio" name="c20" value="0"></td><td><input type="radio" name="c20" value="1"></td><td><input type="radio" name="c20" value="2" data-crit="OCPD"></td></tr>
+            <tr><td><span class="crit-text">6. Motvillig til å delegere/samarbeide med mindre andre gjør det på hans/hennes måte.</span></td><td><input type="radio" name="c21" value="?"></td><td><input type="radio" name="c21" value="0"></td><td><input type="radio" name="c21" value="1"></td><td><input type="radio" name="c21" value="2" data-crit="OCPD"></td></tr>
+            <tr><td><span class="crit-text">7. Gjerrig overfor seg selv og andre; penger spares for fremtidige katastrofer.</span></td><td><input type="radio" name="c22" value="?"></td><td><input type="radio" name="c22" value="0"></td><td><input type="radio" name="c22" value="1"></td><td><input type="radio" name="c22" value="2" data-crit="OCPD"></td></tr>
+            <tr><td><span class="crit-text">8. Viser rigiditet og stahet.</span></td><td><input type="radio" name="c23" value="?"></td><td><input type="radio" name="c23" value="0"></td><td><input type="radio" name="c23" value="1"></td><td><input type="radio" name="c23" value="2" data-crit="OCPD"></td></tr>
+            <tr class="subtotal-row"><td>Delsum</td><td colspan="4" id="sum-OCPD">0 / 8</td></tr>
+        </tbody>
+    </table>
+
+    <!-- ===================== PARANOID ===================== -->
+    <div class="disorder-header">Paranoid personlighetsforstyrrelse <span class="disorder-code">DSM-5: 301.00 · Terskel: ≥ 4 av 7</span></div>
+    <div class="disorder-criteria-text">A: Gjennomgripende mistillit og mistenksomhet slik at andres motiver tolkes som ondskapsfulle, fra tidlig voksen alder, vist ved minst 4 av 7 kriterier.</div>
+    <table data-disorder="PAR" data-threshold="4" data-total="7">
+        <thead><tr><th>Kriterium</th><th>?</th><th>0</th><th>1</th><th>2</th></tr></thead>
+        <tbody>
+            <tr><td><span class="crit-text">1. Mistenker uten grunnlag at andre utnytter, skader eller lurer en.</span></td><td><input type="radio" name="c24" value="?"></td><td><input type="radio" name="c24" value="0"></td><td><input type="radio" name="c24" value="1"></td><td><input type="radio" name="c24" value="2" data-crit="PAR"></td></tr>
+            <tr><td><span class="crit-text">2. Ubegrunnet tvil om lojalitet/pålitelighet hos venner/kolleger.</span></td><td><input type="radio" name="c25" value="?"></td><td><input type="radio" name="c25" value="0"></td><td><input type="radio" name="c25" value="1"></td><td><input type="radio" name="c25" value="2" data-crit="PAR"></td></tr>
+            <tr><td><span class="crit-text">3. Uvillig til å betro seg pga. frykt for at det brukes mot en.</span></td><td><input type="radio" name="c26" value="?"></td><td><input type="radio" name="c26" value="0"></td><td><input type="radio" name="c26" value="1"></td><td><input type="radio" name="c26" value="2" data-crit="PAR"></td></tr>
+            <tr><td><span class="crit-text">4. Oppfatter uskyldige bemerkninger som nedverdigende eller truende.</span></td><td><input type="radio" name="c27" value="?"></td><td><input type="radio" name="c27" value="0"></td><td><input type="radio" name="c27" value="1"></td><td><input type="radio" name="c27" value="2" data-crit="PAR"></td></tr>
+            <tr><td><span class="crit-text">5. Bærer nag over lengre tid; tilgir ikke fornærmelser/krenkelser.</span></td><td><input type="radio" name="c28" value="?"></td><td><input type="radio" name="c28" value="0"></td><td><input type="radio" name="c28" value="1"></td><td><input type="radio" name="c28" value="2" data-crit="PAR"></td></tr>
+            <tr><td><span class="crit-text">6. Opplever angrep på person/omdømme som ikke er åpenbart for andre; reagerer med sinne.</span></td><td><input type="radio" name="c29" value="?"></td><td><input type="radio" name="c29" value="0"></td><td><input type="radio" name="c29" value="1"></td><td><input type="radio" name="c29" value="2" data-crit="PAR"></td></tr>
+            <tr><td><span class="crit-text">7. Mistenker stadig, uten berettigelse, partner for å være utro.</span></td><td><input type="radio" name="c30" value="?"></td><td><input type="radio" name="c30" value="0"></td><td><input type="radio" name="c30" value="1"></td><td><input type="radio" name="c30" value="2" data-crit="PAR"></td></tr>
+            <tr class="subtotal-row"><td>Delsum</td><td colspan="4" id="sum-PAR">0 / 7</td></tr>
+        </tbody>
+    </table>
+
+    <!-- ===================== SCHIZOTYP ===================== -->
+    <div class="disorder-header">Schizotyp personlighetsforstyrrelse <span class="disorder-code">DSM-5: 301.22 · Terskel: ≥ 5 av 9</span></div>
+    <div class="disorder-criteria-text">A: Sosiale/mellommenneskelige mangler med sterkt ubehag ved nære forhold, kognitive/perseptuelle forstyrrelser og eksentrisk atferd, fra tidlig voksen alder, vist ved minst 5 av 9 kriterier.</div>
+    <table data-disorder="SCHT" data-threshold="5" data-total="9">
+        <thead><tr><th>Kriterium</th><th>?</th><th>0</th><th>1</th><th>2</th></tr></thead>
+        <tbody>
+            <tr><td><span class="crit-text">1. Selvhenføringsideer (ikke vrangforestillinger).</span></td><td><input type="radio" name="c31" value="?"></td><td><input type="radio" name="c31" value="0"></td><td><input type="radio" name="c31" value="1"></td><td><input type="radio" name="c31" value="2" data-crit="SCHT"></td></tr>
+            <tr><td><span class="crit-text">2. Underlige oppfatninger/magisk tenkning som påvirker atferd.</span></td><td><input type="radio" name="c32" value="?"></td><td><input type="radio" name="c32" value="0"></td><td><input type="radio" name="c32" value="1"></td><td><input type="radio" name="c32" value="2" data-crit="SCHT"></td></tr>
+            <tr><td><span class="crit-text">3. Uvanlige sanseopplevelser, inkl. kroppslige sansebedrag.</span></td><td><input type="radio" name="c33" value="?"></td><td><input type="radio" name="c33" value="0"></td><td><input type="radio" name="c33" value="1"></td><td><input type="radio" name="c33" value="2" data-crit="SCHT"></td></tr>
+            <tr><td><span class="crit-text">4. Underlig tankeverden/måte å snakke på (observert under intervjuet).</span></td><td><input type="radio" name="c34" value="?"></td><td><input type="radio" name="c34" value="0"></td><td><input type="radio" name="c34" value="1"></td><td><input type="radio" name="c34" value="2" data-crit="SCHT"></td></tr>
+            <tr><td><span class="crit-text">5. Mistenksomhet eller paranoide forestillinger.</span></td><td><input type="radio" name="c35" value="?"></td><td><input type="radio" name="c35" value="0"></td><td><input type="radio" name="c35" value="1"></td><td><input type="radio" name="c35" value="2" data-crit="SCHT"></td></tr>
+            <tr><td><span class="crit-text">6. Upassende eller innsnevret affekt (observert).</span></td><td><input type="radio" name="c36" value="?"></td><td><input type="radio" name="c36" value="0"></td><td><input type="radio" name="c36" value="1"></td><td><input type="radio" name="c36" value="2" data-crit="SCHT"></td></tr>
+            <tr><td><span class="crit-text">7. Underlig, eksentrisk eller merkelig atferd/fremtoning (observert).</span></td><td><input type="radio" name="c37" value="?"></td><td><input type="radio" name="c37" value="0"></td><td><input type="radio" name="c37" value="1"></td><td><input type="radio" name="c37" value="2" data-crit="SCHT"></td></tr>
+            <tr><td><span class="crit-text">8. Mangler nære venner utover første-ledds slektninger.</span></td><td><input type="radio" name="c38" value="?"></td><td><input type="radio" name="c38" value="0"></td><td><input type="radio" name="c38" value="1"></td><td><input type="radio" name="c38" value="2" data-crit="SCHT"></td></tr>
+            <tr><td><span class="crit-text">9. Sterk sosial angst knyttet til paranoid frykt, avtar ikke med bekjentskap.</span></td><td><input type="radio" name="c39" value="?"></td><td><input type="radio" name="c39" value="0"></td><td><input type="radio" name="c39" value="1"></td><td><input type="radio" name="c39" value="2" data-crit="SCHT"></td></tr>
+            <tr class="subtotal-row"><td>Delsum</td><td colspan="4" id="sum-SCHT">0 / 9</td></tr>
+        </tbody>
+    </table>
+
+    <!-- ===================== SCHIZOID ===================== -->
+    <div class="disorder-header">Schizoid personlighetsforstyrrelse <span class="disorder-code">DSM-5: 301.20 · Terskel: ≥ 4 av 7</span></div>
+    <div class="disorder-criteria-text">A: Gjennomgripende mønster av sosial tilbaketrukkethet og begrenset følelsesuttrykk, fra tidlig voksen alder, vist ved minst 4 av 7 kriterier.</div>
+    <table data-disorder="SCHOID" data-threshold="4" data-total="7">
+        <thead><tr><th>Kriterium</th><th>?</th><th>0</th><th>1</th><th>2</th></tr></thead>
+        <tbody>
+            <tr><td><span class="crit-text">1. Ønsker verken eller har glede av nære forhold, inkl. familie.</span></td><td><input type="radio" name="c40" value="?"></td><td><input type="radio" name="c40" value="0"></td><td><input type="radio" name="c40" value="1"></td><td><input type="radio" name="c40" value="2" data-crit="SCHOID"></td></tr>
+            <tr><td><span class="crit-text">2. Velger nesten alltid aktiviteter alene.</span></td><td><input type="radio" name="c41" value="?"></td><td><input type="radio" name="c41" value="0"></td><td><input type="radio" name="c41" value="1"></td><td><input type="radio" name="c41" value="2" data-crit="SCHOID"></td></tr>
+            <tr><td><span class="crit-text">3. Lite/ingen interesse for seksuelle opplevelser med annen person.</span></td><td><input type="radio" name="c42" value="?"></td><td><input type="radio" name="c42" value="0"></td><td><input type="radio" name="c42" value="1"></td><td><input type="radio" name="c42" value="2" data-crit="SCHOID"></td></tr>
+            <tr><td><span class="crit-text">4. Har glede av få, om noen, aktiviteter.</span></td><td><input type="radio" name="c43" value="?"></td><td><input type="radio" name="c43" value="0"></td><td><input type="radio" name="c43" value="1"></td><td><input type="radio" name="c43" value="2" data-crit="SCHOID"></td></tr>
+            <tr><td><span class="crit-text">5. Mangler nære venner/fortrolige utover første-ledds slektninger.</span></td><td><input type="radio" name="c44" value="?"></td><td><input type="radio" name="c44" value="0"></td><td><input type="radio" name="c44" value="1"></td><td><input type="radio" name="c44" value="2" data-crit="SCHOID"></td></tr>
+            <tr><td><span class="crit-text">6. Synes likegyldig til ros eller kritikk fra andre.</span></td><td><input type="radio" name="c45" value="?"></td><td><input type="radio" name="c45" value="0"></td><td><input type="radio" name="c45" value="1"></td><td><input type="radio" name="c45" value="2" data-crit="SCHOID"></td></tr>
+            <tr><td><span class="crit-text">7. Viser emosjonell kulde, distanse eller flatt følelsesliv.</span></td><td><input type="radio" name="c46" value="?"></td><td><input type="radio" name="c46" value="0"></td><td><input type="radio" name="c46" value="1"></td><td><input type="radio" name="c46" value="2" data-crit="SCHOID"></td></tr>
+            <tr class="subtotal-row"><td>Delsum</td><td colspan="4" id="sum-SCHOID">0 / 7</td></tr>
+        </tbody>
+    </table>
+
+    <!-- ===================== HISTRIONISK ===================== -->
+    <div class="disorder-header">Histrionisk personlighetsforstyrrelse <span class="disorder-code">DSM-5: 301.50 · Terskel: ≥ 5 av 8</span></div>
+    <div class="disorder-criteria-text">A: Gjennomgripende mønster av overdreven emosjonalitet og oppmerksomhetssøking, fra tidlig voksen alder, vist ved minst 5 av 8 kriterier.</div>
+    <table data-disorder="HIST" data-threshold="5" data-total="8">
+        <thead><tr><th>Kriterium</th><th>?</th><th>0</th><th>1</th><th>2</th></tr></thead>
+        <tbody>
+            <tr><td><span class="crit-text">1. Mistrives når ikke i oppmerksomhetens sentrum.</span></td><td><input type="radio" name="c47" value="?"></td><td><input type="radio" name="c47" value="0"></td><td><input type="radio" name="c47" value="1"></td><td><input type="radio" name="c47" value="2" data-crit="HIST"></td></tr>
+            <tr><td><span class="crit-text">2. Upassende seksuelt forførende eller utfordrende atferd.</span></td><td><input type="radio" name="c48" value="?"></td><td><input type="radio" name="c48" value="0"></td><td><input type="radio" name="c48" value="1"></td><td><input type="radio" name="c48" value="2" data-crit="HIST"></td></tr>
+            <tr><td><span class="crit-text">3. Hurtig skiftende og overflatiske følelsesuttrykk (observert).</span></td><td><input type="radio" name="c49" value="?"></td><td><input type="radio" name="c49" value="0"></td><td><input type="radio" name="c49" value="1"></td><td><input type="radio" name="c49" value="2" data-crit="HIST"></td></tr>
+            <tr><td><span class="crit-text">4. Bruker konsekvent fysisk utseende for å trekke oppmerksomhet.</span></td><td><input type="radio" name="c50" value="?"></td><td><input type="radio" name="c50" value="0"></td><td><input type="radio" name="c50" value="1"></td><td><input type="radio" name="c50" value="2" data-crit="HIST"></td></tr>
+            <tr><td><span class="crit-text">5. Impresjonistisk språkstil som mangler detaljer (observert).</span></td><td><input type="radio" name="c51" value="?"></td><td><input type="radio" name="c51" value="0"></td><td><input type="radio" name="c51" value="1"></td><td><input type="radio" name="c51" value="2" data-crit="HIST"></td></tr>
+            <tr><td><span class="crit-text">6. Dramatiserende, teatralsk, overdrevne følelsesuttrykk.</span></td><td><input type="radio" name="c52" value="?"></td><td><input type="radio" name="c52" value="0"></td><td><input type="radio" name="c52" value="1"></td><td><input type="radio" name="c52" value="2" data-crit="HIST"></td></tr>
+            <tr><td><span class="crit-text">7. Påvirkbar; lar seg lett påvirke av andre/situasjoner.</span></td><td><input type="radio" name="c53" value="?"></td><td><input type="radio" name="c53" value="0"></td><td><input type="radio" name="c53" value="1"></td><td><input type="radio" name="c53" value="2" data-crit="HIST"></td></tr>
+            <tr><td><span class="crit-text">8. Betrakter forhold som mer intime enn de faktisk er.</span></td><td><input type="radio" name="c54" value="?"></td><td><input type="radio" name="c54" value="0"></td><td><input type="radio" name="c54" value="1"></td><td><input type="radio" name="c54" value="2" data-crit="HIST"></td></tr>
+            <tr class="subtotal-row"><td>Delsum</td><td colspan="4" id="sum-HIST">0 / 8</td></tr>
+        </tbody>
+    </table>
+
+    <!-- ===================== NARSISSISTISK ===================== -->
+    <div class="disorder-header">Narsissistisk personlighetsforstyrrelse <span class="disorder-code">DSM-5: 301.81 · Terskel: ≥ 5 av 9</span></div>
+    <div class="disorder-criteria-text">A: Gjennomgripende mønster av grandiositet, beundringsbehov og manglende empati, fra tidlig voksen alder, vist ved minst 5 av 9 kriterier.</div>
+    <table data-disorder="NARC" data-threshold="5" data-total="9">
+        <thead><tr><th>Kriterium</th><th>?</th><th>0</th><th>1</th><th>2</th></tr></thead>
+        <tbody>
+            <tr><td><span class="crit-text">1. Grandios følelse av egen betydning.</span></td><td><input type="radio" name="c55" value="?"></td><td><input type="radio" name="c55" value="0"></td><td><input type="radio" name="c55" value="1"></td><td><input type="radio" name="c55" value="2" data-crit="NARC"></td></tr>
+            <tr><td><span class="crit-text">2. Opptatt av fantasier om ubegrenset suksess, makt, briljanse, skjønnhet eller ideell kjærlighet.</span></td><td><input type="radio" name="c56" value="?"></td><td><input type="radio" name="c56" value="0"></td><td><input type="radio" name="c56" value="1"></td><td><input type="radio" name="c56" value="2" data-crit="NARC"></td></tr>
+            <tr><td><span class="crit-text">3. Tror han/hun er "spesiell" og kun forstått av/bør omgås spesielle personer/institusjoner.</span></td><td><input type="radio" name="c57" value="?"></td><td><input type="radio" name="c57" value="0"></td><td><input type="radio" name="c57" value="1"></td><td><input type="radio" name="c57" value="2" data-crit="NARC"></td></tr>
+            <tr><td><span class="crit-text">4. Krever overdreven beundring.</span></td><td><input type="radio" name="c58" value="?"></td><td><input type="radio" name="c58" value="0"></td><td><input type="radio" name="c58" value="1"></td><td><input type="radio" name="c58" value="2" data-crit="NARC"></td></tr>
+            <tr><td><span class="crit-text">5. Følelse av å være særlig berettiget.</span></td><td><input type="radio" name="c59" value="?"></td><td><input type="radio" name="c59" value="0"></td><td><input type="radio" name="c59" value="1"></td><td><input type="radio" name="c59" value="2" data-crit="NARC"></td></tr>
+            <tr><td><span class="crit-text">6. Utnyttende i mellommenneskelige forhold.</span></td><td><input type="radio" name="c60" value="?"></td><td><input type="radio" name="c60" value="0"></td><td><input type="radio" name="c60" value="1"></td><td><input type="radio" name="c60" value="2" data-crit="NARC"></td></tr>
+            <tr><td><span class="crit-text">7. Mangler empati.</span></td><td><input type="radio" name="c61" value="?"></td><td><input type="radio" name="c61" value="0"></td><td><input type="radio" name="c61" value="1"></td><td><input type="radio" name="c61" value="2" data-crit="NARC"></td></tr>
+            <tr><td><span class="crit-text">8. Er ofte misunnelig på andre, eller tror andre er misunnelige på han/henne.</span></td><td><input type="radio" name="c62" value="?"></td><td><input type="radio" name="c62" value="0"></td><td><input type="radio" name="c62" value="1"></td><td><input type="radio" name="c62" value="2" data-crit="NARC"></td></tr>
+            <tr><td><span class="crit-text">9. Viser arrogant, hovmodig atferd eller holdning.</span></td><td><input type="radio" name="c63" value="?"></td><td><input type="radio" name="c63" value="0"></td><td><input type="radio" name="c63" value="1"></td><td><input type="radio" name="c63" value="2" data-crit="NARC"></td></tr>
+            <tr class="subtotal-row"><td>Delsum</td><td colspan="4" id="sum-NARC">0 / 9</td></tr>
+        </tbody>
+    </table>
+
+    <!-- ===================== USTABIL (BORDERLINE) ===================== -->
+    <div class="disorder-header">Ustabil (Borderline) personlighetsforstyrrelse <span class="disorder-code">DSM-5: 301.83 · Terskel: ≥ 5 av 9</span></div>
+    <div class="disorder-criteria-text">A: Gjennomgripende mønster av ustabilitet i forhold, selvbilde og affekter, samt markert impulsivitet, fra tidlig voksen alder, vist ved minst 5 av 9 kriterier.</div>
+    <table data-disorder="BPD" data-threshold="5" data-total="9">
+        <thead><tr><th>Kriterium</th><th>?</th><th>0</th><th>1</th><th>2</th></tr></thead>
+        <tbody>
+            <tr><td><span class="crit-text">1. Desperate anstrengelser for å unngå reell/innbilt fare for å bli forlatt.</span></td><td><input type="radio" name="c64" value="?"></td><td><input type="radio" name="c64" value="0"></td><td><input type="radio" name="c64" value="1"></td><td><input type="radio" name="c64" value="2" data-crit="BPD"></td></tr>
+            <tr><td><span class="crit-text">2. Ustabile/intense forhold med veksling mellom idealisering og devaluering.</span></td><td><input type="radio" name="c65" value="?"></td><td><input type="radio" name="c65" value="0"></td><td><input type="radio" name="c65" value="1"></td><td><input type="radio" name="c65" value="2" data-crit="BPD"></td></tr>
+            <tr><td><span class="crit-text">3. Identitetsforstyrrelse: markert, vedvarende ustabilt selvbilde.</span></td><td><input type="radio" name="c66" value="?"></td><td><input type="radio" name="c66" value="0"></td><td><input type="radio" name="c66" value="1"></td><td><input type="radio" name="c66" value="2" data-crit="BPD"></td></tr>
+            <tr><td><span class="crit-text">4. Impulsivitet på minst to potensielt selvødeleggende områder.</span></td><td><input type="radio" name="c67" value="?"></td><td><input type="radio" name="c67" value="0"></td><td><input type="radio" name="c67" value="1"></td><td><input type="radio" name="c67" value="2" data-crit="BPD"></td></tr>
+            <tr><td><span class="crit-text">5. Gjentatte selvmordsforsøk, trusler eller selvskadingsatferd.</span></td><td><input type="radio" name="c68" value="?"></td><td><input type="radio" name="c68" value="0"></td><td><input type="radio" name="c68" value="1"></td><td><input type="radio" name="c68" value="2" data-crit="BPD"></td></tr>
+            <tr><td><span class="crit-text">6. Affektiv ustabilitet grunnet markert reaktivitet i humøret.</span></td><td><input type="radio" name="c69" value="?"></td><td><input type="radio" name="c69" value="0"></td><td><input type="radio" name="c69" value="1"></td><td><input type="radio" name="c69" value="2" data-crit="BPD"></td></tr>
+            <tr><td><span class="crit-text">7. Kronisk følelse av tomhet.</span></td><td><input type="radio" name="c70" value="?"></td><td><input type="radio" name="c70" value="0"></td><td><input type="radio" name="c70" value="1"></td><td><input type="radio" name="c70" value="2" data-crit="BPD"></td></tr>
+            <tr><td><span class="crit-text">8. Upassende, intenst sinne eller vansker med å kontrollere sinne.</span></td><td><input type="radio" name="c71" value="?"></td><td><input type="radio" name="c71" value="0"></td><td><input type="radio" name="c71" value="1"></td><td><input type="radio" name="c71" value="2" data-crit="BPD"></td></tr>
+            <tr><td><span class="crit-text">9. Forbigående stressrelaterte paranoide tanker eller alvorlige dissosiative symptomer.</span></td><td><input type="radio" name="c72" value="?"></td><td><input type="radio" name="c72" value="0"></td><td><input type="radio" name="c72" value="1"></td><td><input type="radio" name="c72" value="2" data-crit="BPD"></td></tr>
+            <tr class="subtotal-row"><td>Delsum</td><td colspan="4" id="sum-BPD">0 / 9</td></tr>
+        </tbody>
+    </table>
+
+    <!-- ===================== ANTISOSIAL ===================== -->
+    <div class="disorder-header">Antisosial personlighetsforstyrrelse <span class="disorder-code">DSM-5: 301.70 · A: alder ≥18 · B: ≥2/15 (før 15 år) · C: ≥3/7 (etter 15 år)</span></div>
+    <div class="disorder-criteria-text">A: Individet er minst 18 år. B: Atferdsforstyrrelse med start før 15 år (≥2 av 15 kriterier, hvorav kriterium 14–15 må starte før 13 år). C: Gjennomgripende ringeakt for andres rettigheter siden 15-årsalder (≥3 av 7 kriterier).</div>
+
+    <table data-disorder="ASPD_B" data-threshold="2" data-total="15">
+        <thead><tr><th>Kriterium B (før 15 år)</th><th>?</th><th>0</th><th>1</th><th>2</th></tr></thead>
+        <tbody>
+            <tr><td><span class="crit-text">1. Mobbet, truet eller skremte ofte andre.</span></td><td><input type="radio" name="c73" value="?"></td><td><input type="radio" name="c73" value="0"></td><td><input type="radio" name="c73" value="1"></td><td><input type="radio" name="c73" value="2" data-crit="ASPD_B"></td></tr>
+            <tr><td><span class="crit-text">2. Startet ofte slåsskamper.</span></td><td><input type="radio" name="c74" value="?"></td><td><input type="radio" name="c74" value="0"></td><td><input type="radio" name="c74" value="1"></td><td><input type="radio" name="c74" value="2" data-crit="ASPD_B"></td></tr>
+            <tr><td><span class="crit-text">3. Brukte våpen som kunne forårsake alvorlig fysisk skade.</span></td><td><input type="radio" name="c75" value="?"></td><td><input type="radio" name="c75" value="0"></td><td><input type="radio" name="c75" value="1"></td><td><input type="radio" name="c75" value="2" data-crit="ASPD_B"></td></tr>
+            <tr><td><span class="crit-text">4. Var fysisk grusom mot mennesker.</span></td><td><input type="radio" name="c76" value="?"></td><td><input type="radio" name="c76" value="0"></td><td><input type="radio" name="c76" value="1"></td><td><input type="radio" name="c76" value="2" data-crit="ASPD_B"></td></tr>
+            <tr><td><span class="crit-text">5. Var fysisk grusom mot dyr.</span></td><td><input type="radio" name="c77" value="?"></td><td><input type="radio" name="c77" value="0"></td><td><input type="radio" name="c77" value="1"></td><td><input type="radio" name="c77" value="2" data-crit="ASPD_B"></td></tr>
+            <tr><td><span class="crit-text">6. Har stjålet under konfrontasjon med offer (ran/overfall).</span></td><td><input type="radio" name="c78" value="?"></td><td><input type="radio" name="c78" value="0"></td><td><input type="radio" name="c78" value="1"></td><td><input type="radio" name="c78" value="2" data-crit="ASPD_B"></td></tr>
+            <tr><td><span class="crit-text">7. Har tvunget noen til seksuell aktivitet.</span></td><td><input type="radio" name="c79" value="?"></td><td><input type="radio" name="c79" value="0"></td><td><input type="radio" name="c79" value="1"></td><td><input type="radio" name="c79" value="2" data-crit="ASPD_B"></td></tr>
+            <tr><td><span class="crit-text">8. Anstiftet brann med hensikt om alvorlig skade.</span></td><td><input type="radio" name="c80" value="?"></td><td><input type="radio" name="c80" value="0"></td><td><input type="radio" name="c80" value="1"></td><td><input type="radio" name="c80" value="2" data-crit="ASPD_B"></td></tr>
+            <tr><td><span class="crit-text">9. Ødela med vilje andres eiendom (uten brannstiftelse).</span></td><td><input type="radio" name="c81" value="?"></td><td><input type="radio" name="c81" value="0"></td><td><input type="radio" name="c81" value="1"></td><td><input type="radio" name="c81" value="2" data-crit="ASPD_B"></td></tr>
+            <tr><td><span class="crit-text">10. Gjorde innbrudd i hus, bygning eller bil.</span></td><td><input type="radio" name="c82" value="?"></td><td><input type="radio" name="c82" value="0"></td><td><input type="radio" name="c82" value="1"></td><td><input type="radio" name="c82" value="2" data-crit="ASPD_B"></td></tr>
+            <tr><td><span class="crit-text">11. Løy ofte for å oppnå goder eller unngå forpliktelser.</span></td><td><input type="radio" name="c83" value="?"></td><td><input type="radio" name="c83" value="0"></td><td><input type="radio" name="c83" value="1"></td><td><input type="radio" name="c83" value="2" data-crit="ASPD_B"></td></tr>
+            <tr><td><span class="crit-text">12. Stjal ting av verdi uten konfrontasjon (butikktyveri/forfalskning).</span></td><td><input type="radio" name="c84" value="?"></td><td><input type="radio" name="c84" value="0"></td><td><input type="radio" name="c84" value="1"></td><td><input type="radio" name="c84" value="2" data-crit="ASPD_B"></td></tr>
+            <tr><td><span class="crit-text">13. Var ute hele natten minst to ganger, eller borte lengre periode.</span></td><td><input type="radio" name="c85" value="?"></td><td><input type="radio" name="c85" value="0"></td><td><input type="radio" name="c85" value="1"></td><td><input type="radio" name="c85" value="2" data-crit="ASPD_B"></td></tr>
+            <tr><td><span class="crit-text">14. Var ofte ute om natten på tross av forbud, fra før 13 år.</span></td><td><input type="radio" name="c86" value="?"></td><td><input type="radio" name="c86" value="0"></td><td><input type="radio" name="c86" value="1"></td><td><input type="radio" name="c86" value="2" data-crit="ASPD_B"></td></tr>
+            <tr><td><span class="crit-text">15. Skulket ofte skolen fra før 13 år.</span></td><td><input type="radio" name="c87" value="?"></td><td><input type="radio" name="c87" value="0"></td><td><input type="radio" name="c87" value="1"></td><td><input type="radio" name="c87" value="2" data-crit="ASPD_B"></td></tr>
+            <tr class="subtotal-row"><td>Delsum (Kriterium B)</td><td colspan="4" id="sum-ASPD_B">0 / 15</td></tr>
+        </tbody>
+    </table>
+
+    <table data-disorder="ASPD_C" data-threshold="3" data-total="7" style="margin-top:15px;">
+        <thead><tr><th>Kriterium C (fra 15 år)</th><th>?</th><th>0</th><th>1</th><th>2</th></tr></thead>
+        <tbody>
+            <tr><td><span class="crit-text">1. Manglende evne til å følge sosiale normer for lovlydig atferd.</span></td><td><input type="radio" name="c88" value="?"></td><td><input type="radio" name="c88" value="0"></td><td><input type="radio" name="c88" value="1"></td><td><input type="radio" name="c88" value="2" data-crit="ASPD_C"></td></tr>
+            <tr><td><span class="crit-text">2. Svikefullhet: kronisk løgnaktighet, bruk av andres navn, eller lurer andre.</span></td><td><input type="radio" name="c89" value="?"></td><td><input type="radio" name="c89" value="0"></td><td><input type="radio" name="c89" value="1"></td><td><input type="radio" name="c89" value="2" data-crit="ASPD_C"></td></tr>
+            <tr><td><span class="crit-text">3. Impulsivitet eller manglende evne til å planlegge fremover.</span></td><td><input type="radio" name="c90" value="?"></td><td><input type="radio" name="c90" value="0"></td><td><input type="radio" name="c90" value="1"></td><td><input type="radio" name="c90" value="2" data-crit="ASPD_C"></td></tr>
+            <tr><td><span class="crit-text">4. Irritabilitet og aggressivitet (slagsmål/overfall).</span></td><td><input type="radio" name="c91" value="?"></td><td><input type="radio" name="c91" value="0"></td><td><input type="radio" name="c91" value="1"></td><td><input type="radio" name="c91" value="2" data-crit="ASPD_C"></td></tr>
+            <tr><td><span class="crit-text">5. Uansvarlig ringeakt for egen/andres sikkerhet.</span></td><td><input type="radio" name="c92" value="?"></td><td><input type="radio" name="c92" value="0"></td><td><input type="radio" name="c92" value="1"></td><td><input type="radio" name="c92" value="2" data-crit="ASPD_C"></td></tr>
+            <tr><td><span class="crit-text">6. Konsekvent uansvarlighet mht. jobb/økonomiske forpliktelser.</span></td><td><input type="radio" name="c93" value="?"></td><td><input type="radio" name="c93" value="0"></td><td><input type="radio" name="c93" value="1"></td><td><input type="radio" name="c93" value="2" data-crit="ASPD_C"></td></tr>
+            <tr><td><span class="crit-text">7. Mangel på anger, likegyldig til/bortforklarer å ha skadet andre.</span></td><td><input type="radio" name="c94" value="?"></td><td><input type="radio" name="c94" value="0"></td><td><input type="radio" name="c94" value="1"></td><td><input type="radio" name="c94" value="2" data-crit="ASPD_C"></td></tr>
+            <tr class="subtotal-row"><td>Delsum (Kriterium C)</td><td colspan="4" id="sum-ASPD_C">0 / 7</td></tr>
+        </tbody>
+    </table>
+
+    </form>
+
+    <div id="results">
+        <div class="result-header">Sammendrag av resultater</div>
+        <table class="result-table">
+            <thead>
+                <tr><th>Personlighetsforstyrrelse</th><th class="num">Skåre</th><th class="num">Terskel</th><th>Konklusjon</th></tr>
+            </thead>
+            <tbody id="resultsBody">
+                <!-- Filled by JS -->
+            </tbody>
+        </table>
+        <table class="result-table" style="margin-top:10px;">
+            <tr class="note-row"><td colspan="4">Antisosial personlighetsforstyrrelse krever i tillegg at pasienten er ≥ 18 år, og at kriterium B og C begge er oppfylt (se generelle kriterier A–F for alle diagnoser).</td></tr>
+        </table>
+    </div>
+
+    <div class="controls">
+        <button type="button" class="btn-calc" onclick="calculateScore()">Regne ut skårer</button>
+        <button type="button" class="btn-export" onclick="exportHTML()">Lage til html</button>
+        <button type="button" class="btn-word" onclick="exportWord()">Lagre til Word</button>
+        <button type="button" class="btn-pdf" onclick="window.print()">Lagre til PDF</button>
+    </div>
+</div>
+
+<script>
+    const disorders = [
+        {code: "AVOID", name: "Unnvikende personlighetsforstyrrelse"},
+        {code: "DEP", name: "Avhengig personlighetsforstyrrelse"},
+        {code: "OCPD", name: "Tvangspreget personlighetsforstyrrelse"},
+        {code: "PAR", name: "Paranoid personlighetsforstyrrelse"},
+        {code: "SCHT", name: "Schizotyp personlighetsforstyrrelse"},
+        {code: "SCHOID", name: "Schizoid personlighetsforstyrrelse"},
+        {code: "HIST", name: "Histrionisk personlighetsforstyrrelse"},
+        {code: "NARC", name: "Narsissistisk personlighetsforstyrrelse"},
+        {code: "BPD", name: "Ustabil (Borderline) personlighetsforstyrrelse"},
+        {code: "ASPD_B", name: "Antisosial - Kriterium B (barndom)"},
+        {code: "ASPD_C", name: "Antisosial - Kriterium C (voksen)"}
+    ];
+
+    const thresholds = {
+        AVOID: 4, DEP: 5, OCPD: 4, PAR: 4, SCHT: 5, SCHOID: 4,
+        HIST: 5, NARC: 5, BPD: 5, ASPD_B: 2, ASPD_C: 3
+    };
+    const totals = {
+        AVOID: 7, DEP: 8, OCPD: 8, PAR: 7, SCHT: 9, SCHOID: 7,
+        HIST: 8, NARC: 9, BPD: 9, ASPD_B: 15, ASPD_C: 7
+    };
+
+    function calculateScore() {
+        const counts = {};
+        disorders.forEach(d => counts[d.code] = 0);
+
+        document.querySelectorAll('input[type="radio"]:checked').forEach(input => {
+            if (input.hasAttribute('data-crit')) {
+                const crit = input.getAttribute('data-crit');
+                counts[crit] = (counts[crit] || 0) + 1;
+            }
+        });
+
+        // Update subtotal display in each table
+        disorders.forEach(d => {
+            const el = document.getElementById('sum-' + d.code);
+            if (el) el.innerText = counts[d.code] + " / " + totals[d.code];
+        });
+
+        // Build results table
+        const tbody = document.getElementById('resultsBody');
+        tbody.innerHTML = '';
+        disorders.forEach(d => {
+            const score = counts[d.code];
+            const thresh = thresholds[d.code];
+            const met = score >= thresh;
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${d.name}</td>
+                <td class="num">${score} / ${totals[d.code]}</td>
+                <td class="num">≥ ${thresh}</td>
+                <td class="${met ? 'positive-result' : 'negative-result'}">${met ? 'Kriterium oppfylt' : 'Ikke oppfylt'}</td>`;
+            tbody.appendChild(row);
+        });
+
+        // Special row combining ASPD B+C
+        const aspdMet = counts['ASPD_B'] >= thresholds['ASPD_B'] && counts['ASPD_C'] >= thresholds['ASPD_C'];
+        const aspdRow = document.createElement('tr');
+        aspdRow.style.background = "#f7f7f7";
+        aspdRow.innerHTML = `<td><strong>➜ Antisosial PF (samlet B+C, forutsatt alder ≥18)</strong></td>
+            <td class="num">-</td><td class="num">-</td>
+            <td class="${aspdMet ? 'positive-result' : 'negative-result'}"><strong>${aspdMet ? 'Kriterier B og C oppfylt' : 'Ikke oppfylt'}</strong></td>`;
+        tbody.appendChild(aspdRow);
+
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('results').scrollIntoView({behavior: "smooth"});
+    }
+
+    // ===== EXPORT LOGIC (identisk mønster som ASRS/WURS) =====
+    function prepareContentForExport() {
+        const nameVal = document.getElementById('patientName').value;
+        const interviewerVal = document.getElementById('interviewerName').value;
+        const dateVal = document.getElementById('testDate').value;
+
+        const contentClone = document.getElementById('document-content').cloneNode(true);
+        const controls = contentClone.querySelector('.controls');
+        if (controls) controls.remove();
+
+        contentClone.querySelector('#patientName').setAttribute('value', nameVal);
+        contentClone.querySelector('#interviewerName').setAttribute('value', interviewerVal);
+        contentClone.querySelector('#testDate').setAttribute('value', dateVal);
+
+        const originalInputs = document.querySelectorAll('input[type="radio"]');
+        const clonedInputs = contentClone.querySelectorAll('input[type="radio"]');
+
+        for (let i = 0; i < originalInputs.length; i++) {
+            if (originalInputs[i].checked) {
+                const parent = clonedInputs[i].parentNode;
+                clonedInputs[i].style.display = 'none';
+                const marker = document.createElement('strong');
+                marker.innerHTML = " [X] ";
+                marker.style.fontSize = "1.1em";
+                parent.appendChild(marker);
+                parent.style.backgroundColor = "#dff0d8";
+            } else {
+                clonedInputs[i].style.display = 'none';
+                const emptyParams = document.createElement('span');
+                emptyParams.innerHTML = " ( ) ";
+                clonedInputs[i].parentNode.appendChild(emptyParams);
+            }
+        }
+
+        const results = contentClone.querySelector('#results');
+        if (results) results.style.display = 'block';
+
+        return contentClone.innerHTML;
+    }
+
+    function prepareHTMLFileContent() {
+        const docClone = document.documentElement.cloneNode(true);
+
+        const nameVal = document.getElementById('patientName').value;
+        const interviewerVal = document.getElementById('interviewerName').value;
+        const dateVal = document.getElementById('testDate').value;
+
+        docClone.querySelector('#patientName').setAttribute('value', nameVal);
+        docClone.querySelector('#interviewerName').setAttribute('value', interviewerVal);
+        docClone.querySelector('#testDate').setAttribute('value', dateVal);
+
+        const origInputs = document.querySelectorAll('input[type="radio"]');
+        const cloneInputs = docClone.querySelectorAll('input[type="radio"]');
+
+        for (let i = 0; i < origInputs.length; i++) {
+            if (origInputs[i].checked) {
+                cloneInputs[i].setAttribute('checked', 'checked');
+            }
+        }
+        return docClone.outerHTML;
+    }
+
+    function exportHTML() {
+        const htmlContent = prepareHTMLFileContent();
+        const blob = new Blob([htmlContent], {type: 'text/html'});
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'SCID-5-PF_utfylt.html';
+        link.click();
+    }
+
+    function exportWord() {
+        const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' " +
+            "xmlns:w='urn:schemas-microsoft-com:office:word' " +
+            "xmlns='http://www.w3.org/TR/REC-html40'>" +
+            "<head><meta charset='utf-8'><title>SCID-5-PF Resultat</title></head><body>";
+        const footer = "</body></html>";
+        const bodyContent = prepareContentForExport();
+        const sourceHTML = header + bodyContent + footer;
+
+        const blob = new Blob(['\ufeff', sourceHTML], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'SCID-5-PF_Resultat.doc';
+        link.click();
+    }
+</script>
+
+</body>
+</html>

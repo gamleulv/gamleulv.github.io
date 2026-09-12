@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SSHF – gamleulv.github.io</title>
+<style>
+:root {
+  --bg: #eef2ff; --bg-card: #f8f9ff; --text: #111; --text-muted: #5a5f73;
+  --accent: #0044aa; --accent-strong:#00298f; --border: #d7dbee; --radius: 16px;
+}
+[data-theme="dark"] {
+  --bg: #0f172a; --bg-card: #1b2436; --text: #e7e9f0; --text-muted: #98a0b8;
+  --accent: #7fb1ff; --accent-strong:#a9cbff; --border: #2c3752;
+}
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  background: var(--bg); color: var(--text); margin: 0; padding: 16px;
+  line-height: 1.45; -webkit-text-size-adjust: 100%;
+}
+.container { max-width: 1100px; margin: auto; background: var(--bg-card);
+  padding: 20px; border-radius: var(--radius); box-shadow: 0 0 30px rgba(0,0,0,0.10); }
+h1 { font-size: clamp(22px, 5vw, 30px); margin: 6px 0 8px; }
+h3 { font-size: 17px; margin: 22px 0 8px; }
+a { color: var(--accent); text-decoration: none; word-break: break-word; }
+a:hover { text-decoration: underline; }
+.topbar { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom: 6px;}
+.home-link { font-weight:600; font-size:15px; }
+.theme-toggle button, .btn {
+  padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border);
+  background: transparent; color: var(--text); cursor: pointer; font-size: 13px;
+}
+.breadcrumb { font-size: 13px; color: var(--text-muted); margin: 6px 0 16px; line-height:1.8; }
+.breadcrumb a { margin-right:2px; }
+.search-wrap { margin: 14px 0 20px; position: relative; }
+.search-wrap input {
+  width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
+  font-size: 16px; background: var(--bg); color: var(--text);
+}
+#searchResults { margin-top: 8px; border-radius: 12px; overflow: hidden; }
+#searchResults .res { display:block; padding: 10px 12px; border-bottom: 1px solid var(--border); background: var(--bg); }
+#searchResults .res small { display:block; color: var(--text-muted); }
+ul.filelist { list-style: none; padding: 0; margin: 6px 0 0; }
+ul.filelist li { display:flex; align-items:center; gap:8px; padding: 9px 4px; border-bottom: 1px solid var(--border); flex-wrap: wrap;}
+ul.filelist li .name { flex: 1 1 auto; min-width: 140px; }
+.dl-btn { flex: 0 0 auto; font-size: 12px; padding: 5px 10px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); }
+.dl-btn:hover { color: var(--accent); border-color: var(--accent); text-decoration:none; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; margin-top: 14px; }
+.card { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
+.card-title { font-size: 17px; font-weight: 600; margin-bottom: 4px; display:flex; align-items:center; gap:6px;}
+.card-meta { font-size: 12px; color: var(--text-muted); }
+.recent-list { list-style:none; padding:0; margin: 8px 0 0; }
+.recent-list li { padding: 8px 0; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;}
+.recent-list .date { color: var(--text-muted); font-size: 13px; }
+.footer { margin-top: 26px; font-size: 12px; color: var(--text-muted); text-align:center; }
+.locked-badge { font-size:12px; color:var(--text-muted); }
+@media (max-width: 600px) {
+  body { padding: 8px; }
+  .container { padding: 14px; border-radius: 12px; }
+  ul.filelist li { font-size: 15px; }
+  .grid { grid-template-columns: 1fr; }
+}
+</style>
+
+</head>
+<body>
+<div class="container">
+<div class="theme-toggle"><button onclick="toggleTheme()">☀️/🌙</button></div>
+<h1>📁 SSHF</h1>
+<div class="breadcrumb"><a href="/index.html">🏠 Hjem</a> / <a href="/E-postmaler/index.html">E-postmaler</a> / <a href="/E-postmaler/SSHF/index.html">SSHF</a></div>
+<div class="search-wrap"><input id="searchInput" type="text" placeholder="🔎 Søk i hele nettstedet – mappe, fil eller innhold…" autocomplete="off"><div id="searchResults"></div></div>
+<h3>Filer i denne mappen</h3><ul class="filelist">
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/2026.08.19-Teamsamling.html">Teamsamling 19.08.26</a></span><a class="dl-btn" href="/E-postmaler/SSHF/2026.08.19-Teamsamling.html" download="2026.08.19-Teamsamling.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/ADHD-behandlere-fugler-kvister-riklenke.html">ADHD - riklenke</a></span><a class="dl-btn" href="/E-postmaler/SSHF/ADHD-behandlere-fugler-kvister-riklenke.html" download="ADHD-behandlere-fugler-kvister-riklenke.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/ADHD-pasienter-fugler-kvister-riklenke.html">Om ADHD for pasienter - riklenke - høstgreiner og fugler</a></span><a class="dl-btn" href="/E-postmaler/SSHF/ADHD-pasienter-fugler-kvister-riklenke.html" download="ADHD-pasienter-fugler-kvister-riklenke.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/ADHD-pasienter-fugler-kvister.html">Om ADHD: For pasienter og pårørende</a></span><a class="dl-btn" href="/E-postmaler/SSHF/ADHD-pasienter-fugler-kvister.html" download="ADHD-pasienter-fugler-kvister.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/BAL-behandlere-elvemagi-riklenke.html">Om bipolare lidleser - riklenke på elvmagi</a></span><a class="dl-btn" href="/E-postmaler/SSHF/BAL-behandlere-elvemagi-riklenke.html" download="BAL-behandlere-elvemagi-riklenke.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/BAL-behandlere-elvemagi.html">Bipolare lidelser</a></span><a class="dl-btn" href="/E-postmaler/SSHF/BAL-behandlere-elvemagi.html" download="BAL-behandlere-elvemagi.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/BAL-pasienter-elvemagi-riklenke.html">Om bipolare lidelser for pasienter - riklenk på lysmagi</a></span><a class="dl-btn" href="/E-postmaler/SSHF/BAL-pasienter-elvemagi-riklenke.html" download="BAL-pasienter-elvemagi-riklenke.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/BAL-pasienter-elvemagi.html">Om bipolare lidelser: For pasienter og pårørende</a></span><a class="dl-btn" href="/E-postmaler/SSHF/BAL-pasienter-elvemagi.html" download="BAL-pasienter-elvemagi.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/BAL-pasienter-hurtigtekst.html">BAL pasienter hurtigtekst</a></span><a class="dl-btn" href="/E-postmaler/SSHF/BAL-pasienter-hurtigtekst.html" download="BAL-pasienter-hurtigtekst.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/Born-to-run.html">Fysisk trening og psykisk helse</a></span><a class="dl-btn" href="/E-postmaler/SSHF/Born-to-run.html" download="Born-to-run.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/Freud.html">Freud</a></span><a class="dl-btn" href="/E-postmaler/SSHF/Freud.html" download="Freud.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/Pasienter-pa%CC%8Ar%C3%B8rende-sider.html">Sider for pasienter og pårørende</a></span><a class="dl-btn" href="/E-postmaler/SSHF/Pasienter-pa%CC%8Ar%C3%B8rende-sider.html" download="Pasienter-pårørende-sider.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/Psykometri.html">Psykometri</a></span><a class="dl-btn" href="/E-postmaler/SSHF/Psykometri.html" download="Psykometri.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/PTSD-behandlere-pil-riklenke.html">PTSD - riklenke under pil</a></span><a class="dl-btn" href="/E-postmaler/SSHF/PTSD-behandlere-pil-riklenke.html" download="PTSD-behandlere-pil-riklenke.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/PTSD-pasienter-pil-riklenke.html">Om PTSD for pasienter - riklenke under pil</a></span><a class="dl-btn" href="/E-postmaler/SSHF/PTSD-pasienter-pil-riklenke.html" download="PTSD-pasienter-pil-riklenke.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/PTSD-pasienter-pil.html">Om PTSD: For pasienter og pårørende</a></span><a class="dl-btn" href="/E-postmaler/SSHF/PTSD-pasienter-pil.html" download="PTSD-pasienter-pil.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/S%C3%B8vn-behandlere-skj%C3%A6rga%CC%8Ardsnatt-lenker-gyngende-ma%CC%8Ane.html">Søvn - lenker - gyngende måne - nattbakgrunn</a></span><a class="dl-btn" href="/E-postmaler/SSHF/S%C3%B8vn-behandlere-skj%C3%A6rga%CC%8Ardsnatt-lenker-gyngende-ma%CC%8Ane.html" download="Søvn-behandlere-skjærgårdsnatt-lenker-gyngende-måne.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/S%C3%B8vn-behandlere-skj%C3%A6rga%CC%8Ardsnatt-lenker.html">Søvnlenker på nattbakgrunn</a></span><a class="dl-btn" href="/E-postmaler/SSHF/S%C3%B8vn-behandlere-skj%C3%A6rga%CC%8Ardsnatt-lenker.html" download="Søvn-behandlere-skjærgårdsnatt-lenker.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/S%C3%B8vn-behandlere-skj%C3%A6rga%CC%8Ardsnatt-riklenke.html">Søvn - riklenke på nattbakgrunn</a></span><a class="dl-btn" href="/E-postmaler/SSHF/S%C3%B8vn-behandlere-skj%C3%A6rga%CC%8Ardsnatt-riklenke.html" download="Søvn-behandlere-skjærgårdsnatt-riklenke.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/S%C3%B8vn-behandlere-skj%C3%A6rga%CC%8Ardsnatt.html">Om søvn og behandling av søvnforstyrrelser</a></span><a class="dl-btn" href="/E-postmaler/SSHF/S%C3%B8vn-behandlere-skj%C3%A6rga%CC%8Ardsnatt.html" download="Søvn-behandlere-skjærgårdsnatt.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/S%C3%B8vn-behandling-s%C3%B8vnforstyrrelser.html">Behandling av søvnforstyrrelser</a></span><a class="dl-btn" href="/E-postmaler/SSHF/S%C3%B8vn-behandling-s%C3%B8vnforstyrrelser.html" download="Søvn-behandling-søvnforstyrrelser.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/S%C3%B8vn-pasienter-skj%C3%A6rga%CC%8Ardsnatt-riklenke.html">Om søvn for pasienter - riklenke på nattbakgrunn</a></span><a class="dl-btn" href="/E-postmaler/SSHF/S%C3%B8vn-pasienter-skj%C3%A6rga%CC%8Ardsnatt-riklenke.html" download="Søvn-pasienter-skjærgårdsnatt-riklenke.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/S%C3%B8vn-pasienter-skj%C3%A6rga%CC%8Ardsnatt.html">Om søvn og behandling av søvnforstyrrelser</a></span><a class="dl-btn" href="/E-postmaler/SSHF/S%C3%B8vn-pasienter-skj%C3%A6rga%CC%8Ardsnatt.html" download="Søvn-pasienter-skjærgårdsnatt.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/S%C3%B8vn-sidelenker-1nattebakgrunn.html">Søvn - lenker på 1 bakgrunn</a></span><a class="dl-btn" href="/E-postmaler/SSHF/S%C3%B8vn-sidelenker-1nattebakgrunn.html" download="Søvn-sidelenker-1nattebakgrunn.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/E-postmaler/SSHF/Trening-lenke.html">Fysisk trening og psykisk helse - riklenke</a></span><a class="dl-btn" href="/E-postmaler/SSHF/Trening-lenke.html" download="Trening-lenke.html">⬇ Last ned</a></li>
+</ul>
+<p style="margin-top:26px;"><a href="/E-postmaler/index.html">⬅ Tilbake</a></p>
+<div class="footer">Sist oppdatert: 2026-09-12 03:02</div>
+</div>
+<script>
+function setTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('site-theme',t);}
+function toggleTheme(){const c=document.documentElement.getAttribute('data-theme')||'light';setTheme(c==='light'?'dark':'light');}
+document.addEventListener('DOMContentLoaded',function(){setTheme(localStorage.getItem('site-theme')||'light');initSearch();});
+
+let SEARCH_INDEX = null;
+async function loadSearchIndex(){
+  if (SEARCH_INDEX) return SEARCH_INDEX;
+  try {
+    const res = await fetch('/search-index.json');
+    SEARCH_INDEX = await res.json();
+  } catch(e) { SEARCH_INDEX = []; }
+  return SEARCH_INDEX;
+}
+function scoreMatch(entry, q){
+  const hay = (entry.name+' '+entry.dir+' '+entry.title+' '+entry.snippet).toLowerCase();
+  return hay.includes(q) ? (entry.name.toLowerCase().includes(q) ? 2 : 1) : 0;
+}
+async function runSearch(q){
+  const box = document.getElementById('searchResults');
+  if (!box) return;
+  q = q.trim().toLowerCase();
+  if (q.length < 2) { box.innerHTML=''; return; }
+  const idx = await loadSearchIndex();
+  const hits = idx.map(e=>({e,s:scoreMatch(e,q)})).filter(x=>x.s>0)
+    .sort((a,b)=>b.s-a.s).slice(0,40);
+  if (!hits.length) { box.innerHTML = '<div class="res">Ingen treff.</div>'; return; }
+  box.innerHTML = hits.map(({e})=>{
+    const snip = e.snippet ? e.snippet.slice(0,140)+'…' : '';
+    return `<a class="res" href="${e.href}"><strong>${e.icon||'📄'} ${e.title}</strong><small>${e.dir}</small>${snip?('<small>'+snip+'</small>'):''}</a>`;
+  }).join('');
+}
+function initSearch(){
+  const input = document.getElementById('searchInput');
+  if (!input) return;
+  let t;
+  input.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=>runSearch(input.value), 120); });
+}
+</script>
+</body>
+</html>

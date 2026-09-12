@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="no" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ME-CFS-Canada-kriterier-skjema</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    :root,[data-theme="light"]{
+      --color-bg:#f7f6f2;--color-surface:#f9f8f5;--color-surface-2:#fbfbf9;--color-surface-offset:#f3f0ec;--color-border:#d4d1ca;--color-divider:#dcd9d5;
+      --color-text:#28251d;--color-text-muted:#6f6d67;--color-primary:#01696f;--color-primary-hover:#0c4e54;--color-primary-highlight:#cedcd8;
+      --color-success:#437a22;--color-warning:#964219;--color-error:#a13544;--color-text-inverse:#f9f8f4;
+      --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;
+      --text-xs:clamp(.75rem,.7rem + .25vw,.875rem);--text-sm:clamp(.875rem,.8rem + .35vw,1rem);--text-base:clamp(1rem,.95rem + .25vw,1.125rem);--text-lg:clamp(1.125rem,1rem + .75vw,1.5rem);--text-xl:clamp(1.5rem,1.2rem + 1.25vw,2.25rem);
+      --radius-sm:.375rem;--radius-md:.5rem;--radius-lg:.75rem;--radius-xl:1rem;--shadow-sm:0 1px 2px rgba(0,0,0,.06);--shadow-md:0 8px 24px rgba(0,0,0,.08);
+      --font-body:'Segoe UI',system-ui,sans-serif;--font-display:'Segoe UI',system-ui,sans-serif;
+    }
+    [data-theme="dark"]{
+      --color-bg:#171614;--color-surface:#1c1b19;--color-surface-2:#201f1d;--color-surface-offset:#22211f;--color-border:#393836;--color-divider:#262523;
+      --color-text:#e3e0da;--color-text-muted:#aaa59a;--color-primary:#4f98a3;--color-primary-hover:#66aeb9;--color-primary-highlight:#2b393c;
+      --color-success:#7ab056;--color-warning:#d18e5c;--color-error:#d86b7a;--color-text-inverse:#171614;--shadow-sm:0 1px 2px rgba(0,0,0,.25);--shadow-md:0 12px 28px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;min-height:100vh;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);font-size:var(--text-base);line-height:1.55}
+    button,input,textarea,select{font:inherit;color:inherit}
+    .page{max-width:1100px;margin:0 auto;padding:var(--space-8) var(--space-4) var(--space-10)}
+    .card{background:var(--color-surface);border:1px solid color-mix(in srgb,var(--color-text) 10%, transparent);border-radius:var(--radius-xl);box-shadow:var(--shadow-md)}
+    .header{display:flex;justify-content:space-between;gap:var(--space-4);align-items:flex-start;margin-bottom:var(--space-6)}
+    .brand{display:flex;gap:var(--space-4);align-items:center}
+    .logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--color-primary),color-mix(in srgb,var(--color-primary) 55%, white));display:grid;place-items:center;color:#fff;flex:none}
+    .logo svg{width:24px;height:24px}
+    h1{margin:0 0 .3rem;font-size:var(--text-xl);line-height:1.1}
+    .sub{margin:0;color:var(--color-text-muted);font-size:var(--text-sm);max-width:72ch}
+    .theme-toggle{min-width:44px;min-height:44px;border-radius:999px;border:1px solid color-mix(in srgb,var(--color-text) 12%, transparent);background:var(--color-surface-2);display:grid;place-items:center}
+    .panel{padding:var(--space-6)}
+    .meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-4);margin-bottom:var(--space-6)}
+    .field label{display:block;font-size:var(--text-xs);font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:var(--space-2)}
+    .field input,.field textarea{width:100%;padding:.8rem .9rem;border-radius:var(--radius-md);border:1px solid var(--color-border);background:var(--color-surface-2)}
+    .field textarea{min-height:74px;resize:vertical}
+    .intro{display:grid;grid-template-columns:1.2fr .8fr;gap:var(--space-4);margin-bottom:var(--space-6)}
+    .note,.scale-box,.result-box{background:var(--color-surface-offset);border-radius:var(--radius-lg);padding:var(--space-4);border:1px solid color-mix(in srgb,var(--color-text) 8%, transparent)}
+    .note h2,.scale-box h2,.result-box h2{margin:0 0 var(--space-3);font-size:var(--text-lg)}
+    .note p,.scale-box p,.result-box p{margin:.35rem 0;color:var(--color-text-muted);font-size:var(--text-sm)}
+    .criteria-list{display:grid;gap:var(--space-4)}
+    .criterion{border:1px solid color-mix(in srgb,var(--color-text) 10%, transparent);background:var(--color-surface-2);border-radius:var(--radius-lg);overflow:hidden}
+    .criterion-head{padding:var(--space-4) var(--space-5);background:color-mix(in srgb,var(--color-primary) 8%, var(--color-surface-2));border-bottom:1px solid color-mix(in srgb,var(--color-text) 8%, transparent)}
+    .criterion-head h3{margin:0;font-size:1.02rem}
+    .criterion-head p{margin:.35rem 0 0;color:var(--color-text-muted);font-size:var(--text-sm)}
+    .criterion-body{padding:var(--space-4) var(--space-5)}
+    .options{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--space-2)}
+    .opt{padding:var(--space-3);border-radius:var(--radius-md);border:1px solid var(--color-border);background:var(--color-surface);display:flex;flex-direction:column;gap:.15rem;align-items:center;justify-content:center;min-height:64px;cursor:pointer;text-align:center}
+    .opt strong{font-size:var(--text-sm)} .opt span{font-size:var(--text-xs);color:var(--color-text-muted)}
+    .opt.selected{background:var(--color-primary);border-color:var(--color-primary);color:var(--color-text-inverse)} .opt.selected span{color:rgba(255,255,255,.85)}
+    .score-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--space-4);margin-top:var(--space-5)}
+    .stat{padding:var(--space-4);background:var(--color-surface-2);border:1px solid color-mix(in srgb,var(--color-text) 10%, transparent);border-radius:var(--radius-lg)}
+    .stat .label{font-size:var(--text-xs);text-transform:uppercase;font-weight:700;color:var(--color-text-muted);letter-spacing:.03em}
+    .stat .value{font-size:1.6rem;font-weight:800;margin-top:.2rem}
+    .interp{margin-top:var(--space-4);padding:var(--space-4);border-radius:var(--radius-lg);font-size:var(--text-sm);border:1px solid transparent}
+    .interp.ok{background:color-mix(in srgb,var(--color-success) 12%, var(--color-surface));border-color:color-mix(in srgb,var(--color-success) 30%, transparent)}
+    .interp.warn{background:color-mix(in srgb,var(--color-warning) 12%, var(--color-surface));border-color:color-mix(in srgb,var(--color-warning) 30%, transparent)}
+    .interp.bad{background:color-mix(in srgb,var(--color-error) 12%, var(--color-surface));border-color:color-mix(in srgb,var(--color-error) 30%, transparent)}
+    .controls{display:flex;flex-wrap:wrap;gap:var(--space-3);margin-top:var(--space-6)}
+    .btn{border:none;border-radius:999px;padding:.9rem 1.2rem;min-height:46px;font-weight:700;cursor:pointer}
+    .btn-primary{background:var(--color-primary);color:var(--color-text-inverse)} .btn-primary:hover{background:var(--color-primary-hover)}
+    .btn-secondary{background:var(--color-surface-offset);border:1px solid var(--color-border)}
+    .footnote{margin-top:var(--space-4);font-size:var(--text-xs);color:var(--color-text-muted)}
+    .hidden{display:none!important}
+    @media (max-width:800px){.meta,.intro,.score-grid{grid-template-columns:1fr}.header{flex-direction:column}.options{grid-template-columns:1fr 1fr}.page{padding:var(--space-4)}}
+    @media print{.controls,.theme-toggle{display:none!important} body{background:#fff} .page{max-width:none;padding:0} .card{box-shadow:none;border:none}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="header">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M5 8c2.2-1.3 4.4-2 7-2s4.8.7 7 2"/><path d="M5 16c2.2-1.3 4.4-2 7-2s4.8.7 7 2"/></svg>
+        </div>
+        <div>
+          <h1>ME/CFS – Canada-kriterier</h1>
+          <p class="sub">Interaktivt vurderingsskjema basert på nettskjemaet hos Psyktest. Skjemaet summerer antall oppfylte kriterier, viser tolkning og kan eksporteres til Word eller PDF. [page:1]</p>
+        </div>
+      </div>
+      <button type="button" class="theme-toggle" data-theme-toggle aria-label="Bytt tema">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </button>
+    </div>
+
+    <section class="card panel" id="exportArea">
+      <div class="meta">
+        <div class="field"><label for="patientName">Navn</label><input id="patientName" type="text"></div>
+        <div class="field"><label for="assessmentDate">Dato</label><input id="assessmentDate" type="date"></div>
+        <div class="field"><label for="patientId">ID / journalnr.</label><input id="patientId" type="text"></div>
+      </div>
+
+      <div class="intro">
+        <div class="note">
+          <h2>Instruksjon</h2>
+          <p>Vurder symptomene over de siste 6 månedene. Psyktest beskriver testen som en pasientrapportert vurdering basert på Canada-kriteriene (2003), der alle 7 hovedkriterier må være oppfylt for fullt treff. [page:1]</p>
+          <p>De 7 hovedkriteriene er utmattelse, PEM, søvnforstyrrelse, smerte, nevrologiske/kognitive symptomer og multisystemisk involvering, der sistnevnte krever minst 2 av 3 områder: autonome, nevroendokrine og immunologiske symptomer. [page:1]</p>
+        </div>
+        <div class="scale-box">
+          <h2>Skåring</h2>
+          <p><strong>0</strong> = Nei / ikke oppfylt</p>
+          <p><strong>1</strong> = Ja / oppfylt</p>
+          <p>Summen angir antall oppfylte kriterier fra 0 til 7. Tolkningen følger nivåene som er oppgitt på Psyktest. [page:1]</p>
+        </div>
+      </div>
+
+      <div id="criteriaContainer" class="criteria-list"></div>
+
+      <div class="result-box" style="margin-top:var(--space-6)">
+        <h2>Skåringsoversikt</h2>
+        <div class="score-grid">
+          <div class="stat"><div class="label">Oppfylte kriterier</div><div class="value" id="criteriaCount">0 / 7</div></div>
+          <div class="stat"><div class="label">Resultatnivå</div><div class="value" id="resultLevel">–</div></div>
+          <div class="stat"><div class="label">PEM</div><div class="value" id="pemStatus">–</div></div>
+          <div class="stat"><div class="label">Multisystemisk</div><div class="value" id="multiStatus">–</div></div>
+        </div>
+        <div id="interpretation" class="interp warn">Fyll ut skjemaet og trykk «Beregn resultat».</div>
+        <div class="footnote">Psyktest oppgir følgende fortolkning: 7 kriterier = oppfyller Canada-kriterier; 5–6 = nær kriteriene; 3–5 = delvis kriterier; 0–2 = oppfyller ikke kriterier. Testen er et screeningverktøy og ikke en diagnose i seg selv. [page:1]</div>
+      </div>
+    </section>
+
+    <div class="controls">
+      <button class="btn btn-primary" type="button" onclick="calculateResults()">Beregn resultat</button>
+      <button class="btn btn-secondary" type="button" onclick="exportWord()">Eksporter til Word</button>
+      <button class="btn btn-secondary" type="button" onclick="exportPDF()" id="pdfBtn">Eksporter til PDF</button>
+      <button class="btn btn-secondary" type="button" onclick="window.print()">Skriv ut</button>
+      <button class="btn btn-secondary" type="button" onclick="resetForm()">Nullstill</button>
+    </div>
+  </main>
+
+  <script>
+    const criteria = [
+      { id:'fatigue', title:'1. Utmattelse', desc:'Vedvarende utmattelse i minst 6 måneder som ikke bedres av hvile.', type:'single' },
+      { id:'pem', title:'2. Anstrengelsesutløst symptomforverring (PEM)', desc:'Forverring etter fysisk eller mental anstrengelse.', type:'single' },
+      { id:'sleep', title:'3. Søvnforstyrrelse', desc:'Ikke-uthvilende søvn eller annen betydelig søvnforstyrrelse.', type:'single' },
+      { id:'pain', title:'4. Smerte', desc:'Smerter som del av symptombildet.', type:'single' },
+      { id:'neuro', title:'5. Nevrologiske / kognitive symptomer', desc:'Kognitive eller nevrologiske plager som konsentrasjonsvansker, hukommelsesproblemer eller lignende.', type:'single' },
+      { id:'autonomic', title:'6A. Autonome symptomer', desc:'Autonom involvering.', type:'sub' },
+      { id:'neuroendo', title:'6B. Nevroendokrine symptomer', desc:'Nevroendokrin involvering.', type:'sub' },
+      { id:'immune', title:'6C. Immunologiske symptomer', desc:'Immunologisk involvering.', type:'sub' }
+    ];
+
+    const options = [
+      { value: 0, label: 'Nei' },
+      { value: 1, label: 'Ja' }
+    ];
+
+    const container = document.getElementById('criteriaContainer');
+    let rendered = false;
+
+    function renderFormOnce() {
+      if (rendered) return;
+      rendered = true;
+      container.innerHTML = '';
+      criteria.forEach(item => {
+        const section = document.createElement('section');
+        section.className = 'criterion';
+        section.innerHTML = `
+          <div class="criterion-head">
+            <h3>${item.title}</h3>
+            <p>${item.desc}</p>
+          </div>
+          <div class="criterion-body">
+            <div class="options" role="radiogroup" aria-label="${item.title}">
+              ${options.map(opt => `
+                <button type="button" class="opt" data-item="${item.id}" data-value="${opt.value}">
+                  <strong>${opt.label}</strong>
+                  <span>${opt.value === 1 ? 'Kriteriet er oppfylt' : 'Kriteriet er ikke oppfylt'}</span>
+                </button>`).join('')}
+            </div>
+            <input type="hidden" id="${item.id}" value="">
+          </div>
+        `;
+        container.appendChild(section);
+      });
+
+      container.addEventListener('click', (e) => {
+        const btn = e.target.closest('.opt');
+        if (!btn) return;
+        const itemId = btn.dataset.item;
+        const value = btn.dataset.value;
+        document.querySelectorAll(`.opt[data-item="${itemId}"]`).forEach(el => el.classList.remove('selected'));
+        btn.classList.add('selected');
+        document.getElementById(itemId).value = value;
+      });
+    }
+
+    function val(id){ const v = document.getElementById(id).value; return v === '' ? null : Number(v); }
+
+    function calculateResults() {
+      const singles = ['fatigue','pem','sleep','pain','neuro'];
+      let score = 0;
+      let missing = 0;
+
+      singles.forEach(id => {
+        const v = val(id);
+        if (v === null) missing++; else score += v;
+      });
+
+      const subVals = ['autonomic','neuroendo','immune'].map(id => val(id));
+      subVals.forEach(v => { if (v === null) missing++; });
+      const multiCount = subVals.filter(v => v === 1).length;
+      const multiCriterion = multiCount >= 2 ? 1 : 0;
+      if (subVals.every(v => v !== null)) score += multiCriterion;
+
+      const countText = `${score} / 7`;
+      document.getElementById('criteriaCount').textContent = countText;
+      document.getElementById('pemStatus').textContent = val('pem') === 1 ? 'Oppfylt' : (val('pem') === 0 ? 'Ikke oppfylt' : '–');
+      document.getElementById('multiStatus').textContent = subVals.every(v => v !== null) ? `${multiCount}/3 → ${multiCriterion ? 'Oppfylt' : 'Ikke oppfylt'}` : '–';
+
+      const levelEl = document.getElementById('resultLevel');
+      const interpEl = document.getElementById('interpretation');
+      let level = '–';
+      let text = 'Fyll ut skjemaet og trykk «Beregn resultat».';
+      let cls = 'interp warn';
+
+      if (missing > 0) {
+        level = 'Ufullstendig';
+        text = `Det mangler svar på ${missing} felt. Resultatet blir mest pålitelig når alle kriterier er vurdert.`;
+        cls = 'interp warn';
+      } else if (score === 7) {
+        level = 'Oppfyller';
+        text = 'Alle 7 kriterier er oppfylt. Psyktest beskriver dette som at Canada-kriteriene er oppfylt, og at behandler bør vurdere ME/CFS-diagnose og relevant oppfølging. [page:1]';
+        cls = 'interp ok';
+      } else if (score >= 5) {
+        level = 'Nær';
+        text = '5–6 kriterier er oppfylt. Psyktest beskriver dette som nær kriteriene, og anbefaler vurdering av ME/CFS eller andre utmattelsestilstander samt videre monitorering. [page:1]';
+        cls = 'interp warn';
+      } else if (score >= 3) {
+        level = 'Delvis';
+        text = '3–5 kriterier er oppfylt. Psyktest beskriver dette som delvis kriterier og anbefaler differensialdiagnostisk vurdering av andre årsaker til kronisk utmattelse. [page:1]';
+        cls = 'interp warn';
+      } else {
+        level = 'Ikke oppfylt';
+        text = '0–2 kriterier er oppfylt. Psyktest beskriver dette som at kriteriene ikke er oppfylt og at andre årsaker til symptomene bør utredes. [page:1]';
+        cls = 'interp bad';
+      }
+
+      levelEl.textContent = level;
+      interpEl.className = cls;
+      interpEl.textContent = text.replace(' [page:1]','');
+    }
+
+    function resetForm() {
+      if (!confirm('Nullstille alle svar?')) return;
+      document.querySelectorAll('input[type="hidden"]').forEach(el => el.value = '');
+      document.querySelectorAll('.opt').forEach(el => el.classList.remove('selected'));
+      document.getElementById('criteriaCount').textContent = '0 / 7';
+      document.getElementById('resultLevel').textContent = '–';
+      document.getElementById('pemStatus').textContent = '–';
+      document.getElementById('multiStatus').textContent = '–';
+      const interpEl = document.getElementById('interpretation');
+      interpEl.className = 'interp warn';
+      interpEl.textContent = 'Fyll ut skjemaet og trykk «Beregn resultat».';
+      document.getElementById('patientName').value = '';
+      document.getElementById('patientId').value = '';
+      document.getElementById('assessmentDate').valueAsDate = new Date();
+    }
+
+    async function exportPDF() {
+      calculateResults();
+      const btn = document.getElementById('pdfBtn');
+      btn.disabled = true;
+      btn.textContent = 'Lager PDF…';
+      try {
+        const element = document.getElementById('exportArea');
+        const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: getComputedStyle(document.body).backgroundColor });
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pageWidth = 190;
+        const pageHeight = 277;
+        const imgHeight = canvas.height * pageWidth / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 10;
+        pdf.addImage(imgData, 'PNG', 10, position, pageWidth, imgHeight);
+        heightLeft -= pageHeight;
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight + 10;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 10, position, pageWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+        const name = (document.getElementById('patientName').value || 'pasient').replace(/[^a-z0-9æøå_-]+/gi,'_');
+        pdf.save(`ME-CFS-Canada-kriterier_${name}.pdf`);
+      } catch (err) {
+        alert('Kunne ikke lage PDF.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Eksporter til PDF';
+      }
+    }
+
+    function exportWord() {
+      calculateResults();
+      const clone = document.getElementById('exportArea').cloneNode(true);
+      clone.querySelectorAll('.options').forEach(group => {
+        const selected = group.querySelector('.opt.selected strong');
+        const summary = document.createElement('div');
+        summary.style.fontWeight = '700';
+        summary.style.marginTop = '8px';
+        summary.textContent = 'Svar: ' + (selected ? selected.textContent : 'Ikke besvart');
+        group.replaceWith(summary);
+      });
+      clone.querySelectorAll('input').forEach(input => {
+        if (input.type === 'hidden') { input.remove(); return; }
+        const span = document.createElement('span');
+        span.innerHTML = '<strong>' + (input.value || '______') + '</strong>';
+        input.replaceWith(span);
+      });
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>ME/CFS Canada-kriterier</title><style>body{font-family:Arial,sans-serif;line-height:1.45;color:#111}.criterion{border:1px solid #ccc;margin:0 0 12px;border-radius:6px}.criterion-head,.criterion-body,.result-box,.note,.scale-box{padding:10px}.criterion-head{background:#f3f3f3}.meta{display:block}.field{margin:0 0 10px}.score-grid{display:block}.stat{border:1px solid #ddd;padding:8px;margin:0 0 8px}.interp{padding:10px;border:1px solid #ccc}</style></head><body>${clone.innerHTML}</body></html>`;
+      const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+      const link = document.createElement('a');
+      const name = (document.getElementById('patientName').value || 'pasient').replace(/[^a-z0-9æøå_-]+/gi,'_');
+      link.href = URL.createObjectURL(blob);
+      link.download = `ME-CFS-Canada-kriterier_${name}.doc`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    (function(){
+      renderFormOnce();
+      document.getElementById('assessmentDate').valueAsDate = new Date();
+      const t=document.querySelector('[data-theme-toggle]');
+      const r=document.documentElement; let d=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+      r.setAttribute('data-theme',d);
+      function icon(){t.innerHTML=d==='dark'?'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>':'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';}
+      icon();
+      t.addEventListener('click',()=>{d=d==='dark'?'light':'dark';r.setAttribute('data-theme',d);icon();});
+    })();
+  </script>
+</body>
+</html>

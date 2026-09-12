@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Angst – gamleulv.github.io</title>
+<style>
+:root {
+  --bg: #eef2ff; --bg-card: #f8f9ff; --text: #111; --text-muted: #5a5f73;
+  --accent: #0044aa; --accent-strong:#00298f; --border: #d7dbee; --radius: 16px;
+}
+[data-theme="dark"] {
+  --bg: #0f172a; --bg-card: #1b2436; --text: #e7e9f0; --text-muted: #98a0b8;
+  --accent: #7fb1ff; --accent-strong:#a9cbff; --border: #2c3752;
+}
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  background: var(--bg); color: var(--text); margin: 0; padding: 16px;
+  line-height: 1.45; -webkit-text-size-adjust: 100%;
+}
+.container { max-width: 1100px; margin: auto; background: var(--bg-card);
+  padding: 20px; border-radius: var(--radius); box-shadow: 0 0 30px rgba(0,0,0,0.10); }
+h1 { font-size: clamp(22px, 5vw, 30px); margin: 6px 0 8px; }
+h3 { font-size: 17px; margin: 22px 0 8px; }
+a { color: var(--accent); text-decoration: none; word-break: break-word; }
+a:hover { text-decoration: underline; }
+.topbar { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom: 6px;}
+.home-link { font-weight:600; font-size:15px; }
+.theme-toggle button, .btn {
+  padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border);
+  background: transparent; color: var(--text); cursor: pointer; font-size: 13px;
+}
+.breadcrumb { font-size: 13px; color: var(--text-muted); margin: 6px 0 16px; line-height:1.8; }
+.breadcrumb a { margin-right:2px; }
+.search-wrap { margin: 14px 0 20px; position: relative; }
+.search-wrap input {
+  width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
+  font-size: 16px; background: var(--bg); color: var(--text);
+}
+#searchResults { margin-top: 8px; border-radius: 12px; overflow: hidden; }
+#searchResults .res { display:block; padding: 10px 12px; border-bottom: 1px solid var(--border); background: var(--bg); }
+#searchResults .res small { display:block; color: var(--text-muted); }
+ul.filelist { list-style: none; padding: 0; margin: 6px 0 0; }
+ul.filelist li { display:flex; align-items:center; gap:8px; padding: 9px 4px; border-bottom: 1px solid var(--border); flex-wrap: wrap;}
+ul.filelist li .name { flex: 1 1 auto; min-width: 140px; }
+.dl-btn { flex: 0 0 auto; font-size: 12px; padding: 5px 10px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); }
+.dl-btn:hover { color: var(--accent); border-color: var(--accent); text-decoration:none; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; margin-top: 14px; }
+.card { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
+.card-title { font-size: 17px; font-weight: 600; margin-bottom: 4px; display:flex; align-items:center; gap:6px;}
+.card-meta { font-size: 12px; color: var(--text-muted); }
+.recent-list { list-style:none; padding:0; margin: 8px 0 0; }
+.recent-list li { padding: 8px 0; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;}
+.recent-list .date { color: var(--text-muted); font-size: 13px; }
+.footer { margin-top: 26px; font-size: 12px; color: var(--text-muted); text-align:center; }
+.locked-badge { font-size:12px; color:var(--text-muted); }
+@media (max-width: 600px) {
+  body { padding: 8px; }
+  .container { padding: 14px; border-radius: 12px; }
+  ul.filelist li { font-size: 15px; }
+  .grid { grid-template-columns: 1fr; }
+}
+</style>
+
+</head>
+<body>
+<div class="container">
+<div class="theme-toggle"><button onclick="toggleTheme()">☀️/🌙</button></div>
+<h1>📁 Angst</h1>
+<div class="breadcrumb"><a href="/index.html">🏠 Hjem</a> / <a href="/Psykometri/index.html">Psykometri</a> / <a href="/Psykometri/Angst/index.html">Angst</a></div>
+<div class="search-wrap"><input id="searchInput" type="text" placeholder="🔎 Søk i hele nettstedet – mappe, fil eller innhold…" autocomplete="off"><div id="searchResults"></div></div>
+<h3>Filer i denne mappen</h3><ul class="filelist">
+<li><span class="name">📄 <a href="/Psykometri/Angst/BSPS.html">BSPS - Brief Social Phobia Scale</a></span><a class="dl-btn" href="/Psykometri/Angst/BSPS.html" download="BSPS.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/Psykometri/Angst/GADS-R.html">GADS-R - Generalized Anxiety Disorder Scale (Revised)</a></span><a class="dl-btn" href="/Psykometri/Angst/GADS-R.html" download="GADS-R.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/Psykometri/Angst/LSAS.html">LSAS - Liebowitz Social Anxiety Scale</a></span><a class="dl-btn" href="/Psykometri/Angst/LSAS.html" download="LSAS.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/Psykometri/Angst/MI.html">MI - Mobility Inventory (Unngåelse)</a></span><a class="dl-btn" href="/Psykometri/Angst/MI.html" download="MI.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/Psykometri/Angst/MWQ.html">MWQ - Meta-Worry Questionnaire</a></span><a class="dl-btn" href="/Psykometri/Angst/MWQ.html" download="MWQ.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/Psykometri/Angst/PAS.html">PAS - Kartlegging av panikkanfall</a></span><a class="dl-btn" href="/Psykometri/Angst/PAS.html" download="PAS.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/Psykometri/Angst/PRS.html">PRS - Panic Rating Scale</a></span><a class="dl-btn" href="/Psykometri/Angst/PRS.html" download="PRS.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/Psykometri/Angst/SIAS.html">SIAS - Social Interaction Anxiety Scale</a></span><a class="dl-btn" href="/Psykometri/Angst/SIAS.html" download="SIAS.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/Psykometri/Angst/SPRS.html">SPRS - Social Phobia Rating Scale</a></span><a class="dl-btn" href="/Psykometri/Angst/SPRS.html" download="SPRS.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/Psykometri/Angst/SPS.html">SPS - Social Phobia Scale</a></span><a class="dl-btn" href="/Psykometri/Angst/SPS.html" download="SPS.html">⬇ Last ned</a></li>
+<li><span class="name">📄 <a href="/Psykometri/Angst/YBOCS.html">Y-BOCS - Yale-Brown Obsessive Compulsive Scale</a></span><a class="dl-btn" href="/Psykometri/Angst/YBOCS.html" download="YBOCS.html">⬇ Last ned</a></li>
+</ul>
+<p style="margin-top:26px;"><a href="/Psykometri/index.html">⬅ Tilbake</a></p>
+<div class="footer">Sist oppdatert: 2026-09-12 03:02</div>
+</div>
+<script>
+function setTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('site-theme',t);}
+function toggleTheme(){const c=document.documentElement.getAttribute('data-theme')||'light';setTheme(c==='light'?'dark':'light');}
+document.addEventListener('DOMContentLoaded',function(){setTheme(localStorage.getItem('site-theme')||'light');initSearch();});
+
+let SEARCH_INDEX = null;
+async function loadSearchIndex(){
+  if (SEARCH_INDEX) return SEARCH_INDEX;
+  try {
+    const res = await fetch('/search-index.json');
+    SEARCH_INDEX = await res.json();
+  } catch(e) { SEARCH_INDEX = []; }
+  return SEARCH_INDEX;
+}
+function scoreMatch(entry, q){
+  const hay = (entry.name+' '+entry.dir+' '+entry.title+' '+entry.snippet).toLowerCase();
+  return hay.includes(q) ? (entry.name.toLowerCase().includes(q) ? 2 : 1) : 0;
+}
+async function runSearch(q){
+  const box = document.getElementById('searchResults');
+  if (!box) return;
+  q = q.trim().toLowerCase();
+  if (q.length < 2) { box.innerHTML=''; return; }
+  const idx = await loadSearchIndex();
+  const hits = idx.map(e=>({e,s:scoreMatch(e,q)})).filter(x=>x.s>0)
+    .sort((a,b)=>b.s-a.s).slice(0,40);
+  if (!hits.length) { box.innerHTML = '<div class="res">Ingen treff.</div>'; return; }
+  box.innerHTML = hits.map(({e})=>{
+    const snip = e.snippet ? e.snippet.slice(0,140)+'…' : '';
+    return `<a class="res" href="${e.href}"><strong>${e.icon||'📄'} ${e.title}</strong><small>${e.dir}</small>${snip?('<small>'+snip+'</small>'):''}</a>`;
+  }).join('');
+}
+function initSearch(){
+  const input = document.getElementById('searchInput');
+  if (!input) return;
+  let t;
+  input.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=>runSearch(input.value), 120); });
+}
+</script>
+</body>
+</html>

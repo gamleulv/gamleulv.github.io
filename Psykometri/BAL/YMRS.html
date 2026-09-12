@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Young Mania Rating Scale (YMRS) - Norsk</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        h1, h2, h4 {
+            color: #2c3e50;
+        }
+        .intro, .instructions {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .item-group {
+            background-color: #fff;
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid #3498db;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .item-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: block;
+        }
+        .options label {
+            display: block;
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .options label:hover {
+            background-color: #f0f8ff;
+        }
+        .options input[type="radio"] {
+            margin-right: 10px;
+        }
+        /* Highlight selected option for printing/saving */
+        input[type="radio"]:checked + span {
+            font-weight: bold;
+            color: #2980b9;
+        }
+        
+        #score-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            font-size: 1.2em;
+            z-index: 1000;
+        }
+        #total-score {
+            font-weight: bold;
+            font-size: 1.5em;
+            color: #f1c40f;
+        }
+        .score-display-inline {
+            background-color: #e8f6f3;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.5em;
+            border: 2px solid #1abc9c;
+        }
+        .action-buttons {
+            margin-top: 40px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding-bottom: 60px; /* Space for fixed score */
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-save-html { background-color: #27ae60; }
+        .btn-save-html:hover { background-color: #219150; }
+        
+        .btn-email { background-color: #2980b9; }
+        .btn-email:hover { background-color: #2471a3; }
+        
+        .btn-pdf { background-color: #e74c3c; }
+        .btn-pdf:hover { background-color: #c0392b; }
+
+        @media print {
+            #score-container, .action-buttons, .intro {
+                display: none;
+            }
+            body {
+                background-color: white;
+            }
+            .item-group {
+                border-left: 2px solid #333;
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="intro">
+        <h1>Young Mania Rating Scale (YMRS)</h1>
+        <p><strong>Introduksjon</strong></p>
+        <p>Young Mania Rating Scale (YMRS) er et klinisk vurderingsverktøy spesielt utviklet for å evaluere maniske symptomer og deres alvorlighetsgrad.</p>
+        
+        <p><strong>Instruksjoner</strong></p>
+        <p>Angi hvilket valg som best beskriver hvordan pasienten har hatt det den siste uken ved å klikke på punktet ved siden av det passende utsagnet.</p>
+    </div>
+
+    <form id="ymrs-form">
+        <!-- Item 1 -->
+        <div class="item-group" id="item1">
+            <span class="item-title">1. Hevet stemningsleie (Elevated Mood)</span>
+            <div class="options">
+                <label><input type="radio" name="item1" value="0" onclick="calculateScore()"> <span>0 - Fraværende</span></label>
+                <label><input type="radio" name="item1" value="1" onclick="calculateScore()"> <span>1 - Mildt eller muligens økt ved utspørring</span></label>
+                <label><input type="radio" name="item1" value="2" onclick="calculateScore()"> <span>2 - Tydelig subjektiv heving; optimistisk, selvsikker; munter; passende til innhold</span></label>
+                <label><input type="radio" name="item1" value="3" onclick="calculateScore()"> <span>3 - Hevet, upassende til innhold; humoristisk</span></label>
+                <label><input type="radio" name="item1" value="4" onclick="calculateScore()"> <span>4 - Euforisk; upassende latter; synging</span></label>
+            </div>
+        </div>
+
+        <!-- Item 2 -->
+        <div class="item-group" id="item2">
+            <span class="item-title">2. Økt motorisk aktivitet/energi (Increased Motor Activity-Energy)</span>
+            <div class="options">
+                <label><input type="radio" name="item2" value="0" onclick="calculateScore()"> <span>0 - Fraværende</span></label>
+                <label><input type="radio" name="item2" value="1" onclick="calculateScore()"> <span>1 - Subjektivt økt</span></label>
+                <label><input type="radio" name="item2" value="2" onclick="calculateScore()"> <span>2 - Livlig; økt gestikulering</span></label>
+                <label><input type="radio" name="item2" value="3" onclick="calculateScore()"> <span>3 - Overdreven energi; hyperaktivitet til tider; rastløshet (kan roes ned)</span></label>
+                <label><input type="radio" name="item2" value="4" onclick="calculateScore()"> <span>4 - Motorisk eksitasjon; kontinuerlig hyperaktivitet (kan ikke roes ned)</span></label>
+            </div>
+        </div>
+
+        <!-- Item 3 -->
+        <div class="item-group" id="item3">
+            <span class="item-title">3. Seksuell interesse (Sexual Interest)</span>
+            <div class="options">
+                <label><input type="radio" name="item3" value="0" onclick="calculateScore()"> <span>0 - Normal; ikke økt</span></label>
+                <label><input type="radio" name="item3" value="1" onclick="calculateScore()"> <span>1 - Mildt eller muligens økt</span></label>
+                <label><input type="radio" name="item3" value="2" onclick="calculateScore()"> <span>2 - Tydelig subjektiv økning ved utspørring</span></label>
+                <label><input type="radio" name="item3" value="3" onclick="calculateScore()"> <span>3 - Spontant seksuelt innhold; utbroderer om seksuelle temaer; hyperseksuell ifølge egenrapport</span></label>
+                <label><input type="radio" name="item3" value="4" onclick="calculateScore()"> <span>4 - Åpenlyse seksuelle handlinger (mot pasienter, personale eller intervjuer)</span></label>
+            </div>
+        </div>
+
+        <!-- Item 4 -->
+        <div class="item-group" id="item4">
+            <span class="item-title">4. Søvn (Sleep)</span>
+            <div class="options">
+                <label><input type="radio" name="item4" value="0" onclick="calculateScore()"> <span>0 - Rapporterer ingen reduksjon i søvn</span></label>
+                <label><input type="radio" name="item4" value="1" onclick="calculateScore()"> <span>1 - Sover mindre enn normalt (opptil én time mindre)</span></label>
+                <label><input type="radio" name="item4" value="2" onclick="calculateScore()"> <span>2 - Sover mindre enn normalt (mer enn én time mindre)</span></label>
+                <label><input type="radio" name="item4" value="3" onclick="calculateScore()"> <span>3 - Rapporterer redusert behov for søvn</span></label>
+                <label><input type="radio" name="item4" value="4" onclick="calculateScore()"> <span>4 - Benekter behov for søvn</span></label>
+            </div>
+        </div>
+
+        <!-- Item 5 (Double weight) -->
+        <div class="item-group" id="item5">
+            <span class="item-title">5. Irritabilitet (Irritability)</span>
+            <div class="options">
+                <label><input type="radio" name="item5" value="0" onclick="calculateScore()"> <span>0 - Fraværende</span></label>
+                <label><input type="radio" name="item5" value="2" onclick="calculateScore()"> <span>2 - Subjektivt økt</span></label>
+                <label><input type="radio" name="item5" value="4" onclick="calculateScore()"> <span>4 - Irritabel til tider under intervjuet; nylige episoder med sinne eller irritasjon på avdelingen</span></label>
+                <label><input type="radio" name="item5" value="6" onclick="calculateScore()"> <span>6 - Ofte irritabel under intervjuet; kort, brå gjennomgående</span></label>
+                <label><input type="radio" name="item5" value="8" onclick="calculateScore()"> <span>8 - Fiendtlig, usamarbeidsvillig; intervju umulig</span></label>
+            </div>
+        </div>
+
+        <!-- Item 6 (Double weight) -->
+        <div class="item-group" id="item6">
+            <span class="item-title">6. Tale (tempo og mengde) (Speech)</span>
+            <div class="options">
+                <label><input type="radio" name="item6" value="0" onclick="calculateScore()"> <span>0 - Ingen økning</span></label>
+                <label><input type="radio" name="item6" value="2" onclick="calculateScore()"> <span>2 - Føler seg pratsom</span></label>
+                <label><input type="radio" name="item6" value="4" onclick="calculateScore()"> <span>4 - Økt tempo eller mengde til tider; ordrik til tider</span></label>
+                <label><input type="radio" name="item6" value="6" onclick="calculateScore()"> <span>6 - "Push"; konsekvent økt tempo og mengde; vanskelig å avbryte</span></label>
+                <label><input type="radio" name="item6" value="8" onclick="calculateScore()"> <span>8 - Talepress; umulig å avbryte; kontinuerlig tale</span></label>
+            </div>
+        </div>
+
+        <!-- Item 7 -->
+        <div class="item-group" id="item7">
+            <span class="item-title">7. Språk/tankeforstyrrelser (Language-Thought Disorder)</span>
+            <div class="options">
+                <label><input type="radio" name="item7" value="0" onclick="calculateScore()"> <span>0 - Fraværende</span></label>
+                <label><input type="radio" name="item7" value="1" onclick="calculateScore()"> <span>1 - Omstendelig; mild distraherbarhet; tankekjør</span></label>
+                <label><input type="radio" name="item7" value="2" onclick="calculateScore()"> <span>2 - Distraherbar; mister tråden; endrer tema ofte; tankeflukt</span></label>
+                <label><input type="radio" name="item7" value="3" onclick="calculateScore()"> <span>3 - Tankeflukt; tangentiell; vanskelig å følge; rim/ordspill</span></label>
+                <label><input type="radio" name="item7" value="4" onclick="calculateScore()"> <span>4 - Usammenhengende; kommunikasjon umulig</span></label>
+            </div>
+        </div>
+
+        <!-- Item 8 (Double weight) -->
+        <div class="item-group" id="item8">
+            <span class="item-title">8. Tankeinnhold (Content)</span>
+            <div class="options">
+                <label><input type="radio" name="item8" value="0" onclick="calculateScore()"> <span>0 - Normalt</span></label>
+                <label><input type="radio" name="item8" value="2" onclick="calculateScore()"> <span>2 - Tvilsomme planer; nye interesser</span></label>
+                <label><input type="radio" name="item8" value="4" onclick="calculateScore()"> <span>4 - Spesielle prosjekter; hyperreligiøs</span></label>
+                <label><input type="radio" name="item8" value="6" onclick="calculateScore()"> <span>6 - Grandiose eller paranoide ideer; referanseideer</span></label>
+                <label><input type="radio" name="item8" value="8" onclick="calculateScore()"> <span>8 - Vrangforestillinger; hallusinasjoner</span></label>
+            </div>
+        </div>
+
+        <!-- Item 9 (Double weight) -->
+        <div class="item-group" id="item9">
+            <span class="item-title">9. Utagerende/aggressiv atferd (Disruptive-Aggressive Behavior)</span>
+            <div class="options">
+                <label><input type="radio" name="item9" value="0" onclick="calculateScore()"> <span>0 - Fraværende, samarbeidsvillig</span></label>
+                <label><input type="radio" name="item9" value="2" onclick="calculateScore()"> <span>2 - Sarkastisk; høylytt til tider, vaktsom</span></label>
+                <label><input type="radio" name="item9" value="4" onclick="calculateScore()"> <span>4 - Krevende; trusler på avdelingen</span></label>
+                <label><input type="radio" name="item9" value="6" onclick="calculateScore()"> <span>6 - Truer intervjuer; roper; intervju vanskelig</span></label>
+                <label><input type="radio" name="item9" value="8" onclick="calculateScore()"> <span>8 - Angriper; destruktiv; intervju umulig</span></label>
+            </div>
+        </div>
+
+        <!-- Item 10 -->
+        <div class="item-group" id="item10">
+            <span class="item-title">10. Utseende (Appearance)</span>
+            <div class="options">
+                <label><input type="radio" name="item10" value="0" onclick="calculateScore()"> <span>0 - Passende påkledning og hygiene</span></label>
+                <label><input type="radio" name="item10" value="1" onclick="calculateScore()"> <span>1 - Minimalt ustelt</span></label>
+                <label><input type="radio" name="item10" value="2" onclick="calculateScore()"> <span>2 - Dårlig stelt; moderat ustelt; overpyntet</span></label>
+                <label><input type="radio" name="item10" value="3" onclick="calculateScore()"> <span>3 - Ustelt; delvis påkledd; grell sminke</span></label>
+                <label><input type="radio" name="item10" value="4" onclick="calculateScore()"> <span>4 - Fullstendig ustelt; dekorert; bisarr bekledning</span></label>
+            </div>
+        </div>
+
+        <!-- Item 11 -->
+        <div class="item-group" id="item11">
+            <span class="item-title">11. Innsikt (Insight)</span>
+            <div class="options">
+                <label><input type="radio" name="item11" value="0" onclick="calculateScore()"> <span>0 - Tilstede; innrømmer sykdom; enig i behov for behandling</span></label>
+                <label><input type="radio" name="item11" value="1" onclick="calculateScore()"> <span>1 - Muligens syk</span></label>
+                <label><input type="radio" name="item11" value="2" onclick="calculateScore()"> <span>2 - Innrømmer atferdsendring, men benekter sykdom</span></label>
+                <label><input type="radio" name="item11" value="3" onclick="calculateScore()"> <span>3 - Innrømmer mulig endring i atferd, men benekter sykdom</span></label>
+                <label><input type="radio" name="item11" value="4" onclick="calculateScore()"> <span>4 - Benekter enhver atferdsendring</span></label>
+            </div>
+        </div>
+    </form>
+
+    <div class="score-display-inline">
+        Total YMRS Skår: <span id="total-score-inline">0</span>
+    </div>
+
+    <!-- Actions Buttons -->
+    <div class="action-buttons">
+        <button class="btn btn-save-html" onclick="saveAsHtml()">Lagre som HTML-fil</button>
+        <button class="btn btn-email" onclick="copyAndMail()">Send resultatet per e-post</button>
+        <button class="btn btn-pdf" onclick="window.print()">Lagre som PDF / Skriv ut</button>
+    </div>
+
+    <!-- Floating Score (visible on screen only) -->
+    <div id="score-container">
+        Total: <span id="total-score">0</span>
+    </div>
+
+    <script>
+        function calculateScore() {
+            let totalScore = 0;
+            // Loop through all 11 items
+            for (let i = 1; i <= 11; i++) {
+                const radios = document.getElementsByName('item' + i);
+                for (const radio of radios) {
+                    if (radio.checked) {
+                        totalScore += parseInt(radio.value);
+                        // Reset all spans in this group
+                        const labels = radio.closest('.options').getElementsByTagName('label');
+                        for(let lbl of labels) {
+                             lbl.style.fontWeight = 'normal';
+                             lbl.style.color = '#333';
+                        }
+                        // Highlight current
+                        radio.parentElement.style.fontWeight = 'bold';
+                        radio.parentElement.style.color = '#2980b9';
+                        
+                        break;
+                    }
+                }
+            }
+            // Update the display
+            document.getElementById('total-score').innerText = totalScore;
+            document.getElementById('total-score-inline').innerText = totalScore;
+            return totalScore;
+        }
+
+        function saveAsHtml() {
+            // Clone the entire document
+            const htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+            
+            // Create a blob
+            const blob = new Blob([htmlContent], {type: 'text/html'});
+            const url = URL.createObjectURL(blob);
+            
+            // Create a temporary link to download
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'YMRS_utfylt_' + new Date().toISOString().slice(0,10) + '.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        async function copyAndMail() {
+            // Generate summary text
+            let summary = "YMRS RESULTATER\n";
+            summary += "Dato: " + new Date().toLocaleString() + "\n";
+            summary += "Total Skår: " + document.getElementById('total-score-inline').innerText + "\n\n";
+            
+            summary += "DETALJER:\n";
+            
+            for (let i = 1; i <= 11; i++) {
+                const group = document.getElementById('item' + i);
+                const title = group.querySelector('.item-title').innerText;
+                const radios = document.getElementsByName('item' + i);
+                let selectedText = "Ikke besvart";
+                let selectedValue = "-";
+                
+                for (const radio of radios) {
+                    if (radio.checked) {
+                        selectedValue = radio.value;
+                        selectedText = radio.nextElementSibling.innerText; // The span text
+                        break;
+                    }
+                }
+                summary += `${title}: ${selectedText}\n`;
+            }
+
+            // Copy to clipboard
+            try {
+                // Use the Clipboard API
+                await navigator.clipboard.writeText(summary);
+                
+                // Open Email Client
+                const subject = encodeURIComponent("YMRS resultater");
+                const body = encodeURIComponent("Lim inn det skjemaet fra utklippstavlen (Ctrl+V på Windows og Cmd+V på Mac)\n\n");
+                window.location.href = `mailto:?subject=${subject}&body=${body}`;
+                
+                alert("Resultatene er kopiert til utklippstavlen! Et e-postvindu skal nå åpnes. Hvis ikke, åpne e-postprogrammet ditt og lim inn (Ctrl+V/Cmd+V).");
+                
+            } catch (err) {
+                console.error('Kunne ikke kopiere tekst: ', err);
+                alert("Kunne ikke kopiere automatisk. Vennligst bruk 'Lagre som PDF' eller kopier teksten manuelt.");
+            }
+        }
+    </script>
+</body>
+</html>

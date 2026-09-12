@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood Disorder Questionnaire (MDQ) – Norsk</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; max-width: 900px; margin: 20px auto; line-height: 1.5; color: #333; padding: 0 10px; }
+        h1, h2, h3 { margin-bottom: 0.5em; }
+        fieldset { margin-bottom: 1.5em; padding: 15px; border: 1px solid #ccc; border-radius: 6px; }
+        legend { font-weight: bold; padding: 0 8px; font-size: 1.1em; }
+        label { display: block; margin: 5px 0; cursor: pointer; }
+        .question { margin: 12px 0; padding-bottom: 12px; border-bottom: 1px solid #eee; }
+        .question:last-child { border-bottom: none; }
+        .result, .subscores { margin-top: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 6px; background-color: #f9f9f9; }
+        .positive { background-color: #ffe6e6; border-color: #ffcccc; color: #a00; }
+        .negative { background-color: #e6ffe6; border-color: #ccffcc; color: #006600; }
+        .note { font-size: 0.9em; color: #666; margin-top: 15px; font-style: italic; }
+        
+        /* Forbedret knappe-stil for touch/mobil */
+        button { 
+            margin-top: 15px; 
+            padding: 10px 20px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            border-radius: 6px;
+            border: 1px solid #888;
+            background-color: #f0f0f0;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: #e0e0e0; }
+        
+        .action-buttons {
+            margin-top: 40px;
+            padding: 30px;
+            border-top: 2px solid #333;
+            background-color: #f4f4f4;
+            text-align: center;
+            border-radius: 8px;
+        }
+        .action-btn {
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            font-weight: bold;
+            margin: 10px;
+            padding: 12px 24px;
+        }
+        .action-btn:hover { background-color: #004494; }
+        
+        @media print {
+            .no-print { display: none !important; }
+            body { max-width: 100%; margin: 0; padding: 0; }
+            fieldset { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Mood Disorder Questionnaire (MDQ) – Norsk versjon</h1>
+    <p><span>Dette er et <strong>screening</strong>-skjema for symptomer på mani/hypomani (bipolar lidelse). Skjemaet gir kun en
+        indikasjon og erstatter ikke en klinisk vurdering av lege eller psykolog.</span></p>
+    
+    <form id="mdqForm">
+      <fieldset> <legend>Pasientopplysninger</legend> 
+        <label>Pasientnavn: <input type="text" name="patientName" style="width: 60%;"> </label> 
+        <label>Fødselsdato: <input type="date" name="birthDate"> </label>
+        <label>Dato for konsultasjon: <input type="date" name="visitDate"> </label> 
+      </fieldset>
+      
+      <fieldset> <legend>Del 1 – Har det noen gang vært en periode hvor du ikke var helt som du pleier å være, og …</legend>
+        <div class="question">1. … du følte deg så oppstemt, «høy» eller hyper at andre mente du ikke var deg selv, eller at du kom i trøbbel?
+            <br><label><input type="radio" name="q1" value="1"> Ja</label> <label><input type="radio" name="q1" value="0" checked="checked"> Nei</label> </div>
+        
+        <div class="question"> 2. … du var så irritabel at du ropte til folk eller startet krangler eller slåsskamper? 
+            <br><label><input type="radio" name="q2" value="1"> Ja</label> <label><input type="radio" name="q2" value="0" checked="checked"> Nei</label> </div>
+        
+        <div class="question"> 3. … du følte deg mye mer selvsikker enn vanlig? 
+            <br><label><input type="radio" name="q3" value="1"> Ja</label> <label><input type="radio" name="q3" value="0" checked="checked"> Nei</label> </div>
+        
+        <div class="question"> 4. … du sov mye mindre enn vanlig uten å egentlig føle søvnmangel? 
+            <br><label><input type="radio" name="q4" value="1"> Ja</label> <label><input type="radio" name="q4" value="0" checked="checked"> Nei</label> </div>
+        
+        <div class="question"> 5. … du var mer pratsom enn vanlig eller snakket mye raskere enn vanlig? 
+            <br><label><input type="radio" name="q5" value="1"> Ja</label> <label><input type="radio" name="q5" value="0" checked="checked"> Nei</label> </div>
+        
+        <div class="question"> 6. … tankene raste gjennom hodet ditt, eller du ikke klarte ikke bremse/roe tankene ned?
+          <br><label><input type="radio" name="q6" value="1"> Ja</label> <label><input type="radio" name="q6" value="0" checked="checked"> Nei</label> </div>
+        
+        <div class="question"> 7. … du var så lett distrahert at du hadde vansker med å konsentrere deg eller holde tråden? 
+          <br><label><input type="radio" name="q7" value="1"> Ja</label> <label><input type="radio" name="q7" value="0" checked="checked"> Nei</label> </div>
+        
+        <div class="question"> 8. … du hadde mer energi enn vanlig? 
+          <br><label><input type="radio" name="q8" value="1"> Ja</label> <label><input type="radio" name="q8" value="0" checked="checked"> Nei</label> </div>
+        
+        <div class="question"> 9. … du var mye mer aktiv eller gjorde langt flere ting enn vanlig? 
+          <br><label><input type="radio" name="q9" value="1"> Ja</label> <label><input type="radio" name="q9" value="0" checked="checked"> Nei</label> </div>
+        
+        <div class="question"> 10. … du var mye mer sosial eller utadvendt enn vanlig – for eksempel ringte venner midt på natten? 
+          <br><label><input type="radio" name="q10" value="1"> Ja</label> <label><input type="radio" name="q10" value="0" checked="checked"> Nei</label> </div>
+        
+        <div class="question"> 11. … du var mye mer interessert i sex enn vanlig? 
+          <br><label><input type="radio" name="q11" value="1"> Ja</label> <label><input type="radio" name="q11" value="0" checked="checked"> Nei</label> </div>
+        
+        <div class="question"> 12. … du gjorde ting som var uvanlige for deg, eller som andre kunne mene var overdrevne, dumdristige eller risikofylte? 
+          <br><label><input type="radio" name="q12" value="1"> Ja</label> <label><input type="radio" name="q12" value="0" checked="checked"> Nei</label> </div>
+        
+        <div class="question"> 13. … pengebruk gjorde at du eller familien din kom i vansker? 
+          <br><label><input type="radio" name="q13" value="1"> Ja</label> <label><input type="radio" name="q13" value="0" checked="checked"> Nei</label> </div>
+      </fieldset>
+      
+      <fieldset> <legend>Del 2 – Samtidighet</legend>
+        <div class="question"> 14. Hvis du har krysset av «Ja» på mer enn ett av punktene over, har flere av disse noen
+          gang skjedd i <strong>samme tidsperiode</strong>? 
+          <br><label><input type="radio" name="q14" value="yes" checked="checked"> Ja</label> <label><input type="radio" name="q14" value="no"> Nei</label> </div>
+      </fieldset>
+      
+      <fieldset> <legend>Del 3 – Hvor store problemer ga dette?</legend>
+        <div class="question"> 15. Hvor store problemer forårsaket noe av dette for deg – for eksempel for familien din,
+          for økonomien din eller juridiske forhold, eller ved at du kom i krangler eller slåsskamper? 
+          <br><label><input type="radio" name="q15" value="none" checked="checked"> Ingen problemer</label> 
+          <label><input type="radio" name="q15" value="minor"> Små problemer</label> 
+          <label><input type="radio" name="q15" value="moderate"> Moderate problemer</label> 
+          <label><input type="radio" name="q15" value="serious"> Alvorlige problemer</label> </div>
+      </fieldset>
+      
+      <div class="no-print">
+        <button type="button" onclick="calculateMDQ()" style="background-color: #ddd; font-weight:bold;">Beregn skår</button> 
+        <button type="reset" onclick="resetResult()">Nullstill</button>
+      </div>
+    </form>
+
+    <div id="subscores" class="subscores" style="display:none;">
+      <div class="scores-row"><strong>Delsum symptomer (spørsmål 1–13):</strong> <span id="symptomScore">0</span> av 13</div>
+      <div class="scores-row"><strong>Del 2 – Samtidighet (spørsmål 14):</strong> <span id="clusterInfo"></span></div>
+      <div class="scores-row"><strong>Del 3 – Funksjon (spørsmål 15):</strong> <span id="impairmentInfo"></span></div>
+    </div>
+    <div id="result" class="result" style="display:none;"></div>
+    
+    <p class="note"> Dette verktøyet er utviklet for screening og skal ikke brukes alene til å stille diagnose. Et
+      positivt utslag bør alltid følges opp med en grundig klinisk vurdering. </p>
+    
+    <hr>
+    
+    <div class="action-buttons no-print">
+        <h3>Lagre eller del skjemaet</h3>
+        <p>Husk å trykke på "Beregn skår" før du lagrer/sender.</p>
+        <button type="button" class="action-btn" onclick="saveAsHTML()">💾 Lagre som HTML-fil</button>
+        <button type="button" class="action-btn" onclick="saveAsPDF()">📄 Lagre som PDF</button>
+        <button type="button" class="action-btn" onclick="copyForEmail()">📧 Kopier til e-post</button>
+    </div>
+
+    <h2>Skåring</h2>
+    <h3><strong>Kriterier for positiv MDQ-screening (mulig bipolar lidelse)</strong></h3>
+    <ul>
+      <li>«Ja» til <strong>7 eller flere</strong> av de 13 punktene i spørsmål 1, <strong>og</strong></li>
+      <li>«Ja» til spørsmål 14 (symptomene har opptrådt i samme tidsperiode), <strong>og</strong></li>
+      <li>«Moderat problem» eller «Alvorlig problem» på spørsmål 15.</li>
+    </ul>
+    <p> Dersom alle tre kriterier er oppfylt, regnes testen som <strong>positiv screening</strong> for mulig bipolar
+      lidelse (hovedsakelig bipolar I). Ved negativ screening, men fortsatt betydelige plager, anbefales likevel klinisk
+      vurdering. </p>
+    <h3>Klinisk nytte</h3>
+    <ul>
+      <li>MDQ er et kort selvrapporteringsskjema som vanligvis tar omkring 5 minutter å fylle ut.</li>
+      <li>Skjemaet er laget for å bidra til rask og mer presis identifisering av mulig bipolar lidelse.</li>
+      <li>Det er best egnet til å fange opp bipolar I, og mindre sensitivt for bipolar II og bipolar NOS.</li>
+    </ul>
+    <h3>Begrensninger</h3>
+    <ul>
+      <li>MDQ er kun et screeningverktøy og er <strong>ikke</strong> laget for å brukes som diagnostisk instrument.</li>
+      <li>Et positivt funn må alltid følges opp med en omfattende klinisk evaluering.</li>
+    </ul>
+    <h3>Merknad om opphavsrett</h3>
+    <p> Originalteksten i dette skjemaet er utviklet av R.M.A. Hirschfeld og kolleger. Bruk og tilpasning skal skje i
+      samsvar med eventuelle gjeldende tillatelser og rettigheter.</p>
+
+    <script>
+    function calculateMDQ() {
+      let symptomScore = 0;
+
+      // Del 1: summer Ja-svar (1–13)
+      for (let i = 1; i <= 13; i++) {
+        const radios = document.getElementsByName('q' + i);
+        for (const r of radios) {
+          if (r.checked && r.value === '1') {
+            symptomScore += 1;
+          }
+        }
+      }
+
+      // Del 2 og 3
+      const q14 = document.querySelector('input[name="q14"]:checked')?.value || 'no';
+      const q15 = document.querySelector('input[name="q15"]:checked')?.value || 'none';
+
+      const meetsSymptomThreshold = symptomScore >= 7;
+      const symptomsCluster = (q14 === 'yes');
+      const impairment = (q15 === 'moderate' || q15 === 'serious');
+
+      const positiveScreen = meetsSymptomThreshold && symptomsCluster && impairment;
+
+      // Oppdater delsummer
+      const subscoresDiv = document.getElementById('subscores');
+      subscoresDiv.style.display = 'block';
+      document.getElementById('symptomScore').textContent = symptomScore.toString();
+      document.getElementById('clusterInfo').textContent =
+        symptomsCluster ? "Ja – flere symptomer i samme periode" : "Nei / ikke oppgitt";
+      let impairmentText = "";
+      if (q15 === "none") impairmentText = "Ingen problemer";
+      else if (q15 === "minor") impairmentText = "Små problemer";
+      else if (q15 === "moderate") impairmentText = "Moderat problem";
+      else if (q15 === "serious") impairmentText = "Alvorlig problem";
+      document.getElementById('impairmentInfo').textContent = impairmentText;
+
+      // Tolkning
+      const resultDiv = document.getElementById('result');
+      resultDiv.style.display = 'block';
+
+      let text = "<strong>Oppsummering:</strong><br>";
+      text += "– Symptomskår (spørsmål 1–13): " + symptomScore + " av 13.<br>";
+      text += "– Terskel (≥ 7 «Ja»): " + (meetsSymptomThreshold ? "Oppfylt" : "Ikke oppfylt") + "<br>";
+      text += "– Samtidighet (spørsmål 14 = Ja): " + (symptomsCluster ? "Oppfylt" : "Ikke oppfylt") + "<br>";
+      text += "– Funksjon (spørsmål 15 = Moderat/Alvorlig): " + (impairment ? "Oppfylt" : "Ikke oppfylt") + "<br><br>";
+
+      if (positiveScreen) {
+        resultDiv.className = "result positive";
+        text += "<strong>Tolkning:</strong> Skjemaet gir utslag som forenlig med mulig bipolar lidelse. " +
+                "Det anbefales en nærmere vurdering hos lege eller psykolog/psykiater.";
+      } else {
+        resultDiv.className = "result negative";
+        text += "<strong>Tolkning:</strong> Skjemaet gir ikke utslag som typisk for bipolar lidelse etter standard MDQ-kriterier. " +
+                "Ved betydelige symptomer eller funksjonsvansker bør du likevel vurderes av helsepersonell.";
+      }
+
+      resultDiv.innerHTML = text;
+    }
+
+    function resetResult() {
+      const subscoresDiv = document.getElementById('subscores');
+      const resultDiv = document.getElementById('result');
+      subscoresDiv.style.display = 'none';
+      resultDiv.style.display = 'none';
+      subscoresDiv.querySelector('#symptomScore').textContent = "0";
+      subscoresDiv.querySelector('#clusterInfo').textContent = "";
+      subscoresDiv.querySelector('#impairmentInfo').textContent = "";
+      resultDiv.innerHTML = "";
+    }
+
+    // --- NY FUNKSJONALITET FOR LAGRING/EKSPORT ---
+
+    // 1. Lagre som HTML med utfylte data
+    function saveAsHTML() {
+        // Vi må oppdatere DOM-attributtene 'value' og 'checked' slik at de blir med i lagringen
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            if (input.type === 'text' || input.type === 'date') {
+                input.setAttribute('value', input.value);
+            } else if (input.type === 'radio' || input.type === 'checkbox') {
+                if (input.checked) {
+                    input.setAttribute('checked', 'checked');
+                } else {
+                    input.removeAttribute('checked');
+                }
+            }
+        });
+
+        const htmlContent = document.documentElement.outerHTML;
+        const blob = new Blob([htmlContent], {type: 'text/html'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        
+        // Hent pasientnavn for filnavn, hvis det finnes
+        const pName = document.querySelector('input[name="patientName"]').value || "utfylt";
+        a.href = url;
+        a.download = `MDQ-skjema-${pName.replace(/\s+/g, '_')}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // 2. Lagre som PDF
+    function saveAsPDF() {
+        // Den enkleste og mest robuste måten uten eksterne biblioteker er å bruke nettleserens utskriftsfunksjon.
+        // CSS-regelen @media print skjuler knappene.
+        window.print(); 
+        // Brukeren må velge "Lagre som PDF" i dialogvinduet, noe som er standard i moderne nettlesere.
+    }
+
+    // 3. Kopier til e-post (Kopierer formatert innhold til utklippstavlen)
+    function copyForEmail() {
+        // Vi velger innholdet unntatt knappene
+        const range = document.createRange();
+        
+        // Vi markerer hele body, men CSS vil ikke bli med overalt i e-post. 
+        // Det er tryggere å kopiere det visuelle.
+        range.selectNode(document.body);
+        
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        
+        try {
+            const successful = document.execCommand('copy');
+            if(successful) {
+                alert("Hele skjemaet er nå kopiert til utklippstavlen.\n\nDu kan nå gå til e-posten din, opprette en ny melding, og velge 'Lim inn' (Ctrl+V) i tekstfeltet.");
+            } else {
+                alert("Klarte ikke å kopiere automatisk. Prøv å markere teksten manuelt.");
+            }
+        } catch (err) {
+            alert("Feil ved kopiering: " + err);
+        }
+        
+        window.getSelection().removeAllRanges();
+    }
+  </script>
+  </body>
+</html>

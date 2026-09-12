@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KBL — Опросник стрессовых жизненных событий</title>
+
+    <!-- PDF & Word Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+      :root {
+        --primary: #2c3e50;
+        --secondary: #3498db;
+        --accent: #e74c3c;
+        --bg: #f4f7f6;
+        --paper: #ffffff;
+        --border: #dcdde1;
+      }
+
+      body {
+        font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+        background-color: var(--bg);
+        color: #333;
+        margin: 0;
+        padding: 30px;
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 950px;
+        margin: 0 auto;
+        background-color: var(--paper);
+        padding: 40px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border-radius: 8px;
+      }
+
+      h1 {
+        color: var(--primary);
+        text-align: center;
+        margin-bottom: 5px;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #7f8c8d;
+        margin-bottom: 30px;
+        font-weight: 300;
+      }
+
+      .instructions {
+        background: #e8f4fd;
+        padding: 15px;
+        border-left: 4px solid var(--secondary);
+        margin-bottom: 30px;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      /* Meta Info */
+      .meta-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 30px;
+        padding: 20px;
+        background: #fafafa;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+      }
+
+      .form-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: bold;
+        color: #7f8c8d;
+        margin-bottom: 4px;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+      /* Question Blocks */
+      .question-box {
+        margin-bottom: 20px;
+        border: 1px solid #eee;
+        border-radius: 6px;
+        background: #fff;
+        overflow: hidden;
+      }
+
+      .main-q {
+        padding: 15px;
+        background: #fdfdfd;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .main-q.active {
+        background-color: #f4faff;
+        border-left: 4px solid var(--secondary);
+      }
+
+      .q-text {
+        font-weight: 600;
+        font-size: 15px;
+        flex: 1;
+        padding-right: 15px;
+      }
+
+      /* Buttons Fix */
+      .yes-no-group {
+        display: flex;
+        gap: 10px;
+      }
+
+      .btn-toggle {
+        padding: 8px 18px;
+        border: 1px solid #aaa;
+        /* Более чёткая рамка */
+        border-radius: 4px;
+        cursor: pointer;
+        background: #ffffff;
+        /* Белый фон по умолчанию */
+        color: #333333;
+        /* Тёмный текст по умолчанию */
+        font-size: 13px;
+        font-weight: bold;
+        transition: all 0.2s ease;
+        min-width: 60px;
+      }
+
+      .btn-toggle:hover {
+        background-color: #f0f0f0;
+        border-color: #888;
+      }
+
+      .btn-toggle.selected {
+        background: var(--secondary);
+        color: white;
+        border-color: var(--secondary);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Follow-up Details */
+      .details-section {
+        padding: 15px;
+        background-color: #fff;
+        display: none;
+        /* Hidden by default */
+        font-size: 14px;
+        border-top: 1px solid #eee;
+      }
+
+      .detail-row {
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .detail-label {
+        font-weight: 500;
+        min-width: 150px;
+      }
+
+      .detail-input {
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        width: 100px;
+      }
+
+      .detail-text {
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        width: 100%;
+      }
+
+      /* Radios for sub-questions */
+      .sub-radio-group label {
+        margin-right: 10px;
+        cursor: pointer;
+      }
+
+      .sub-radio-group input {
+        margin-right: 4px;
+      }
+
+      /* Results */
+      .results-section {
+        margin-top: 40px;
+        padding: 25px;
+        background: #f8f9fa;
+        border: 2px solid var(--primary);
+        border-radius: 8px;
+        display: none;
+      }
+
+      /* Controls */
+      .controls {
+        margin-top: 40px;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+      }
+
+      button {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        color: white;
+        transition: transform 0.1s;
+        font-size: 14px;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+      }
+
+      .btn-calc {
+        background-color: var(--secondary);
+      }
+
+      .btn-word {
+        background-color: #2980b9;
+      }
+
+      .btn-pdf {
+        background-color: #c0392b;
+      }
+
+      .btn-reset {
+        background-color: #95a5a6;
+      }
+
+      @media print {
+        .controls {
+          display: none;
+        }
+
+        .container {
+          box-shadow: none;
+          margin: 0;
+          padding: 0;
+          width: 100%;
+        }
+
+        .details-section {
+          display: block !important;
+        }
+      }
+    </style>
+    <link rel="preconnect" href="https://psykometri-sovn.wunderbucket.dev/" crossorigin="true">
+    <link rel="dns-prefetch" href="https://psykometri-sovn.wunderbucket.dev/">
+  </head>
+
+  <body>
+
+    <div class="container" id="doc-content">
+      <h1>KBL</h1>
+      <div class="subtitle">Опросник стрессовых жизненных событий</div>
+
+      <div class="meta-grid">
+        <div class="form-group">
+          <label>Имя пациента</label>
+          <input type="text" id="pName" placeholder="Имя...">
+        </div>
+        <div class="form-group">
+          <label>Дата</label>
+          <input type="date" id="pDate">
+        </div>
+      </div>
+
+      <div class="instructions">
+        <strong>Инструкция:</strong> Вопросы относятся к событиям, которые могли произойти в любой период Вашей жизни, включая раннее детство.
+        <br>Ответьте <strong>ДА</strong> или <strong>НЕТ</strong>. При ответе ДА заполните дополнительные вопросы.
+      </div>
+
+      <div id="questions-container">
+        <div class="question-box" id="qbox-1">
+          <div class="main-q" id="main-1">
+            <div class="q-text">1. Было ли у Вас когда-либо угрожающее жизни заболевание?</div>
+            <div class="yes-no-group">
+              <button class="btn-toggle" onclick="setAns(1, 'nei')" id="btn-nei-1">НЕТ</button>
+              <button class="btn-toggle" onclick="setAns(1, 'ja')" id="btn-ja-1">ДА</button>
+            </div>
+            <input type="hidden" id="ans-1" value="">
+          </div>
+          <div class="details-section" id="details-1">
+
+            <div class="detail-row">
+              <span class="detail-label">Если да, сколько Вам было лет?</span>
+              <input type="text" class="detail-input" placeholder="Возраст">
+            </div>
+
+          </div>
+        </div>
+        <div class="question-box" id="qbox-2">
+          <div class="main-q" id="main-2">
+            <div class="q-text">2. Были ли Вы когда-либо участником несчастного случая, угрожавшего жизни?</div>
+            <div class="yes-no-group">
+              <button class="btn-toggle" onclick="setAns(2, 'nei')" id="btn-nei-2">НЕТ</button>
+              <button class="btn-toggle" onclick="setAns(2, 'ja')" id="btn-ja-2">ДА</button>
+            </div>
+            <input type="hidden" id="ans-2" value="">
+          </div>
+          <div class="details-section" id="details-2">
+
+            <div class="detail-row">
+              <span class="detail-label">Кто-либо погиб?</span>
+              <div class="sub-radio-group">
+                <label><input type="radio" name="dode-2" value="nei"> Нет</label>
+                <label><input type="radio" name="dode-2" value="ja"> Да</label>
+              </div>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Получили ли Вы телесные повреждения?</span>
+              <div class="sub-radio-group">
+                <label><input type="radio" name="skade-2" value="nei"> Нет</label>
+                <label><input type="radio" name="skade-2" value="ja"> Да</label>
+              </div>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Была ли Ваша жизнь в опасности?</span>
+              <div class="sub-radio-group">
+                <label><input type="radio" name="fare-2" value="nei"> Нет</label>
+                <label><input type="radio" name="fare-2" value="ja"> Да</label>
+              </div>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Если да, сколько Вам было лет?</span>
+              <input type="text" class="detail-input" placeholder="Возраст">
+            </div>
+
+          </div>
+        </div>
+        <div class="question-box" id="qbox-3">
+          <div class="main-q" id="main-3">
+            <div class="q-text">3. Пострадали ли Вы когда-либо от стихийного бедствия?</div>
+            <div class="yes-no-group">
+              <button class="btn-toggle" onclick="setAns(3, 'nei')" id="btn-nei-3">НЕТ</button>
+              <button class="btn-toggle" onclick="setAns(3, 'ja')" id="btn-ja-3">ДА</button>
+            </div>
+            <input type="hidden" id="ans-3" value="">
+          </div>
+          <div class="details-section" id="details-3">
+
+            <div class="detail-row">
+              <span class="detail-label">Кто-либо погиб?</span>
+              <div class="sub-radio-group">
+                <label><input type="radio" name="dode-3" value="nei"> Нет</label>
+                <label><input type="radio" name="dode-3" value="ja"> Да</label>
+              </div>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Получили ли Вы телесные повреждения?</span>
+              <div class="sub-radio-group">
+                <label><input type="radio" name="skade-3" value="nei"> Нет</label>
+                <label><input type="radio" name="skade-3" value="ja"> Да</label>
+              </div>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Была ли Ваша жизнь в опасности?</span>
+              <div class="sub-radio-group">
+                <label><input type="radio" name="fare-3" value="nei"> Нет</label>
+                <label><input type="radio" name="fare-3" value="ja"> Да</label>
+              </div>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Если да, сколько Вам было лет?</span>
+              <input type="text" class="detail-input" placeholder="Возраст">
+            </div>
+
+          </div>
+        </div>
+        <div class="question-box" id="qbox-5">
+          <div class="main-q" id="main-5">
+            <div class="q-text">5. Подвергались ли Вы когда-либо ограблению или нападению с применением физической силы или оружия?</div>
+            <div class="yes-no-group">
+              <button class="btn-toggle" onclick="setAns(5, 'nei')" id="btn-nei-5">НЕТ</button>
+              <button class="btn-toggle" onclick="setAns(5, 'ja')" id="btn-ja-5">ДА</button>
+            </div>
+            <input type="hidden" id="ans-5" value="">
+          </div>
+          <div class="details-section" id="details-5">
+
+            <div class="detail-row">
+              <span class="detail-label">Кто-либо погиб?</span>
+              <div class="sub-radio-group">
+                <label><input type="radio" name="dode-5" value="nei"> Нет</label>
+                <label><input type="radio" name="dode-5" value="ja"> Да</label>
+              </div>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Получили ли Вы телесные повреждения?</span>
+              <div class="sub-radio-group">
+                <label><input type="radio" name="skade-5" value="nei"> Нет</label>
+                <label><input type="radio" name="skade-5" value="ja"> Да</label>
+              </div>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Была ли Ваша жизнь в опасности?</span>
+              <div class="sub-radio-group">
+                <label><input type="radio" name="fare-5" value="nei"> Нет</label>
+                <label><input type="radio" name="fare-5" value="ja"> Да</label>
+              </div>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Если да, сколько Вам было лет?</span>
+              <input type="text" class="detail-input" placeholder="Возраст">
+            </div>
+
+          </div>
+        </div>
+        <div class="question-box" id="qbox-6">
+          <div class="main-q" id="main-6">
+            <div class="q-text">6. Погибал ли кто-либо из Ваших ближайших родственников, супруг(а)/партнёр(ша) или очень близких друзей в результате несчастного случая, убийства или самоубийства?</div>
+            <div class="yes-no-group">
+              <button class="btn-toggle" onclick="setAns(6, 'nei')" id="btn-nei-6">НЕТ</button>
+              <button class="btn-toggle" onclick="setAns(6, 'ja')" id="btn-ja-6">ДА</button>
+            </div>
+            <input type="hidden" id="ans-6" value="">
+          </div>
+          <div class="details-section" id="details-6">
+
+            <div class="detail-row">
+              <span class="detail-label">Если да, сколько Вам было лет?</span>
+              <input type="text" class="detail-input" placeholder="Возраст">
+            </div>
+
+          </div>
+        </div>
+        <div class="question-box" id="qbox-7">
+          <div class="main-q" id="main-7">
+            <div class="q-text">7. Случалось ли Вам когда-либо, что кто-то с применением физической силы или угроз принуждал Вас к сексуальному контакту против Вашей воли?</div>
+            <div class="yes-no-group">
+              <button class="btn-toggle" onclick="setAns(7, 'nei')" id="btn-nei-7">НЕТ</button>
+              <button class="btn-toggle" onclick="setAns(7, 'ja')" id="btn-ja-7">ДА</button>
+            </div>
+            <input type="hidden" id="ans-7" value="">
+          </div>
+          <div class="details-section" id="details-7">
+
+            <div class="detail-row">
+              <span class="detail-label">Если да, сколько Вам было лет?</span>
+              <input type="text" class="detail-input" placeholder="Возраст">
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Сколько раз?</span>
+              <div class="sub-radio-group">
+                <label><input type="radio" name="freq-7" value="1"> 1</label>
+                <label><input type="radio" name="freq-7" value="2-4"> 2-4</label>
+                <label><input type="radio" name="freq-7" value="5-10"> 5-10</label>
+                <label><input type="radio" name="freq-7" value=">10"> Более 10</label>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <div class="question-box" id="qbox-8">
+          <div class="main-q" id="main-8">
+            <div class="q-text">8. Случалось ли Вам когда-либо, что кто-то прикасался к Вашим половым органам против Вашей воли или заставлял Вас прикасаться к своим половым органам?</div>
+            <div class="yes-no-group">
+              <button class="btn-toggle" onclick="setAns(8, 'nei')" id="btn-nei-8">НЕТ</button>
+              <button class="btn-toggle" onclick="setAns(8, 'ja')" id="btn-ja-8">ДА</button>
+            </div>
+            <input type="hidden" id="ans-8" value="">
+          </div>
+          <div class="details-section" id="details-8">
+
+            <div class="detail-row">
+              <span class="detail-label">Если да, сколько Вам было лет?</span>
+              <input type="text" class="detail-input" placeholder="Возраст">
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Сколько раз?</span>
+              <div class="sub-radio-group">
+                <label><input type="radio" name="freq-8" value="1"> 1</label>
+                <label><input type="radio" name="freq-8" value="2-4"> 2-4</label>
+                <label><input type="radio" name="freq-8" value="5-10"> 5-10</label>
+                <label><input type="radio" name="freq-8" value=">10"> Более 10</label>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <div class="question-box" id="qbox-9">
+          <div class="main-q" id="main-9">
+            <div class="q-text">9. В детстве: случалось ли, что один из Ваших родителей или другой взрослый пинал, бил или причинял Вам телесные повреждения?</div>
+            <div class="yes-no-group">
+              <button class="btn-toggle" onclick="setAns(9, 'nei')" id="btn-nei-9">НЕТ</button>
+              <button class="btn-toggle" onclick="setAns(9, 'ja')" id="btn-ja-9">ДА</button>
+            </div>
+            <input type="hidden" id="ans-9" value="">
+          </div>
+          <div class="details-section" id="details-9">
+
+            <div class="detail-row">
+              <span class="detail-label">Если да, сколько Вам было лет?</span>
+              <input type="text" class="detail-input" placeholder="Возраст">
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Сколько раз?</span>
+              <div class="sub-radio-group">
+                <label><input type="radio" name="freq-9" value="1"> 1</label>
+                <label><input type="radio" name="freq-9" value="2-4"> 2-4</label>
+                <label><input type="radio" name="freq-9" value="5-10"> 5-10</label>
+                <label><input type="radio" name="freq-9" value=">10"> Более 10</label>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <div class="question-box" id="qbox-10">
+          <div class="main-q" id="main-10">
+            <div class="q-text">10. Во взрослом возрасте: случалось ли Вам, что партнёр или другой человек пинал, бил или причинял Вам телесные повреждения?</div>
+            <div class="yes-no-group">
+              <button class="btn-toggle" onclick="setAns(10, 'nei')" id="btn-nei-10">НЕТ</button>
+              <button class="btn-toggle" onclick="setAns(10, 'ja')" id="btn-ja-10">ДА</button>
+            </div>
+            <input type="hidden" id="ans-10" value="">
+          </div>
+          <div class="details-section" id="details-10">
+
+            <div class="detail-row">
+              <span class="detail-label">Если да, сколько Вам было лет?</span>
+              <input type="text" class="detail-input" placeholder="Возраст">
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Сколько раз?</span>
+              <div class="sub-radio-group">
+                <label><input type="radio" name="freq-10" value="1"> 1</label>
+                <label><input type="radio" name="freq-10" value="2-4"> 2-4</label>
+                <label><input type="radio" name="freq-10" value="5-10"> 5-10</label>
+                <label><input type="radio" name="freq-10" value=">10"> Более 10</label>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <div class="question-box" id="qbox-11">
+          <div class="main-q" id="main-11">
+            <div class="q-text">11. Высмеивал или унижал ли Вас неоднократно один из родителей, партнёр или член семьи?</div>
+            <div class="yes-no-group">
+              <button class="btn-toggle" onclick="setAns(11, 'nei')" id="btn-nei-11">НЕТ</button>
+              <button class="btn-toggle" onclick="setAns(11, 'ja')" id="btn-ja-11">ДА</button>
+            </div>
+            <input type="hidden" id="ans-11" value="">
+          </div>
+          <div class="details-section" id="details-11">
+
+            <div class="detail-row">
+              <span class="detail-label">Если да, сколько Вам было лет?</span>
+              <input type="text" class="detail-input" placeholder="Возраст">
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Сколько раз?</span>
+              <div class="sub-radio-group">
+                <label><input type="radio" name="freq-11" value="1"> 1</label>
+                <label><input type="radio" name="freq-11" value="2-4"> 2-4</label>
+                <label><input type="radio" name="freq-11" value="5-10"> 5-10</label>
+                <label><input type="radio" name="freq-11" value=">10"> Более 10</label>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <div class="question-box" id="qbox-12">
+          <div class="main-q" id="main-12">
+            <div class="q-text">12. Высмеивали или унижали ли Вас неоднократно лица вне семьи (одноклассники/коллеги)?</div>
+            <div class="yes-no-group">
+              <button class="btn-toggle" onclick="setAns(12, 'nei')" id="btn-nei-12">НЕТ</button>
+              <button class="btn-toggle" onclick="setAns(12, 'ja')" id="btn-ja-12">ДА</button>
+            </div>
+            <input type="hidden" id="ans-12" value="">
+          </div>
+          <div class="details-section" id="details-12">
+
+            <div class="detail-row">
+              <span class="detail-label">Если да, сколько Вам было лет?</span>
+              <input type="text" class="detail-input" placeholder="Возраст">
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Сколько раз?</span>
+              <div class="sub-radio-group">
+                <label><input type="radio" name="freq-12" value="1"> 1</label>
+                <label><input type="radio" name="freq-12" value="2-4"> 2-4</label>
+                <label><input type="radio" name="freq-12" value="5-10"> 5-10</label>
+                <label><input type="radio" name="freq-12" value=">10"> Более 10</label>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <div class="question-box" id="qbox-13">
+          <div class="main-q" id="main-13">
+            <div class="q-text">13. Угрожал ли Вам когда-либо кто-либо оружием?</div>
+            <div class="yes-no-group">
+              <button class="btn-toggle" onclick="setAns(13, 'nei')" id="btn-nei-13">НЕТ</button>
+              <button class="btn-toggle" onclick="setAns(13, 'ja')" id="btn-ja-13">ДА</button>
+            </div>
+            <input type="hidden" id="ans-13" value="">
+          </div>
+          <div class="details-section" id="details-13">
+
+            <div class="detail-row">
+              <span class="detail-label">Если да, сколько Вам было лет?</span>
+              <input type="text" class="detail-input" placeholder="Возраст">
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Сколько раз?</span>
+              <div class="sub-radio-group">
+                <label><input type="radio" name="freq-13" value="1"> 1</label>
+                <label><input type="radio" name="freq-13" value="2-4"> 2-4</label>
+                <label><input type="radio" name="freq-13" value="5-10"> 5-10</label>
+                <label><input type="radio" name="freq-13" value=">10"> Более 10</label>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <div class="question-box" id="qbox-14">
+          <div class="main-q" id="main-14">
+            <div class="q-text">14. Были ли Вы когда-либо свидетелем того, как другого человека убили, тяжело ранили или подвергли жестокому обращению?</div>
+            <div class="yes-no-group">
+              <button class="btn-toggle" onclick="setAns(14, 'nei')" id="btn-nei-14">НЕТ</button>
+              <button class="btn-toggle" onclick="setAns(14, 'ja')" id="btn-ja-14">ДА</button>
+            </div>
+            <input type="hidden" id="ans-14" value="">
+          </div>
+          <div class="details-section" id="details-14">
+
+            <div class="detail-row">
+              <span class="detail-label">Если да, сколько Вам было лет?</span>
+              <input type="text" class="detail-input" placeholder="Возраст">
+            </div>
+
+          </div>
+        </div>
+        <div class="question-box" id="qbox-15">
+          <div class="main-q" id="main-15">
+            <div class="q-text">15. Случалась ли с Вами другая ситуация, в которой Вы получили тяжёлые травмы или Ваша жизнь была в опасности (например, война, терроризм)?</div>
+            <div class="yes-no-group">
+              <button class="btn-toggle" onclick="setAns(15, 'nei')" id="btn-nei-15">НЕТ</button>
+              <button class="btn-toggle" onclick="setAns(15, 'ja')" id="btn-ja-15">ДА</button>
+            </div>
+            <input type="hidden" id="ans-15" value="">
+          </div>
+          <div class="details-section" id="details-15">
+
+            <div class="detail-row">
+              <span class="detail-label">Кто-либо погиб?</span>
+              <div class="sub-radio-group">
+                <label><input type="radio" name="dode-15" value="nei"> Нет</label>
+                <label><input type="radio" name="dode-15" value="ja"> Да</label>
+              </div>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Получили ли Вы телесные повреждения?</span>
+              <div class="sub-radio-group">
+                <label><input type="radio" name="skade-15" value="nei"> Нет</label>
+                <label><input type="radio" name="skade-15" value="ja"> Да</label>
+              </div>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Была ли Ваша жизнь в опасности?</span>
+              <div class="sub-radio-group">
+                <label><input type="radio" name="fare-15" value="nei"> Нет</label>
+                <label><input type="radio" name="fare-15" value="ja"> Да</label>
+              </div>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Если да, сколько Вам было лет?</span>
+              <input type="text" class="detail-input" placeholder="Возраст">
+            </div>
+
+          </div>
+        </div>
+        <div class="question-box" id="qbox-16">
+          <div class="main-q" id="main-16">
+            <div class="q-text">16. Была ли в Вашей жизни другая ситуация, которая была очень пугающей или ужасной?</div>
+            <div class="yes-no-group">
+              <button class="btn-toggle" onclick="setAns(16, 'nei')" id="btn-nei-16">НЕТ</button>
+              <button class="btn-toggle" onclick="setAns(16, 'ja')" id="btn-ja-16">ДА</button>
+            </div>
+            <input type="hidden" id="ans-16" value="">
+          </div>
+          <div class="details-section" id="details-16">
+
+            <div class="detail-row">
+              <span class="detail-label">Если да, сколько Вам было лет?</span>
+              <input type="text" class="detail-input" placeholder="Возраст">
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Пожалуйста, опишите:</span>
+              <textarea class="detail-text" rows="2"></textarea>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="results-section" id="results">
+        <h3>Итог</h3>
+        <div>Общее число подтверждённых событий (ДА): <strong id="total-count" style="font-size: 24px; color: #2c3e50;">0</strong> из 16</div>
+        <div style="margin-top: 10px; font-size: 13px; color: #666;">
+          Это скрининговая анкета. Положительные ответы следует уточнить в ходе клинического интервью для оценки степени тяжести и потребности в лечении.
+        </div>
+      </div>
+
+    </div>
+
+    <div class="controls">
+      <button class="btn-calc" onclick="calculate()">📊 Рассчитать</button>
+      <button class="btn-word" onclick="exportWord()">💾 Сохранить в Word</button>
+      <button class="btn-pdf" onclick="exportPDF()" id="pdfBtn">📄 Сохранить в PDF</button>
+      <button class="btn-reset" onclick="resetForm()">🔄 Сбросить</button>
+    </div>
+
+    <script>
+      document.getElementById('pDate').valueAsDate = new Date();
+
+      const questions = [{
+          id: 1,
+          text: "Было ли у Вас когда-либо угрожающее жизни заболевание?",
+          type: "simple"
+        },
+        {
+          id: 2,
+          text: "Были ли Вы когда-либо участником несчастного случая, угрожавшего жизни?",
+          type: "complex_physical"
+        },
+        {
+          id: 3,
+          text: "Пострадали ли Вы когда-либо от стихийного бедствия?",
+          type: "complex_physical"
+        },
+        {
+          id: 5,
+          text: "Подвергались ли Вы когда-либо ограблению или нападению с применением физической силы или оружия?",
+          type: "complex_physical"
+        },
+        {
+          id: 6,
+          text: "Погибал ли кто-либо из Ваших ближайших родственников, супруг(а)/партнёр(ша) или очень близких друзей в результате несчастного случая, убийства или самоубийства?",
+          type: "simple"
+        },
+        {
+          id: 7,
+          text: "Случалось ли Вам когда-либо, что кто-то с применением физической силы или угроз принуждал Вас к сексуальному контакту против Вашей воли?",
+          type: "complex_frequency"
+        },
+        {
+          id: 8,
+          text: "Случалось ли Вам когда-либо, что кто-то прикасался к Вашим половым органам против Вашей воли или заставлял Вас прикасаться к своим половым органам?",
+          type: "complex_frequency"
+        },
+        {
+          id: 9,
+          text: "В детстве: случалось ли, что один из Ваших родителей или другой взрослый пинал, бил или причинял Вам телесные повреждения?",
+          type: "complex_frequency"
+        },
+        {
+          id: 10,
+          text: "Во взрослом возрасте: случалось ли Вам, что партнёр или другой человек пинал, бил или причинял Вам телесные повреждения?",
+          type: "complex_frequency"
+        },
+        {
+          id: 11,
+          text: "Высмеивал или унижал ли Вас неоднократно один из родителей, партнёр или член семьи?",
+          type: "complex_frequency"
+        },
+        {
+          id: 12,
+          text: "Высмеивали или унижали ли Вас неоднократно лица вне семьи (одноклассники/коллеги)?",
+          type: "complex_frequency"
+        },
+        {
+          id: 13,
+          text: "Угрожал ли Вам когда-либо кто-либо оружием?",
+          type: "complex_frequency"
+        },
+        {
+          id: 14,
+          text: "Были ли Вы когда-либо свидетелем того, как другого человека убили, тяжело ранили или подвергли жестокому обращению?",
+          type: "simple"
+        },
+        {
+          id: 15,
+          text: "Случалась ли с Вами другая ситуация, в которой Вы получили тяжёлые травмы или Ваша жизнь была в опасности (например, война, терроризм)?",
+          type: "complex_physical"
+        },
+        {
+          id: 16,
+          text: "Была ли в Вашей жизни другая ситуация, которая была очень пугающей или ужасной?",
+          type: "text_desc"
+        }
+      ];
+
+      const container = document.getElementById('questions-container');
+
+      // ИСПРАВЛЕНИЕ EDGE: сначала очистить контейнер
+      container.innerHTML = '';
+
+      questions.forEach(q => {
+        const div = document.createElement('div');
+        div.className = 'question-box';
+        div.id = `qbox-${q.id}`;
+
+        let detailsHTML = '';
+
+        if (q.type === 'simple') {
+          detailsHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">Если да, сколько Вам было лет?</span>
+                    <input type="text" class="detail-input" placeholder="Возраст">
+                </div>
+            `;
+        } else if (q.type === 'complex_physical') {
+          detailsHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">Кто-либо погиб?</span>
+                    <div class="sub-radio-group">
+                        <label><input type="radio" name="dode-${q.id}" value="nei"> Нет</label>
+                        <label><input type="radio" name="dode-${q.id}" value="ja"> Да</label>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Получили ли Вы телесные повреждения?</span>
+                    <div class="sub-radio-group">
+                        <label><input type="radio" name="skade-${q.id}" value="nei"> Нет</label>
+                        <label><input type="radio" name="skade-${q.id}" value="ja"> Да</label>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Была ли Ваша жизнь в опасности?</span>
+                    <div class="sub-radio-group">
+                        <label><input type="radio" name="fare-${q.id}" value="nei"> Нет</label>
+                        <label><input type="radio" name="fare-${q.id}" value="ja"> Да</label>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Если да, сколько Вам было лет?</span>
+                    <input type="text" class="detail-input" placeholder="Возраст">
+                </div>
+            `;
+        } else if (q.type === 'complex_frequency') {
+          detailsHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">Если да, сколько Вам было лет?</span>
+                    <input type="text" class="detail-input" placeholder="Возраст">
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Сколько раз?</span>
+                    <div class="sub-radio-group">
+                        <label><input type="radio" name="freq-${q.id}" value="1"> 1</label>
+                        <label><input type="radio" name="freq-${q.id}" value="2-4"> 2-4</label>
+                        <label><input type="radio" name="freq-${q.id}" value="5-10"> 5-10</label>
+                        <label><input type="radio" name="freq-${q.id}" value=">10"> Более 10</label>
+                    </div>
+                </div>
+            `;
+        } else if (q.type === 'text_desc') {
+          detailsHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">Если да, сколько Вам было лет?</span>
+                    <input type="text" class="detail-input" placeholder="Возраст">
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Пожалуйста, опишите:</span>
+                    <textarea class="detail-text" rows="2"></textarea>
+                </div>
+            `;
+        }
+
+        div.innerHTML = `
+            <div class="main-q" id="main-${q.id}">
+                <div class="q-text">${q.id}. ${q.text}</div>
+                <div class="yes-no-group">
+                    <button class="btn-toggle" onclick="setAns(${q.id}, 'nei')" id="btn-nei-${q.id}">НЕТ</button>
+                    <button class="btn-toggle" onclick="setAns(${q.id}, 'ja')" id="btn-ja-${q.id}">ДА</button>
+                </div>
+                <input type="hidden" id="ans-${q.id}" value="">
+            </div>
+            <div class="details-section" id="details-${q.id}">
+                ${detailsHTML}
+            </div>
+        `;
+        container.appendChild(div);
+      });
+
+      function setAns(id, val) {
+        document.getElementById(`ans-${id}`).value = val;
+
+        const btnJa = document.getElementById(`btn-ja-${id}`);
+        const btnNei = document.getElementById(`btn-nei-${id}`);
+        const details = document.getElementById(`details-${id}`);
+        const main = document.getElementById(`main-${id}`);
+
+        if (val === 'ja') {
+          btnJa.classList.add('selected');
+          btnNei.classList.remove('selected');
+          details.style.display = 'block';
+          main.classList.add('active');
+        } else {
+          btnNei.classList.add('selected');
+          btnJa.classList.remove('selected');
+          details.style.display = 'none';
+          main.classList.remove('active');
+        }
+      }
+
+      function calculate() {
+        let count = 0;
+        questions.forEach(q => {
+          const val = document.getElementById(`ans-${q.id}`).value;
+          if (val === 'ja') count++;
+        });
+
+        document.getElementById('total-count').innerText = count;
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('results').scrollIntoView({
+          behavior: 'smooth'
+        });
+      }
+
+      function resetForm() {
+        if (confirm("Очистить данные?")) location.reload();
+      }
+
+      async function exportPDF() {
+        const btn = document.getElementById('pdfBtn');
+        btn.innerText = "Создание...";
+        btn.disabled = true;
+
+        const element = document.getElementById('doc-content');
+        const name = document.getElementById('pName').value || "Неизвестно";
+
+        try {
+          const canvas = await html2canvas(element, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff'
+          });
+          const imgData = canvas.toDataURL('image/png');
+          const {
+            jsPDF
+          } = window.jspdf;
+          const pdf = new jsPDF('p', 'mm', 'a4');
+
+          const imgWidth = 190;
+          const pageHeight = 295;
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+          let heightLeft = imgHeight;
+          let position = 10;
+
+          pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+          heightLeft -= (pageHeight - 20);
+
+          while (heightLeft > 0) {
+            position = heightLeft - imgHeight + 10;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pageHeight - 20);
+          }
+
+          pdf.save(`KBL_${name}.pdf`);
+        } catch (e) {
+          alert("Ошибка при создании PDF");
+        } finally {
+          btn.innerText = "📄 Сохранить в PDF";
+          btn.disabled = false;
+        }
+      }
+
+      function exportWord() {
+        const name = document.getElementById('pName').value || "Неизвестно";
+        const content = document.getElementById('doc-content').cloneNode(true);
+
+        // Transform inputs to text
+        content.querySelectorAll('input[type="text"], input[type="date"], textarea').forEach(inp => {
+          const span = document.createElement('span');
+          span.innerHTML = inp.value ? `<b>${inp.value}</b>` : "______";
+          inp.parentNode.replaceChild(span, inp);
+        });
+
+        // Handle Main Questions & Logic
+        questions.forEach(q => {
+          const box = content.querySelector(`#qbox-${q.id}`);
+          const ans = document.getElementById(`ans-${q.id}`).value;
+          const yesNoGroup = box.querySelector('.yes-no-group');
+
+          // Replace toggle buttons with text
+          const resText = document.createElement('div');
+          resText.innerHTML = `<b>Ответ: ${ans === 'ja' ? 'ДА' : ans === 'nei' ? 'НЕТ' : "Нет ответа"}</b>`;
+          resText.style.color = ans === 'ja' ? "#c0392b" : "#2c3e50";
+          yesNoGroup.parentNode.replaceChild(resText, yesNoGroup);
+
+          // Hide details if NO
+          if (ans !== 'ja') {
+            const det = box.querySelector('.details-section');
+            if (det) det.remove();
+          } else {
+            const det = box.querySelector('.details-section');
+            if (det) det.style.display = 'block';
+
+            // Fix radios in details
+            det.querySelectorAll('input[type="radio"]').forEach(rad => {
+              const label = rad.parentElement;
+              if (rad.checked) {
+                label.innerHTML = `<b>[X] ${label.innerText}</b>`;
+              } else {
+                label.innerHTML = `[ ] ${label.innerText}`;
+              }
+            });
+          }
+        });
+
+        const header = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>Результаты KBL</title>
+            <style>
+                body { font-family: Arial; }
+                .question-box { border-bottom: 1px solid #ccc; margin-bottom: 10px; padding-bottom: 5px; }
+                .main-q { font-weight: bold; background: #eee; padding: 5px; margin-bottom: 5px; }
+                .details-section { margin-left: 20px; font-size: 12px; color: #444; }
+                .detail-row { margin-bottom: 5px; }
+            </style>
+            </head><body>
+        `;
+        const footer = "</body></html>";
+        const html = header + content.innerHTML + footer;
+
+        const blob = new Blob(['\ufeff', html], {
+          type: 'application/msword'
+        });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `KBL_${name}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    </script>
+
+
+
+  </body>
+
+</html>

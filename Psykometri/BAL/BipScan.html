@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BipScan - Bipolar Screening</title>
+    
+    <!-- PDF & Word Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --low-color: #7f8c8d;   /* Lavere */
+            --med-color: #d35400;   /* Medium | */
+            --high-color: #c0392b;  /* Høyere */
+            --bg: #f4f7f6;
+            --paper: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: var(--paper);
+            padding: 40px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        /* Patient Info */
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            color: #7f8c8d;
+            margin-bottom: 4px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; 
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+        
+        .legend span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .dot-low { background: var(--low-color); }
+        .dot-med { background: var(--med-color); }
+        .dot-high { background: var(--high-color); }
+
+        /* Sections */
+        .section {
+            margin-bottom: 25px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .section h3 {
+            color: var(--primary);
+            font-size: 16px;
+            border-left: 4px solid var(--primary);
+            padding-left: 10px;
+            margin-bottom: 15px;
+        }
+
+        .item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 10px;
+            border-radius: 4px;
+            transition: background 0.2s;
+            cursor: pointer;
+            margin-bottom: 2px;
+        }
+
+        .item-row:hover { background-color: #f0f2f5; }
+        .item-row.checked { background-color: #e8f4fd; }
+
+        .item-label { display: flex; align-items: center; gap: 10px; flex: 1; }
+        
+        /* Checkbox styling */
+        input[type="checkbox"] {
+            transform: scale(1.3);
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .predictive-val {
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 10px;
+            color: white;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .pv-low { background-color: var(--low-color); }
+        .pv-med { background-color: var(--med-color); }
+        .pv-high { background-color: var(--high-color); }
+
+        /* Interpretation Box */
+        .interpretation-box {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border: 2px solid #ddd;
+            transition: all 0.3s;
+        }
+
+        .result-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+        .result-text { font-size: 14px; line-height: 1.5; }
+        
+        /* Dynamic Styles for Result */
+        .result-positive {
+            background-color: #fff5f5;
+            border-color: var(--high-color);
+            color: #c0392b;
+        }
+        
+        .result-negative {
+            background-color: #f0fff4;
+            border-color: #27ae60;
+            color: #27ae60;
+        }
+
+        .result-uncertain {
+            background-color: #fffaf0;
+            border-color: #d35400;
+            color: #d35400;
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            transition: transform 0.1s;
+        }
+
+        button:hover { transform: translateY(-1px); }
+        
+        .btn-word { background-color: #2b579a; }
+        .btn-pdf { background-color: #e74c3c; }
+        .btn-reset { background-color: #95a5a6; }
+
+    </style>
+</head>
+<body>
+
+<div class="container" id="doc-content">
+    <h1>BipScan</h1>
+    <div class="subtitle">Beregning av sannsynlighet for bipolar type depresjon</div>
+
+    <!-- Info -->
+    <div class="meta-grid">
+        <div class="form-group">
+            <label>Pasientnavn</label>
+            <input type="text" id="pName" placeholder="Navn...">
+        </div>
+        <div class="form-group">
+            <label>Fødselsdato</label>
+            <input type="text" id="pDob" placeholder="dd.mm.åå">
+        </div>
+        <div class="form-group">
+            <label>Dato</label>
+            <input type="date" id="pDate">
+        </div>
+        <div class="form-group">
+            <label>Kliniker</label>
+            <input type="text" id="pClinician">
+        </div>
+    </div>
+
+    <div class="legend">
+        <span><div class="dot dot-low"></div> Lavere</span>
+        <span><div class="dot dot-med"></div> Middels (|)</span>
+        <span><div class="dot dot-high"></div> Høyere</span>
+    </div>
+
+    <!-- SEKSJON 1 -->
+    <div class="section" id="sec1">
+        <h3>1. I pasientens slekt forekommer:</h3>
+        
+        <div class="item-row" onclick="toggleCheck(this)">
+            <label class="item-label">
+                <input type="checkbox" value="low">
+                Depresjon
+            </label>
+            <span class="predictive-val pv-low">Lavere</span>
+        </div>
+
+        <div class="item-row" onclick="toggleCheck(this)">
+            <label class="item-label">
+                <input type="checkbox" value="med">
+                Ett tilfelle av bipolar (manisk-depressiv) lidelse
+            </label>
+            <span class="predictive-val pv-med">Middels</span>
+        </div>
+
+        <div class="item-row" onclick="toggleCheck(this)">
+            <label class="item-label">
+                <input type="checkbox" value="high">
+                Flere tilfeller av bipolar (manisk-depressiv) lidelse
+            </label>
+            <span class="predictive-val pv-high">Høyere</span>
+        </div>
+    </div>
+
+    <!-- SEKSJON 2 -->
+    <div class="section" id="sec2">
+        <h3>2. Tidligere sykdom hos pasienten:</h3>
+        
+        <div class="item-row" onclick="toggleCheck(this)">
+            <label class="item-label">
+                <input type="checkbox" value="low">
+                En alvorlig depresjonsepisode
+            </label>
+            <span class="predictive-val pv-low">Lavere</span>
+        </div>
+
+        <div class="item-row" onclick="toggleCheck(this)">
+            <label class="item-label">
+                <input type="checkbox" value="med">
+                Tilbakevendende depresjoner
+            </label>
+            <span class="predictive-val pv-med">Middels</span>
+        </div>
+
+        <div class="item-row" onclick="toggleCheck(this)">
+            <label class="item-label">
+                <input type="checkbox" value="high">
+                Mani/hypomani
+            </label>
+            <span class="predictive-val pv-high">Høyere</span>
+        </div>
+    </div>
+
+    <!-- SEKSJON 3 -->
+    <div class="section" id="sec3">
+        <h3>3. Om tidligere depresjon(er):</h3>
+        
+        <div class="item-row" onclick="toggleCheck(this)">
+            <label class="item-label">
+                <input type="checkbox" value="low">
+                Hadde første depresjon før fylte 20 år
+            </label>
+            <span class="predictive-val pv-low">Lavere</span>
+        </div>
+
+        <div class="item-row" onclick="toggleCheck(this)">
+            <label class="item-label">
+                <input type="checkbox" value="med">
+                Behandlet med et antidepressivum med dårlig effekt
+            </label>
+            <span class="predictive-val pv-med">Middels</span>
+        </div>
+
+        <div class="item-row" onclick="toggleCheck(this)">
+            <label class="item-label">
+                <input type="checkbox" value="med">
+                Behandlet med litium / antiepileptika med god effekt
+            </label>
+            <span class="predictive-val pv-med">Middels</span>
+        </div>
+
+        <div class="item-row" onclick="toggleCheck(this)">
+            <label class="item-label">
+                <input type="checkbox" value="high">
+                "Switchet" til hypomani under antidepressiv behandling
+            </label>
+            <span class="predictive-val pv-high">Høyere</span>
+        </div>
+    </div>
+
+    <!-- SEKSJON 4 -->
+    <div class="section" id="sec4">
+        <h3>4. Periodiske symptomer:</h3>
+        
+        <div class="item-row" onclick="toggleCheck(this)">
+            <label class="item-label">
+                <input type="checkbox" value="low">
+                Periodiske fobier
+            </label>
+            <span class="predictive-val pv-low">Lavere</span>
+        </div>
+
+        <div class="item-row" onclick="toggleCheck(this)">
+            <label class="item-label">
+                <input type="checkbox" value="med">
+                Periodiske tvangssymptomer
+            </label>
+            <span class="predictive-val pv-med">Middels</span>
+        </div>
+
+        <div class="item-row" onclick="toggleCheck(this)">
+            <label class="item-label">
+                <input type="checkbox" value="med">
+                Periodiske panikkanfall
+            </label>
+            <span class="predictive-val pv-med">Middels</span>
+        </div>
+
+        <div class="item-row" onclick="toggleCheck(this)">
+            <label class="item-label">
+                <input type="checkbox" value="med">
+                Periodiske rusproblemer
+            </label>
+            <span class="predictive-val pv-med">Middels</span>
+        </div>
+
+        <div class="item-row" onclick="toggleCheck(this)">
+            <label class="item-label">
+                <input type="checkbox" value="med">
+                Periodisk sosial tilbaketrekking/sosial angst
+            </label>
+            <span class="predictive-val pv-med">Middels</span>
+        </div>
+
+        <div class="item-row" onclick="toggleCheck(this)">
+            <label class="item-label">
+                <input type="checkbox" value="med">
+                Periodisk økt arbeidskapasitet
+            </label>
+            <span class="predictive-val pv-med">Middels</span>
+        </div>
+
+        <div class="item-row" onclick="toggleCheck(this)">
+            <label class="item-label">
+                <input type="checkbox" value="med">
+                Periodisk økt sosial aktivitet
+            </label>
+            <span class="predictive-val pv-med">Middels</span>
+        </div>
+
+        <div class="item-row" onclick="toggleCheck(this)">
+            <label class="item-label">
+                <input type="checkbox" value="med">
+                Periodisk hyperirritabilitet
+            </label>
+            <span class="predictive-val pv-med">Middels</span>
+        </div>
+
+        <div class="item-row" onclick="toggleCheck(this)">
+            <label class="item-label">
+                <input type="checkbox" value="high">
+                Perioder med lite søvn, høyt tempo, ukritisk oppførsel
+            </label>
+            <span class="predictive-val pv-high">Høyere</span>
+        </div>
+    </div>
+
+    <!-- INTERPRETATION -->
+    <div class="interpretation-box result-negative" id="resultBox">
+        <div class="result-title" id="resultTitle">TOLKNING: Lav indikasjon</div>
+        <div class="result-text" id="resultText">
+            Ingen symptomer med høyere prediktiv verdi er markert.
+        </div>
+        <div style="margin-top:10px; font-size:12px; color:#666;">
+            Antall Høyere: <span id="countHigh">0</span> | 
+            Antall Middels: <span id="countMed">0</span> | 
+            Antall Lavere: <span id="countLow">0</span>
+        </div>
+    </div>
+
+</div>
+
+<div class="controls">
+    <button class="btn-word" onclick="exportWord()">💾 Word</button>
+    <button class="btn-pdf" onclick="exportPDF()" id="pdfBtn">📄 PDF</button>
+    <button class="btn-reset" onclick="location.reload()">🔄 Nullstill</button>
+</div>
+
+<script>
+    document.getElementById('pDate').valueAsDate = new Date();
+
+    function toggleCheck(row) {
+        if(event.target.type !== 'checkbox') {
+            const chk = row.querySelector('input[type="checkbox"]');
+            chk.checked = !chk.checked;
+        }
+        
+        const checkbox = row.querySelector('input[type="checkbox"]');
+        if(checkbox.checked) row.classList.add('checked');
+        else row.classList.remove('checked');
+        
+        calculateResult();
+    }
+
+    // Attach listener to actual checkboxes too to prevent double toggle
+    document.querySelectorAll('input[type="checkbox"]').forEach(chk => {
+        chk.addEventListener('change', function() {
+            if(this.checked) this.closest('.item-row').classList.add('checked');
+            else this.closest('.item-row').classList.remove('checked');
+            calculateResult();
+        });
+    });
+
+    function calculateResult() {
+        const checks = document.querySelectorAll('input[type="checkbox"]:checked');
+        let countHigh = 0;
+        let countMed = 0;
+        let countLow = 0;
+        
+        // Track unique sections with checks
+        const activeSections = new Set();
+
+        checks.forEach(chk => {
+            const val = chk.value;
+            if(val === 'high') countHigh++;
+            if(val === 'med') countMed++;
+            if(val === 'low') countLow++;
+            
+            // Find parent section id
+            const secId = chk.closest('.section').id;
+            activeSections.add(secId);
+        });
+
+        // Update counts
+        document.getElementById('countHigh').innerText = countHigh;
+        document.getElementById('countMed').innerText = countMed;
+        document.getElementById('countLow').innerText = countLow;
+
+        const box = document.getElementById('resultBox');
+        const title = document.getElementById('resultTitle');
+        const text = document.getElementById('resultText');
+
+        // Logic based on document text:
+        // "Dersom pasienten har ett symptom av høyere prioritet... bør behandles som bipolar"
+        // "Dette gjelder også ved multiple symptomer med lavere og middels prediktiv verdi innen flere grupper"
+
+        if (countHigh > 0) {
+            box.className = 'interpretation-box result-positive';
+            title.innerText = 'TOLKNING: HØY INDIKASJON';
+            text.innerHTML = 'Minst ett symptom med <strong>HØYERE</strong> prediktiv verdi er funnet.<br>Depresjonen bør vurderes behandlet som en bipolar depresjon.';
+        } 
+        else if (activeSections.size >= 2 && (countMed + countLow) >= 3) {
+            // Tolkning av "multiple symptomer... innen flere grupper"
+            // Her definert som: Minst 3 symptomer totalt, fordelt på minst 2 ulike seksjoner.
+            box.className = 'interpretation-box result-uncertain';
+            title.innerText = 'TOLKNING: MULIG INDIKASJON';
+            text.innerHTML = 'Ingen symptomer med høyere verdi, men <strong>multiple symptomer</strong> på tvers av flere grupper.<br>Vurder om depresjonen skal behandles som bipolar.';
+        } 
+        else {
+            box.className = 'interpretation-box result-negative';
+            title.innerText = 'TOLKNING: LAV INDIKASJON';
+            text.innerText = 'Ingen symptomer av høyere prioritet, og få indikatorer ellers. Standard depresjonsbehandling er sannsynligvis indikert.';
+        }
+    }
+
+    async function exportPDF() {
+        const name = document.getElementById('pName').value || "Pasient";
+        const btn = document.getElementById('pdfBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ ...';
+
+        const element = document.getElementById('doc-content');
+        
+        try {
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            
+            const imgWidth = 190;
+            const pageHeight = 295;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            
+            pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+            pdf.save(`BipScan_${name}.pdf`);
+        } catch(e) {
+            alert("Feil ved PDF generering");
+        }
+        btn.disabled = false;
+        btn.textContent = '📄 PDF';
+    }
+
+    function exportWord() {
+        const name = document.getElementById('pName').value || "Pasient";
+        
+        // Clone content to manipulate for Word without affecting view
+        const content = document.getElementById('doc-content').cloneNode(true);
+        
+        // Replace checked checkboxes with [X]
+        const checks = content.querySelectorAll('input[type="checkbox"]');
+        checks.forEach(chk => {
+            const span = document.createElement('span');
+            span.innerHTML = chk.checked ? "<b>[ X ]</b> " : "[ _ ] ";
+            chk.parentNode.replaceChild(span, chk);
+        });
+        
+        // Values inputs
+        const inputs = content.querySelectorAll('input[type="text"], input[type="date"]');
+        inputs.forEach(inp => {
+            const span = document.createElement('span');
+            span.innerHTML = inp.value ? `<b>${inp.value}</b>` : "_______";
+            inp.parentNode.replaceChild(span, inp);
+        });
+
+        const header = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>BipScan</title>
+            <style>
+                body { font-family: Arial; }
+                .item-row { border-bottom: 1px solid #eee; padding: 5px 0; }
+                .predictive-val { font-weight: bold; font-size: 10px; color: #555; }
+                .result-positive { background: #ffebeb; border: 1px solid red; padding: 10px; }
+            </style>
+            </head><body>
+        `;
+        const footer = "</body></html>";
+        const html = header + content.innerHTML + footer;
+
+        const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `BipScan_${name}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</body>
+</html>

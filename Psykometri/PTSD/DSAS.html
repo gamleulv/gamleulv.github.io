@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSAS - Davidsons Traumeskala</title>
+    
+    <!-- PDF & Word Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --bg: #f4f7f6;
+            --paper: #ffffff;
+            --border: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 30px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background-color: var(--paper);
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-radius: 8px;
+        }
+
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-weight: 300; }
+
+        .instructions {
+            background: #e8f4fd;
+            padding: 15px;
+            border-left: 4px solid var(--secondary);
+            margin-bottom: 30px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* Meta Info */
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .form-group label { display: block; font-size: 12px; font-weight: bold; color: #7f8c8d; margin-bottom: 4px; }
+        .form-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+
+        /* Trauma Specification */
+        .trauma-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        /* Question Blocks */
+        .question-box {
+            margin-bottom: 25px;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            background: #fff;
+            padding: 15px;
+            break-inside: avoid; /* Print friendly */
+        }
+
+        .q-text {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        /* Dual Scale Grid */
+        .scales-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .scale-column {
+            background: #fdfdfd;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .scale-title {
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #7f8c8d;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 4px;
+            border-radius: 4px;
+        }
+
+        .radio-option:hover { background-color: #f5f5f5; }
+        .radio-option input { margin-right: 10px; }
+
+        /* Results */
+        .results-section {
+            margin-top: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            display: none;
+        }
+
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .score-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+        
+        .score-val { font-size: 24px; font-weight: bold; color: var(--secondary); }
+        .score-label { font-size: 12px; color: #777; text-transform: uppercase; }
+
+        /* Controls */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            transition: transform 0.1s;
+            font-size: 14px;
+        }
+        button:hover { transform: translateY(-2px); }
+        .btn-calc { background-color: var(--secondary); }
+        .btn-word { background-color: #2980b9; }
+        .btn-pdf { background-color: #c0392b; }
+        .btn-reset { background-color: #95a5a6; }
+
+        @media print {
+            .controls { display: none; }
+            .container { box-shadow: none; margin: 0; padding: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="doc-content">
+    <h1>Davidsons Traumeskala (DTS)</h1>
+    <div class="subtitle">Selvrapporteringsskjema for posttraumatisk stress</div>
+
+    <div class="meta-grid">
+        <div class="form-group">
+            <label>Pasientnavn</label>
+            <input type="text" id="pName" placeholder="Navn...">
+        </div>
+        <div class="form-group">
+            <label>Dato</label>
+            <input type="date" id="pDate">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Vær snill å angi det traumet som har vært mest belastende for deg:</label>
+        <input type="text" class="trauma-input" id="traumaDesc" placeholder="Beskriv hendelsen kort...">
+    </div>
+
+    <div class="instructions">
+        <strong>Instruksjon:</strong> Angi hvor ofte (Hyppighet) og hvor alvorlig (Alvorlighet) symptomet plaget deg <strong>sist uke</strong>.
+        Sett ett kryss i hver kolonne for hvert spørsmål.
+    </div>
+
+    <div id="questions-container">
+        <!-- Spørsmål genereres her -->
+    </div>
+
+    <div class="results-section" id="results">
+        <h3>Resultater</h3>
+        
+        <div class="score-grid">
+            <div class="score-item">
+                <div class="score-label">Hyppighet (Total)</div>
+                <div class="score-val" id="scoreFreq">0</div>
+                <div style="font-size:10px; color:#999;">Maks 68</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">Alvorlighet (Total)</div>
+                <div class="score-val" id="scoreSev">0</div>
+                <div style="font-size:10px; color:#999;">Maks 68</div>
+            </div>
+            <div class="score-item" style="border-color: var(--secondary); background: #f4faff;">
+                <div class="score-label">TOTAL SKÅRE</div>
+                <div class="score-val" id="scoreTotal">0</div>
+                <div style="font-size:10px; color:#999;">Maks 136</div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px; font-size: 13px; color: #555;">
+            * En total skåre over 40 indikerer ofte klinisk signifikant PTSD.
+        </div>
+    </div>
+
+</div>
+
+<div class="controls">
+    <button class="btn-calc" onclick="calculateScore()">📊 Beregn Skåre</button>
+    <button class="btn-word" onclick="exportWord()">💾 Lagre til Word</button>
+    <button class="btn-pdf" onclick="exportPDF()" id="pdfBtn">📄 Lagre til PDF</button>
+    <button class="btn-reset" onclick="resetForm()">🔄 Nullstill</button>
+</div>
+
+<script>
+    document.getElementById('pDate').valueAsDate = new Date();
+
+    const questions = [
+        "1. Har du hatt plagsomme bilder, minner eller tanker om hendelsen?",
+        "2. Har du hatt plagsomme drømmer om hendelsen?",
+        "3. Har du følt det som om hendelsen kom tilbake til deg? Var det som om du gjenopplevde den?",
+        "4. Har du blitt urolig av noe som minnet deg om hendelsen?",
+        "5. Har du reagert kroppslig hvis noe minnet deg om hendelsen? (Svetting, skjelving, puls etc.)",
+        "6. Har du unngått tanker eller følelser om hendelsen?",
+        "7. Har du unngått å gjøre ting eller å gå inn i situasjoner som minnet deg om hendelsen?",
+        "8. Har du vært ute av stand til å huske viktige deler av hendelsen?",
+        "9. Har du vansker med å glede deg over ting?",
+        "10. Har du følt deg fjern fra eller stengt ute fra andre?",
+        "11. Har du vært ute av stand til å ha triste eller kjærlige følelser?",
+        "12. Har du følt at det ikke er noen vits i å legge planer for fremtiden?",
+        "13. Har du hatt vansker med å sovne eller med å sove?",
+        "14. Har du vært irritabel eller hatt sinneutbrudd?",
+        "15. Har du hatt vansker med å konsentrere deg?",
+        "16. Har du følt deg anspent, lett distraherbar eller vært på vakt?",
+        "17. Har du vært 'på tuppa' eller skvetter du lett?"
+    ];
+
+    const freqLabels = [
+        "Ikke i det hele tatt",
+        "Bare en gang",
+        "2-3 ganger",
+        "4-6 ganger",
+        "Hver dag"
+    ];
+
+    const sevLabels = [
+        "Overhodet ikke plagsomt",
+        "Minimalt plagsomt",
+        "Moderat plagsomt",
+        "Markert plagsomt",
+        "Ekstremt plagsomt"
+    ];
+
+    const container = document.getElementById('questions-container');
+    
+    // EDGE FIX
+    container.innerHTML = '';
+
+    questions.forEach((q, index) => {
+        const i = index + 1;
+        const div = document.createElement('div');
+        div.className = 'question-box';
+        
+        // Generate Frequency Options
+        let freqHTML = '';
+        freqLabels.forEach((label, val) => {
+            freqHTML += `
+                <label class="radio-option">
+                    <input type="radio" name="freq-${i}" value="${val}">
+                    <span>${val} - ${label}</span>
+                </label>
+            `;
+        });
+
+        // Generate Severity Options
+        let sevHTML = '';
+        sevLabels.forEach((label, val) => {
+            sevHTML += `
+                <label class="radio-option">
+                    <input type="radio" name="sev-${i}" value="${val}">
+                    <span>${val} - ${label}</span>
+                </label>
+            `;
+        });
+
+        div.innerHTML = `
+            <div class="q-text">${q}</div>
+            <div class="scales-wrapper">
+                <div class="scale-column">
+                    <div class="scale-title">HYPPIGHET</div>
+                    ${freqHTML}
+                </div>
+                <div class="scale-column">
+                    <div class="scale-title">ALVORLIGHET</div>
+                    ${sevHTML}
+                </div>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+
+    function calculateScore() {
+        let totalFreq = 0;
+        let totalSev = 0;
+        let missing = false;
+
+        for (let i = 1; i <= 17; i++) {
+            const f = document.querySelector(`input[name="freq-${i}"]:checked`);
+            const s = document.querySelector(`input[name="sev-${i}"]:checked`);
+            
+            if (f) totalFreq += parseInt(f.value);
+            else missing = true;
+            
+            if (s) totalSev += parseInt(s.value);
+            else missing = true;
+        }
+
+        document.getElementById('scoreFreq').innerText = totalFreq;
+        document.getElementById('scoreSev').innerText = totalSev;
+        document.getElementById('scoreTotal').innerText = totalFreq + totalSev;
+
+        if (missing) alert("Merk: Du har ikke svart på alle punktene.");
+
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        if(confirm("Slette alt?")) location.reload();
+    }
+
+    async function exportPDF() {
+        const btn = document.getElementById('pdfBtn');
+        btn.innerText = "Genererer...";
+        btn.disabled = true;
+
+        const element = document.getElementById('doc-content');
+        const name = document.getElementById('pName').value || "Ukjent";
+
+        try {
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            const imgWidth = 190;
+            const pageHeight = 295;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 10;
+
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pageHeight - 20);
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight + 10;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - 20);
+            }
+
+            pdf.save(`DSAS_${name}.pdf`);
+        } catch(e) {
+            alert("Feil ved PDF");
+        } finally {
+            btn.innerText = "📄 Lagre til PDF";
+            btn.disabled = false;
+        }
+    }
+
+    function exportWord() {
+        const name = document.getElementById('pName').value || "Ukjent";
+        const content = document.getElementById('doc-content').cloneNode(true);
+        
+        // Transform inputs
+        content.querySelectorAll('input[type="text"], input[type="date"]').forEach(inp => {
+            const span = document.createElement('span');
+            span.innerHTML = inp.value ? `<b>${inp.value}</b>` : "______";
+            inp.parentNode.replaceChild(span, inp);
+        });
+
+        // Replace scales with text summary
+        for (let i = 1; i <= 17; i++) {
+            const qBox = content.getElementsByClassName('question-box')[i-1];
+            const f = document.querySelector(`input[name="freq-${i}"]:checked`);
+            const s = document.querySelector(`input[name="sev-${i}"]:checked`);
+            
+            const scalesDiv = qBox.querySelector('.scales-wrapper');
+            
+            const resDiv = document.createElement('div');
+            resDiv.innerHTML = `
+                <div style="margin-top:5px; color:#2c3e50;">
+                    Hyppighet: <b>${f ? f.value : "-"}</b> &nbsp;|&nbsp; Alvorlighet: <b>${s ? s.value : "-"}</b>
+                </div>
+            `;
+            
+            scalesDiv.parentNode.replaceChild(resDiv, scalesDiv);
+        }
+
+        const header = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>DSAS Resultat</title>
+            <style>
+                body { font-family: Arial; }
+                .question-box { border-bottom: 1px solid #ccc; margin-bottom: 10px; padding-bottom: 5px; }
+                .q-text { font-weight: bold; }
+            </style>
+            </head><body>
+        `;
+        const footer = "</body></html>";
+        const html = header + content.innerHTML + footer;
+
+        const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `DSAS_${name}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BPRS - Brief Psychiatric Rating Scale</title>
+    
+    <!-- PDF & Word Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --bg: #f4f7f6;
+            --paper: #ffffff;
+            --border: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 30px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background-color: var(--paper);
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-radius: 8px;
+        }
+
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-weight: 300; }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .form-group label { display: block; font-size: 12px; font-weight: bold; color: #7f8c8d; margin-bottom: 4px; }
+        .form-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+
+        /* Legend */
+        .legend-box {
+            background: #e8f4fd;
+            padding: 15px;
+            border-left: 4px solid var(--secondary);
+            margin-bottom: 30px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        /* Question Rows */
+        .q-row {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .q-header {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+        
+        .q-desc {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        /* Scale */
+        .scale-container {
+            display: flex;
+            gap: 2px;
+            margin-top: 10px;
+        }
+        
+        .scale-opt {
+            flex: 1;
+            text-align: center;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            padding: 8px 0;
+            font-size: 13px;
+            border-radius: 3px;
+            transition: background 0.1s;
+        }
+        
+        .scale-opt:hover { background-color: #f0f0f0; }
+        .scale-opt.selected { background-color: var(--secondary); color: white; border-color: var(--secondary); }
+        .scale-opt.not-assessed { background-color: #95a5a6; color: white; border-color: #7f8c8d; }
+
+        .scale-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 11px;
+            color: #888;
+        }
+
+        /* Results */
+        .results-section {
+            margin-top: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            display: none;
+        }
+
+        .res-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .res-val { font-weight: bold; font-size: 18px; color: var(--secondary); }
+
+        /* Controls */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            transition: transform 0.1s;
+            font-size: 14px;
+        }
+        button:hover { transform: translateY(-2px); }
+        .btn-calc { background-color: var(--secondary); }
+        .btn-word { background-color: #2980b9; }
+        .btn-pdf { background-color: #c0392b; }
+        .btn-reset { background-color: #95a5a6; }
+
+        @media print {
+            .controls { display: none; }
+            .container { box-shadow: none; margin: 0; padding: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="doc-content">
+    <h1>BPRS</h1>
+    <div class="subtitle">Brief Psychiatric Rating Scale (Overall & Gorham, 1962)</div>
+
+    <div class="meta-grid">
+        <div class="form-group">
+            <label>Navn</label>
+            <input type="text" id="pName" placeholder="Navn...">
+        </div>
+        <div class="form-group">
+            <label>Dato</label>
+            <input type="date" id="pDate">
+        </div>
+        <div class="form-group">
+            <label>Utfylt av</label>
+            <input type="text" id="pRater">
+        </div>
+    </div>
+
+    <div class="legend-box">
+        <strong>Skåringsnøkkel:</strong><br>
+        0 = Ikke tilstede<br>
+        1 = Meget mild grad<br>
+        2 = Mild grad<br>
+        3 = Moderat grad<br>
+        4 = Moderat/Svær grad<br>
+        5 = Svær grad<br>
+        6 = Ekstrem grad<br>
+        9 = Ikke vurdert
+    </div>
+
+    <div id="questions-container">
+        <!-- Generated via JS -->
+    </div>
+
+    <div class="results-section" id="results">
+        <h3>Resultater</h3>
+        
+        <div class="res-row">
+            <span>Totalskår (Alle 18 ledd):</span>
+            <span class="res-val" id="res-total-18">-</span>
+        </div>
+        
+        <div class="res-row">
+            <span>Totalskår (Ledd 1-16):</span>
+            <span class="res-val" id="res-total-16">-</span>
+        </div>
+
+        <div style="font-size:13px; color:#555; margin-top:15px;">
+            <em>Note: "Ikke vurdert" (9) teller ikke med i summen.</em>
+        </div>
+    </div>
+
+</div>
+
+<div class="controls">
+    <button class="btn-calc" onclick="calculateScore()">📊 Beregn</button>
+    <button class="btn-word" onclick="exportWord()">💾 Lagre til Word</button>
+    <button class="btn-pdf" onclick="exportPDF()" id="pdfBtn">📄 Lagre til PDF</button>
+    <button class="btn-reset" onclick="resetForm()">🔄 Nullstill</button>
+</div>
+
+<script>
+    document.getElementById('pDate').valueAsDate = new Date();
+
+    const items = [
+        {
+            title: "1. Somatiske bekymringer",
+            desc: "Grad av opptatthet av legemlig helse i øyeblikket."
+        },
+        {
+            title: "2. Angst",
+            desc: "Engstelse, frykt, overdreven tendens til bekymring for nåtid eller fremtid."
+        },
+        {
+            title: "3. Emosjonell tilbaketrekning",
+            desc: "Svikt i evnen til å forholde seg til intervjueren og intervjusituasjonen."
+        },
+        {
+            title: "4. Tenkingsforstyrrelse (konseptuell disorganisering)",
+            desc: "Konfus, usammenhengende eller disorganisert tankeprosess."
+        },
+        {
+            title: "5. Skyldfølelse",
+            desc: "Overdreven opptatthet av eller anger for tidligere atferd."
+        },
+        {
+            title: "6. Spenning",
+            desc: "Fysiske og motoriske manifestasjoner av spenning, «nervøsitet», og forhøyet aktiveringsnivå."
+        },
+        {
+            title: "7. Unaturlig motorisk aktivitet",
+            desc: "Uvanlig, unaturlig og bisarr motorisk atferd (mannerism and posturing)."
+        },
+        {
+            title: "8. Storhetsideer",
+            desc: "Overdreven selvfølelse, overbevisning om uvanlige evner eller krefter."
+        },
+        {
+            title: "9. Depressiv forstemning",
+            desc: "Senket stemningsleie, tristhet, håpløshet."
+        },
+        {
+            title: "10. Fiendtlighet",
+            desc: "Uvilje, forakt, fiendtlighet overfor andre mennesker."
+        },
+        {
+            title: "11. Mistenksomhet",
+            desc: "Forestillinger om at andre har onde hensikter eller diskriminerer pasienten."
+        },
+        {
+            title: "12. Hallusinasjoner",
+            desc: "Sanseopplevelser som ikke svarer til eksterne stimuli."
+        },
+        {
+            title: "13. Motorisk retardasjon",
+            desc: "Redusert energinivå, manifestert som retarderte bevegelser."
+        },
+        {
+            title: "14. Manglende samarbeidsvilje",
+            desc: "Tegn på motstand, uvennlighet, følelse av krenkelse."
+        },
+        {
+            title: "15. Uvanlig tankeinnhold",
+            desc: "Uvanlig, merkelig, fremmedartet eller bisart tankeinnhold."
+        },
+        {
+            title: "16. Avflatet eller inadekvat affekt",
+            desc: "Redusert emosjonell tonus, mangel på normale følelser eller engasjement."
+        },
+        {
+            title: "17. Oppstemthet/eufori",
+            desc: "Oppstemt, euforisk, ekstatisk tilstand."
+        },
+        {
+            title: "18. Psykomotorisk eksitasjon",
+            desc: "Øket mengde og hastighet av tale og bevegelser."
+        }
+    ];
+
+    const container = document.getElementById('questions-container');
+    container.innerHTML = '';
+
+    items.forEach((item, index) => {
+        const i = index + 1;
+        const div = document.createElement('div');
+        div.className = 'q-row';
+        
+        let scale = `<div class="scale-container">`;
+        // 0-6 options
+        for(let j=0; j<=6; j++) {
+            scale += `<div class="scale-opt" onclick="selectOpt('ans-${i}', ${j}, this)">${j}</div>`;
+        }
+        // 9 option (Not assessed)
+        scale += `<div class="scale-opt" onclick="selectOpt('ans-${i}', 9, this)" style="border-left:2px solid #ccc; font-weight:bold;">9</div>`;
+        scale += `</div>
+        <div class="scale-labels">
+            <span>0 (Ikke tilstede)</span>
+            <span>6 (Ekstrem)</span>
+            <span>9 (Ikke vurdert)</span>
+        </div>
+        <input type="hidden" id="ans-${i}" value="">`;
+
+        div.innerHTML = `
+            <div class="q-header">${item.title}</div>
+            <div class="q-desc">${item.desc}</div>
+            ${scale}
+        `;
+        container.appendChild(div);
+    });
+
+    window.selectOpt = function(id, val, el) {
+        const parent = el.parentElement;
+        parent.querySelectorAll('.scale-opt').forEach(d => {
+            d.classList.remove('selected');
+            d.classList.remove('not-assessed');
+        });
+        
+        if (val === 9) {
+            el.classList.add('not-assessed');
+        } else {
+            el.classList.add('selected');
+        }
+        document.getElementById(id).value = val;
+    };
+
+    function calculateScore() {
+        let sum18 = 0;
+        let sum16 = 0;
+        let count18 = 0;
+        let count16 = 0;
+
+        for(let i=1; i<=18; i++) {
+            const valStr = document.getElementById(`ans-${i}`).value;
+            if(valStr !== "" && valStr !== "9") {
+                const val = parseInt(valStr);
+                sum18 += val;
+                count18++;
+                
+                if (i <= 16) {
+                    sum16 += val;
+                    count16++;
+                }
+            }
+        }
+
+        document.getElementById('res-total-18').innerText = sum18 + (count18 < 18 ? ` (Basert på ${count18} ledd)` : "");
+        document.getElementById('res-total-16').innerText = sum16 + (count16 < 16 ? ` (Basert på ${count16} ledd)` : "");
+
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        if(confirm("Slette data?")) location.reload();
+    }
+
+    async function exportPDF() {
+        const btn = document.getElementById('pdfBtn');
+        btn.innerText = "Genererer...";
+        btn.disabled = true;
+
+        const element = document.getElementById('doc-content');
+        const name = document.getElementById('pName').value || "Ukjent";
+
+        try {
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            const imgWidth = 190;
+            const pageHeight = 295;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 10;
+
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pageHeight - 20);
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight + 10;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - 20);
+            }
+
+            pdf.save(`BPRS_${name}.pdf`);
+        } catch(e) {
+            alert("Feil ved PDF");
+        } finally {
+            btn.innerText = "📄 Lagre til PDF";
+            btn.disabled = false;
+        }
+    }
+
+    function exportWord() {
+        const name = document.getElementById('pName').value || "Ukjent";
+        const content = document.getElementById('doc-content').cloneNode(true);
+        
+        content.querySelectorAll('input[type="text"], input[type="date"]').forEach(inp => {
+            const span = document.createElement('span');
+            span.innerHTML = inp.value ? `<b>${inp.value}</b>` : "______";
+            inp.parentNode.replaceChild(span, inp);
+        });
+
+        const rows = content.querySelectorAll('.q-row');
+        rows.forEach(row => {
+            const hidden = row.querySelector('input[type="hidden"]');
+            const val = hidden ? hidden.value : "-";
+            const text = row.querySelector('.q-header').innerText;
+            
+            row.innerHTML = `<div style="padding:5px; border-bottom:1px solid #eee;">
+                <strong>${text}</strong><br>
+                Skåre: <b>${val === "9" ? "Ikke vurdert" : val}</b>
+            </div>`;
+        });
+
+        const header = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>BPRS Resultat</title>
+            <style>
+                body { font-family: Arial; }
+            </style>
+            </head><body>
+        `;
+        const footer = "</body></html>";
+        const html = header + content.innerHTML + footer;
+
+        const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `BPRS_${name}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</body>
+</html>

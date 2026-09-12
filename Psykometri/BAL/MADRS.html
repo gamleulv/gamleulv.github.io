@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MADRS - Klinisk Skjema</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --panel-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #cbd5e0;
+            --success-color: #27ae60;
+            --highlight-bg: #e8f4fc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background-color: var(--panel-bg);
+            padding: 50px;
+            border-radius: 8px;
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e1e4e8;
+        }
+
+        /* Header & Info */
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 2.2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #636e72;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+            font-weight: 300;
+        }
+
+        .meta-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        .instruction {
+            background-color: #e3f2fd;
+            border-left: 5px solid var(--secondary-color);
+            padding: 15px 20px;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+            color: #2c3e50;
+        }
+
+        /* Spørsmålsblokker for MADRS */
+        .question-block {
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+            background: white;
+            page-break-inside: avoid;
+        }
+
+        .question-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .question-desc {
+            padding: 15px 20px;
+            font-style: italic;
+            color: #555;
+            border-bottom: 1px solid #eee;
+            background-color: #fafafa;
+            font-size: 0.95em;
+        }
+
+        .options-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .options-table tr {
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.1s;
+        }
+
+        .options-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .options-table tr.selected {
+            background-color: var(--highlight-bg);
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .options-table td {
+            padding: 10px 15px;
+            vertical-align: top;
+        }
+
+        .col-radio { width: 50px; text-align: center; } /* Økt bredde litt for sikkerhets skyld */
+        .col-val { width: 30px; font-weight: bold; color: var(--secondary-color); text-align: center; }
+        .col-text { font-size: 0.95em; }
+
+        input[type="radio"] {
+            transform: scale(1.3);
+            cursor: pointer;
+            margin-top: 5px;
+            accent-color: var(--primary-color);
+        }
+
+        /* Resultatboks */
+        #results {
+            margin-top: 40px;
+            padding: 0;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            display: none;
+            overflow: hidden;
+            background-color: #fff;
+        }
+
+        .result-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .result-body {
+            padding: 20px;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 1.1em;
+        }
+
+        .total-score {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--primary-color);
+            font-family: monospace; /* For å få tallene til å se ryddige ut */
+        }
+
+        .severity-badge {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: white;
+        }
+
+        /* Fargekoder for alvorlighetsgrad */
+        .sev-none { background-color: #27ae60; }
+        .sev-mild { background-color: #f1c40f; color: #333; }
+        .sev-mod { background-color: #e67e22; }
+        .sev-severe { background-color: #c0392b; }
+
+        .interpretation {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #666;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        /* Knapper */
+        .controls {
+            margin-top: 50px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .btn-calc { background-color: var(--success-color); color: white; }
+        .btn-html { background-color: var(--secondary-color); color: white; }
+        .btn-word { background-color: #2b579a; color: white; }
+        .btn-pdf { background-color: #b30b00; color: white; }
+
+        @media print {
+            body { background-color: white; padding: 0; font-size: 10pt; }
+            .container { box-shadow: none; width: 100%; max-width: 100%; padding: 0; border: none; margin: 0; }
+            .controls, .instruction { display: none !important; }
+            h1 { font-size: 18pt; margin-bottom: 5px; color: black; }
+            .question-header { background-color: #eee !important; color: black !important; border: 1px solid #ccc; }
+            .question-block { border: none; margin-bottom: 20px; page-break-inside: avoid; }
+            #results { display: block !important; border: 2px solid #000; page-break-inside: avoid; }
+            input[type="text"] { border: none; border-bottom: 1px solid #000; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="document-content">
+    <h1>MADRS</h1>
+    <div class="subtitle">Montgomery and Åsberg Depression Rating Scale</div>
+
+    <div class="meta-info">
+        <div class="form-group">
+            <label for="patientName">Pasientnavn / ID:</label>
+            <input type="text" id="patientName" placeholder="Skriv inn navn eller ID...">
+        </div>
+        <div class="form-group">
+            <label for="assessmentDate">Dato:</label>
+            <input type="date" id="assessmentDate">
+        </div>
+    </div>
+
+    <div class="instruction">
+        <strong>Instruksjon:</strong> Spørsmål 1 skal vurderes etter intervjuets slutt. Resten av spørsmålene krysses av underveis. Hvert ledd scores fra 0 til 6.
+    </div>
+
+    <form id="madrsForm">
+        
+        <!-- Q1 -->
+        <div class="question-block">
+            <div class="question-header">1. Synlig tristhet</div>
+            <div class="question-desc">
+                Sikter på dysterhet, tungsinn, fortvilelse (mer enn bare vanlig forbigående dårlig humør), slik det avspeiler seg i tale, mimikk og holdning. Grader på grunnlag av dybde og manglende evne til å lysne opp.
+            </div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q1', 0, this)">
+                    <td class="col-radio"><input type="radio" name="q1" value="0"></td>
+                    <td class="col-val">0</td>
+                    <td class="col-text">Ingen tristhet</td>
+                </tr>
+                <tr onclick="selectRadio('q1', 1, this)">
+                    <td class="col-radio"><input type="radio" name="q1" value="1"></td>
+                    <td class="col-val">1</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q1', 2, this)">
+                    <td class="col-radio"><input type="radio" name="q1" value="2"></td>
+                    <td class="col-val">2</td>
+                    <td class="col-text">Ser trist ut, men kan leilighetsvis lyse opp</td>
+                </tr>
+                <tr onclick="selectRadio('q1', 3, this)">
+                    <td class="col-radio"><input type="radio" name="q1" value="3"></td>
+                    <td class="col-val">3</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q1', 4, this)">
+                    <td class="col-radio"><input type="radio" name="q1" value="4"></td>
+                    <td class="col-val">4</td>
+                    <td class="col-text">Virker trist og ulykkelig hele tiden</td>
+                </tr>
+                <tr onclick="selectRadio('q1', 5, this)">
+                    <td class="col-radio"><input type="radio" name="q1" value="5"></td>
+                    <td class="col-val">5</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q1', 6, this)">
+                    <td class="col-radio"><input type="radio" name="q1" value="6"></td>
+                    <td class="col-val">6</td>
+                    <td class="col-text">Ekstrem og vedvarende tristhet og fortvilelse</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Q2 -->
+        <div class="question-block">
+            <div class="question-header">2. Tristhet</div>
+            <div class="question-desc">
+                Tar sikte på subjektiv opplevet sinnstemning, uansett om stemningen gir seg ytre uttrykk eller ikke. Omfatter senket stemningsleie, tristhet, oppgitthet, tungsinn, håpløshet og hjelpeløshet.
+            </div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q2', 0, this)">
+                    <td class="col-radio"><input type="radio" name="q2" value="0"></td>
+                    <td class="col-val">0</td>
+                    <td class="col-text">Stort sett indifferent stemningsleie. Leilighetsvis tristhet når omstendighetene tilsier det</td>
+                </tr>
+                <tr onclick="selectRadio('q2', 1, this)">
+                    <td class="col-radio"><input type="radio" name="q2" value="1"></td>
+                    <td class="col-val">1</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q2', 2, this)">
+                    <td class="col-radio"><input type="radio" name="q2" value="2"></td>
+                    <td class="col-val">2</td>
+                    <td class="col-text">Overveiende følelse av nedstemthet, men lysere øyeblikk forekommer</td>
+                </tr>
+                <tr onclick="selectRadio('q2', 3, this)">
+                    <td class="col-radio"><input type="radio" name="q2" value="3"></td>
+                    <td class="col-val">3</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q2', 4, this)">
+                    <td class="col-radio"><input type="radio" name="q2" value="4"></td>
+                    <td class="col-val">4</td>
+                    <td class="col-text">Gjennomtrengende følelse av tristhet og dysterhet. Sinnsstemningen influeres knapt av ytre omstendigheter</td>
+                </tr>
+                <tr onclick="selectRadio('q2', 5, this)">
+                    <td class="col-radio"><input type="radio" name="q2" value="5"></td>
+                    <td class="col-val">5</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q2', 6, this)">
+                    <td class="col-radio"><input type="radio" name="q2" value="6"></td>
+                    <td class="col-val">6</td>
+                    <td class="col-text">Konstant opplevelse av sterk tristhet og fortvilelse</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Q3 -->
+        <div class="question-block">
+            <div class="question-header">3. Indre spenning</div>
+            <div class="question-desc">
+                Sikter på følelse av vag ulystfølelse, ubehagelig indre spenning, uro, angst, stigende til panikk. Grader i henhold til intensitet, varighet og behov for hjelp og støtte.
+            </div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q3', 0, this)">
+                    <td class="col-radio"><input type="radio" name="q3" value="0"></td>
+                    <td class="col-val">0</td>
+                    <td class="col-text">Rolig, bare antydning til indre spenning</td>
+                </tr>
+                <tr onclick="selectRadio('q3', 1, this)">
+                    <td class="col-radio"><input type="radio" name="q3" value="1"></td>
+                    <td class="col-val">1</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q3', 2, this)">
+                    <td class="col-radio"><input type="radio" name="q3" value="2"></td>
+                    <td class="col-val">2</td>
+                    <td class="col-text">Leilighetsvis følelse av ubehagelig psykisk spenning og vag uro</td>
+                </tr>
+                <tr onclick="selectRadio('q3', 3, this)">
+                    <td class="col-radio"><input type="radio" name="q3" value="3"></td>
+                    <td class="col-val">3</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q3', 4, this)">
+                    <td class="col-radio"><input type="radio" name="q3" value="4"></td>
+                    <td class="col-val">4</td>
+                    <td class="col-text">Vedvarende følelse av indre spenning eller panikkepisoder som pasienten bare kan mestre med vanskelighet</td>
+                </tr>
+                <tr onclick="selectRadio('q3', 5, this)">
+                    <td class="col-radio"><input type="radio" name="q3" value="5"></td>
+                    <td class="col-val">5</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q3', 6, this)">
+                    <td class="col-radio"><input type="radio" name="q3" value="6"></td>
+                    <td class="col-val">6</td>
+                    <td class="col-text">Vedvarende frykt og angst. Overveldende panikkfølelse</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Q4 -->
+        <div class="question-block">
+            <div class="question-header">4. Redusert nattesøvn</div>
+            <div class="question-desc">
+                Sikter på subjektiv opplevelse av kortvarig eller mindre dyp søvn sammenlignet med vanlig tilstand.
+            </div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q4', 0, this)">
+                    <td class="col-radio"><input type="radio" name="q4" value="0"></td>
+                    <td class="col-val">0</td>
+                    <td class="col-text">Sover som vanlig</td>
+                </tr>
+                <tr onclick="selectRadio('q4', 1, this)">
+                    <td class="col-radio"><input type="radio" name="q4" value="1"></td>
+                    <td class="col-val">1</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q4', 2, this)">
+                    <td class="col-radio"><input type="radio" name="q4" value="2"></td>
+                    <td class="col-val">2</td>
+                    <td class="col-text">Moderate innsovningsvansker eller moderat, redusert, lett eller urolig søvn</td>
+                </tr>
+                <tr onclick="selectRadio('q4', 3, this)">
+                    <td class="col-radio"><input type="radio" name="q4" value="3"></td>
+                    <td class="col-val">3</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q4', 4, this)">
+                    <td class="col-radio"><input type="radio" name="q4" value="4"></td>
+                    <td class="col-val">4</td>
+                    <td class="col-text">Søvnen redusert eller avbrutt med minst to timer sammenlignet med vanlig</td>
+                </tr>
+                <tr onclick="selectRadio('q4', 5, this)">
+                    <td class="col-radio"><input type="radio" name="q4" value="5"></td>
+                    <td class="col-val">5</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q4', 6, this)">
+                    <td class="col-radio"><input type="radio" name="q4" value="6"></td>
+                    <td class="col-val">6</td>
+                    <td class="col-text">Mindre enn to til tre timers søvn om natten</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Q5 -->
+        <div class="question-block">
+            <div class="question-header">5. Svekket appetitt</div>
+            <div class="question-desc">
+                Sikter på følelsen av at appetitten er svekket i forhold til tidligere.
+            </div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q5', 0, this)">
+                    <td class="col-radio"><input type="radio" name="q5" value="0"></td>
+                    <td class="col-val">0</td>
+                    <td class="col-text">Normal eller øket appetitt</td>
+                </tr>
+                <tr onclick="selectRadio('q5', 1, this)">
+                    <td class="col-radio"><input type="radio" name="q5" value="1"></td>
+                    <td class="col-val">1</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q5', 2, this)">
+                    <td class="col-radio"><input type="radio" name="q5" value="2"></td>
+                    <td class="col-val">2</td>
+                    <td class="col-text">Moderat redusert appetitt</td>
+                </tr>
+                <tr onclick="selectRadio('q5', 3, this)">
+                    <td class="col-radio"><input type="radio" name="q5" value="3"></td>
+                    <td class="col-val">3</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q5', 4, this)">
+                    <td class="col-radio"><input type="radio" name="q5" value="4"></td>
+                    <td class="col-val">4</td>
+                    <td class="col-text">Nesten ingen appetitt, maten smaker ikke, må tvinge seg selv til å spise</td>
+                </tr>
+                <tr onclick="selectRadio('q5', 5, this)">
+                    <td class="col-radio"><input type="radio" name="q5" value="5"></td>
+                    <td class="col-val">5</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q5', 6, this)">
+                    <td class="col-radio"><input type="radio" name="q5" value="6"></td>
+                    <td class="col-val">6</td>
+                    <td class="col-text">Næringsvegrende. Må overtales av andre til å spise</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Q6 -->
+        <div class="question-block">
+            <div class="question-header">6. Konsentrasjonsvansker</div>
+            <div class="question-desc">
+                Sikter på vansker med å samle tankene, stigende til invalidiserende mangel på konsentrasjonsevne.
+            </div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q6', 0, this)">
+                    <td class="col-radio"><input type="radio" name="q6" value="0"></td>
+                    <td class="col-val">0</td>
+                    <td class="col-text">Ingen konsentrasjonsvansker</td>
+                </tr>
+                <tr onclick="selectRadio('q6', 1, this)">
+                    <td class="col-radio"><input type="radio" name="q6" value="1"></td>
+                    <td class="col-val">1</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q6', 2, this)">
+                    <td class="col-radio"><input type="radio" name="q6" value="2"></td>
+                    <td class="col-val">2</td>
+                    <td class="col-text">Leilighetsvis vansker med å samle tankene</td>
+                </tr>
+                <tr onclick="selectRadio('q6', 3, this)">
+                    <td class="col-radio"><input type="radio" name="q6" value="3"></td>
+                    <td class="col-val">3</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q6', 4, this)">
+                    <td class="col-radio"><input type="radio" name="q6" value="4"></td>
+                    <td class="col-val">4</td>
+                    <td class="col-text">Vansker med konsentrasjon og vedvarende oppmerksomhet, som forstyrrer lesing eller konversasjon</td>
+                </tr>
+                <tr onclick="selectRadio('q6', 5, this)">
+                    <td class="col-radio"><input type="radio" name="q6" value="5"></td>
+                    <td class="col-val">5</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q6', 6, this)">
+                    <td class="col-radio"><input type="radio" name="q6" value="6"></td>
+                    <td class="col-val">6</td>
+                    <td class="col-text">Invalidiserende mangel på konsentrasjonsevne</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Q7 -->
+        <div class="question-block">
+            <div class="question-header">7. Initiativløshet</div>
+            <div class="question-desc">
+                Sikter på vanskelighet med å komme i gang, treghet med å ta initiativ og utføre dagligdagse aktiviteter.
+            </div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q7', 0, this)">
+                    <td class="col-radio"><input type="radio" name="q7" value="0"></td>
+                    <td class="col-val">0</td>
+                    <td class="col-text">Ingen spesielle vansker med å komme i gang med ting, ingen treghet</td>
+                </tr>
+                <tr onclick="selectRadio('q7', 1, this)">
+                    <td class="col-radio"><input type="radio" name="q7" value="1"></td>
+                    <td class="col-val">1</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q7', 2, this)">
+                    <td class="col-radio"><input type="radio" name="q7" value="2"></td>
+                    <td class="col-val">2</td>
+                    <td class="col-text">Visse vansker med å komme i gang med aktiviteter</td>
+                </tr>
+                <tr onclick="selectRadio('q7', 3, this)">
+                    <td class="col-radio"><input type="radio" name="q7" value="3"></td>
+                    <td class="col-val">3</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q7', 4, this)">
+                    <td class="col-radio"><input type="radio" name="q7" value="4"></td>
+                    <td class="col-val">4</td>
+                    <td class="col-text">Vanskeligheter med å komme i gang med enkle rutine-aktiviteter, som kan utføres bare med betydelig anstrengelse</td>
+                </tr>
+                <tr onclick="selectRadio('q7', 5, this)">
+                    <td class="col-radio"><input type="radio" name="q7" value="5"></td>
+                    <td class="col-val">5</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q7', 6, this)">
+                    <td class="col-radio"><input type="radio" name="q7" value="6"></td>
+                    <td class="col-val">6</td>
+                    <td class="col-text">Helt manglende evne til å ta initiativ. Uten evne til å igangsette aktiviteter uten hjelp</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Q8 -->
+        <div class="question-block">
+            <div class="question-header">8. Svekkede følelsesmessige reaksjoner</div>
+            <div class="question-desc">
+                Sikter på den subjektive opplevelse av svekkede interesser for omgivelsene eller for aktiviteter som normalt gir glede. Evnen til å reagere med adekvate følelser på omstendighetene eller andre mennesker er redusert. Skilles fra initiativløshet (7).
+            </div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q8', 0, this)">
+                    <td class="col-radio"><input type="radio" name="q8" value="0"></td>
+                    <td class="col-val">0</td>
+                    <td class="col-text">Normal interesse for omgivelsene og andre mennesker</td>
+                </tr>
+                <tr onclick="selectRadio('q8', 1, this)">
+                    <td class="col-radio"><input type="radio" name="q8" value="1"></td>
+                    <td class="col-val">1</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q8', 2, this)">
+                    <td class="col-radio"><input type="radio" name="q8" value="2"></td>
+                    <td class="col-val">2</td>
+                    <td class="col-text">Redusert evne til å glede seg over ting som vanligvis gleder. Redusert evne til å føle sinne</td>
+                </tr>
+                <tr onclick="selectRadio('q8', 3, this)">
+                    <td class="col-radio"><input type="radio" name="q8" value="3"></td>
+                    <td class="col-val">3</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q8', 4, this)">
+                    <td class="col-radio"><input type="radio" name="q8" value="4"></td>
+                    <td class="col-val">4</td>
+                    <td class="col-text">Tap av interesse for omverdenen. Tap av følelser for venner og bekjente</td>
+                </tr>
+                <tr onclick="selectRadio('q8', 5, this)">
+                    <td class="col-radio"><input type="radio" name="q8" value="5"></td>
+                    <td class="col-val">5</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q8', 6, this)">
+                    <td class="col-radio"><input type="radio" name="q8" value="6"></td>
+                    <td class="col-val">6</td>
+                    <td class="col-text">Opplevelsen av å være følelsesmessig lammet, uten evne til å føle sinne eller sorg</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Q9 -->
+        <div class="question-block">
+            <div class="question-header">9. Depressivt tankeinnhold</div>
+            <div class="question-desc">
+                Sikter på tanker om skyld, mindreverdighet, selvbebreidelser, anger og tanker om økonomisk ruin, etc.
+            </div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q9', 0, this)">
+                    <td class="col-radio"><input type="radio" name="q9" value="0"></td>
+                    <td class="col-val">0</td>
+                    <td class="col-text">Ingen depressive tanker</td>
+                </tr>
+                <tr onclick="selectRadio('q9', 1, this)">
+                    <td class="col-radio"><input type="radio" name="q9" value="1"></td>
+                    <td class="col-val">1</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q9', 2, this)">
+                    <td class="col-radio"><input type="radio" name="q9" value="2"></td>
+                    <td class="col-val">2</td>
+                    <td class="col-text">Fluktuerende tanker om ikke å strekke til, selvbebreidelser og mindreverdihetsfølelse</td>
+                </tr>
+                <tr onclick="selectRadio('q9', 3, this)">
+                    <td class="col-radio"><input type="radio" name="q9" value="3"></td>
+                    <td class="col-val">3</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q9', 4, this)">
+                    <td class="col-radio"><input type="radio" name="q9" value="4"></td>
+                    <td class="col-val">4</td>
+                    <td class="col-text">Vedvarende selvbebreidelser eller klare tanker om skyld og synd</td>
+                </tr>
+                <tr onclick="selectRadio('q9', 5, this)">
+                    <td class="col-radio"><input type="radio" name="q9" value="5"></td>
+                    <td class="col-val">5</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q9', 6, this)">
+                    <td class="col-radio"><input type="radio" name="q9" value="6"></td>
+                    <td class="col-val">6</td>
+                    <td class="col-text">Vrangforestillinger om økonomisk ruin eller utilgivelige synder. Absurde selvanklager</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Q10 -->
+        <div class="question-block">
+            <div class="question-header">10. Suicidaltanker</div>
+            <div class="question-desc">
+                Tar sikte på følelsen av at livet ikke er verd å leve, at en naturlig død ville være velkommen, suicidale tanker, og forberedelse til selvmord.
+            </div>
+            <table class="options-table">
+                <tr onclick="selectRadio('q10', 0, this)">
+                    <td class="col-radio"><input type="radio" name="q10" value="0"></td>
+                    <td class="col-val">0</td>
+                    <td class="col-text">Ordinær livslyst, tar det som det kommer</td>
+                </tr>
+                <tr onclick="selectRadio('q10', 1, this)">
+                    <td class="col-radio"><input type="radio" name="q10" value="1"></td>
+                    <td class="col-val">1</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q10', 2, this)">
+                    <td class="col-radio"><input type="radio" name="q10" value="2"></td>
+                    <td class="col-val">2</td>
+                    <td class="col-text">Lei av livet, men bare flyktige suicidaltanker</td>
+                </tr>
+                <tr onclick="selectRadio('q10', 3, this)">
+                    <td class="col-radio"><input type="radio" name="q10" value="3"></td>
+                    <td class="col-val">3</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q10', 4, this)">
+                    <td class="col-radio"><input type="radio" name="q10" value="4"></td>
+                    <td class="col-val">4</td>
+                    <td class="col-text">Ville helst være død, suicidaltanker opptrer hyppig, ingen spesifikke planer</td>
+                </tr>
+                <tr onclick="selectRadio('q10', 5, this)">
+                    <td class="col-radio"><input type="radio" name="q10" value="5"></td>
+                    <td class="col-val">5</td>
+                    <td class="col-text"></td>
+                </tr>
+                <tr onclick="selectRadio('q10', 6, this)">
+                    <td class="col-radio"><input type="radio" name="q10" value="6"></td>
+                    <td class="col-val">6</td>
+                    <td class="col-text">Uttalte planer om suicid når anledningen byr seg. Aktive forberedelser for suicid</td>
+                </tr>
+            </table>
+        </div>
+
+    </form>
+
+    <div id="results">
+        <div class="result-header">Oppsummering</div>
+        <div class="result-body">
+            
+            <div style="font-size: 1.1em; font-weight: bold; margin-bottom: 15px;">
+                MADRS, <span id="resultDate"></span>:
+            </div>
+
+            <div id="detailedScoreList" style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+                <!-- Listen genereres her -->
+            </div>
+
+            <div class="result-row">
+                <span>Sum:</span>
+                <span id="totalScore" class="total-score">-</span>
+            </div>
+
+            <div class="result-row">
+                <span>Alvorlighetsgrad:</span>
+                <span id="interpretationBadge" class="">-</span>
+            </div>
+            
+            <div class="interpretation">
+                <strong>Rangering:</strong><br>
+                • 0 - 9 poeng: Ingen depresjon<br>
+                • 10 - 19 poeng: Lett depresjon<br>
+                • 20 - 34 poeng: Moderat depresjon<br>
+                • > 35 poeng: Alvorlig depresjon
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
+
+    <div class="controls">
+        <button type="button" class="btn-calc" onclick="calculateScore()">
+            <span>🔢</span> Regn ut
+        </button>
+        <button type="button" class="btn-html" onclick="exportHTML()">
+            <span>💾</span> Lagre som HTML
+        </button>
+        <button type="button" class="btn-word" onclick="exportWord()">
+            <span>📝</span> Lagre til Word
+        </button>
+        <button type="button" class="btn-pdf" onclick="window.print()">
+            <span>🖨️</span> Skriv ut / PDF
+        </button>
+    </div>
+</div>
+
+<script>
+    // Sett dagens dato automatisk
+    document.addEventListener('DOMContentLoaded', function() {
+        if (!document.getElementById('assessmentDate').value) {
+            document.getElementById('assessmentDate').valueAsDate = new Date();
+        }
+    });
+
+    // Funksjon for å velge radiobutton ved klikk på rad
+    function selectRadio(groupName, value, row) {
+        const radios = document.getElementsByName(groupName);
+        for(let r of radios) {
+            if(r.value == value) {
+                r.checked = true;
+                break;
+            }
+        }
+        
+        // Oppdater visuell markering
+        const table = row.closest('table');
+        const rows = table.getElementsByTagName('tr');
+        for(let r of rows) {
+            r.classList.remove('selected');
+        }
+        row.classList.add('selected');
+    }
+
+    function calculateScore() {
+        let totalScore = 0;
+        let allAnswered = true;
+        
+        // Titler for hvert spørsmål
+        const questionTitles = [
+            "Synlig tristhet",
+            "Tristhet",
+            "Indre spenning",
+            "Redusert nattesøvn",
+            "Svekket appetitt",
+            "Konsentrasjonsvansker",
+            "Initiativløshet",
+            "Svekkede følelsesmessige reaksjoner",
+            "Depressivt tankeinnhold",
+            "Suicidaltanker"
+        ];
+
+        let listHtml = '<ol style="padding-left: 20px; margin-top: 0;">';
+
+        for (let i = 1; i <= 10; i++) {
+            const radios = document.getElementsByName('q' + i);
+            let answered = false;
+            let val = 0;
+            for (let radio of radios) {
+                if (radio.checked) {
+                    val = parseInt(radio.value);
+                    answered = true;
+                    break;
+                }
+            }
+            
+            // Legg til i listen: "Tittel: Poeng"
+            listHtml += `<li style="margin-bottom: 5px;">
+                            ${questionTitles[i-1]}: <strong>${answered ? val : '?'}</strong>
+                         </li>`;
+
+            if (answered) {
+                totalScore += val;
+            } else {
+                allAnswered = false;
+            }
+        }
+        listHtml += '</ol>';
+
+        const resultDiv = document.getElementById('results');
+        const dateSpan = document.getElementById('resultDate');
+        const listDiv = document.getElementById('detailedScoreList');
+        const scoreSpan = document.getElementById('totalScore');
+        const badgeSpan = document.getElementById('interpretationBadge');
+
+        resultDiv.style.display = 'block';
+        
+        // 1. Sett dato med spesifikt format (dd.mm.yy)
+        const dateInput = document.getElementById('assessmentDate').value;
+        let dateObj = dateInput ? new Date(dateInput) : new Date();
+        
+        // Bruk toLocaleDateString med eksplisitte valg for å få dd.mm.yy (2-sifret år)
+        const formattedDate = dateObj.toLocaleDateString('no-NO', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: '2-digit' 
+        });
+        
+        dateSpan.innerText = formattedDate;
+
+        // 2. Sett inn listen
+        listDiv.innerHTML = listHtml;
+
+        // 3. Sett sum
+        scoreSpan.innerText = totalScore + " / 60";
+
+        // 4. Tolkning
+        let text = "";
+        let className = "severity-badge ";
+        
+        if (totalScore <= 9) {
+            text = "Ingen depresjon";
+            className += "sev-none";
+        } else if (totalScore <= 19) {
+            text = "Lett depresjon";
+            className += "sev-mild";
+        } else if (totalScore <= 34) {
+            text = "Moderat depresjon";
+            className += "sev-mod";
+        } else {
+            text = "Alvorlig depresjon";
+            className += "sev-severe";
+        }
+
+        badgeSpan.innerText = text;
+        badgeSpan.className = className;
+
+        if (!allAnswered) {
+            alert("NB: Ikke alle spørsmål er besvart. Resultatet kan være unøyaktig.");
+        }
+
+        resultDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    /* -------------------------------------------------------------
+       Eksportfunksjoner
+    ------------------------------------------------------------- */
+    
+    function getFilename(suffix) {
+        const name = document.getElementById('patientName').value.trim();
+        const date = document.getElementById('assessmentDate').value || new Date().toISOString().slice(0, 10);
+        let cleanName = name ? name.replace(/[^a-zA-Z0-9æøåÆØÅ ]/g, "").replace(/\s+/g, "_") : "Uten_Navn";
+        return `MADRS_${cleanName}_${date}.${suffix}`;
+    }
+
+    function exportHTML() {
+        const docClone = document.documentElement.cloneNode(true);
+        
+        // Bevar input verdier
+        const originalTextInputs = document.querySelectorAll('input[type="text"], input[type="date"]');
+        const clonedTextInputs = docClone.querySelectorAll('input[type="text"], input[type="date"]');
+        for (let i = 0; i < originalTextInputs.length; i++) {
+            clonedTextInputs[i].setAttribute('value', originalTextInputs[i].value);
+        }
+
+        // Bevar radio state
+        const originalRadios = document.querySelectorAll('input[type="radio"]');
+        const clonedRadios = docClone.querySelectorAll('input[type="radio"]');
+        for (let i = 0; i < originalRadios.length; i++) {
+            if (originalRadios[i].checked) {
+                clonedRadios[i].setAttribute('checked', 'checked');
+                const row = clonedRadios[i].closest('tr');
+                if(row) row.classList.add('selected');
+            }
+        }
+        
+        // Bevar resultatvisning
+        const resultsDiv = document.getElementById('results');
+        const clonedResultsDiv = docClone.querySelector('#results');
+        if (resultsDiv.style.display === 'block') {
+            clonedResultsDiv.style.display = 'block';
+            clonedResultsDiv.innerHTML = resultsDiv.innerHTML;
+        }
+
+        const htmlContent = "<!DOCTYPE html>\n" + docClone.outerHTML;
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = getFilename('html');
+        link.click();
+    }
+
+    function exportWord() {
+        const contentClone = document.getElementById('document-content').cloneNode(true);
+        
+        // Fjern knapper
+        const controls = contentClone.querySelector('.controls');
+        if (controls) controls.remove();
+
+        // Forenkle tabellene for Word: Vis valgt med [X], andre med ( )
+        const tables = contentClone.querySelectorAll('.options-table');
+        tables.forEach(table => {
+            const rows = table.querySelectorAll('tr');
+            rows.forEach(row => {
+                const radio = row.querySelector('input[type="radio"]');
+                const radioCell = row.querySelector('.col-radio');
+                
+                // Tving cellen til å ikke brekke linjer for å holde [ X ] samlet
+                radioCell.style.whiteSpace = "nowrap";
+
+                if (radio && radio.checked) {
+                    // Bruk non-breaking space (&nbsp;) for å sikre at klammene henger sammen
+                    radioCell.innerHTML = "<strong>[&nbsp;X&nbsp;]</strong>";
+                    row.style.backgroundColor = "#e8f4fc"; // Highlight i Word
+                } else {
+                    radioCell.innerHTML = "( )";
+                }
+            });
+        });
+
+        // Håndter tekst inputs
+        const inputs = contentClone.querySelectorAll('input[type="text"], input[type="date"]');
+        inputs.forEach(input => {
+             const span = document.createElement('span');
+             span.innerText = input.value;
+             span.style.fontWeight = "normal";
+             input.replaceWith(span);
+        });
+
+        const header = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' 
+                  xmlns:w='urn:schemas-microsoft-com:office:word' 
+                  xmlns='http://www.w3.org/TR/REC-html40'>
+            <head>
+                <meta charset='utf-8'>
+                <title>MADRS Resultat</title>
+                <style>
+                    body { font-family: Arial, sans-serif; font-size: 11pt; }
+                    .question-header { background-color: #2c3e50; color: white; padding: 10px; font-weight: bold; margin-top: 20px;}
+                    .question-desc { font-style: italic; color: #555; margin-bottom: 10px; }
+                    table { border-collapse: collapse; width: 100%; margin-bottom: 10px; }
+                    td { border-bottom: 1px solid #ddd; padding: 5px; vertical-align: top; }
+                    .result-header { background-color: #eee; font-weight: bold; padding: 10px; border: 1px solid #000; margin-top: 20px;}
+                </style>
+            </head><body>`;
+            
+        const footer = "</body></html>";
+        const sourceHTML = header + contentClone.innerHTML + footer;
+
+        const blob = new Blob(['\ufeff', sourceHTML], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = getFilename('doc');
+        link.click();
+    }
+</script>
+
+</body>
+</html>

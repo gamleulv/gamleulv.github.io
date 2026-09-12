@@ -1,0 +1,459 @@
+{
+  "items" : [
+    {
+      "path" : "Dissosiasjon/SDQ-20.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769883103,
+      "checksum" : "71e9ce18fc5efaa98520102dd1192442",
+      "fileSize" : 17384
+    },
+    {
+      "path" : "Angst/MWQ.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769886753,
+      "checksum" : "90489f547fa133b043608c79e2c19c90",
+      "fileSize" : 15156
+    },
+    {
+      "path" : "ME/ME-CFS-Canada-kriterier-test.html.zip",
+      "mimeType" : "application/zip",
+      "lastUpdated" : 1776009565,
+      "checksum" : "809b00ff7c87c1e095a93c70bc84486c",
+      "fileSize" : 7258
+    },
+    {
+      "path" : "ADHD/ASRS.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769635854,
+      "checksum" : "349d08a232b4aa862c0ecac41344ad3e",
+      "fileSize" : 31846
+    },
+    {
+      "path" : "Sovn/og-image.png",
+      "mimeType" : "image/png",
+      "lastUpdated" : 1787386163,
+      "checksum" : "b2f23d1ccb665c5fa5c1fe3c3a800384",
+      "fileSize" : 1884
+    },
+    {
+      "path" : "PTSD/ICG.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769895258,
+      "checksum" : "3f0cc2f114873c545262bd8a5d74ec6a",
+      "fileSize" : 15908
+    },
+    {
+      "path" : "BAL/GMI.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1055154732,
+      "checksum" : "b3567d8fe94a3c1d867c8e04fa93ce2a",
+      "fileSize" : 14903
+    },
+    {
+      "path" : "Sovn/favicon-32.png",
+      "mimeType" : "image/png",
+      "lastUpdated" : 1787386076,
+      "checksum" : "84924ecdd6e255965d4fa9eda6344c15",
+      "fileSize" : 1355
+    },
+    {
+      "path" : "PTSD/Russisk/ITQ-RU.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1786860606,
+      "checksum" : "0010aed292e717519e4b78153794d70c",
+      "fileSize" : 36053
+    },
+    {
+      "path" : "Psykose/PANSS.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769889685,
+      "checksum" : "2f259ed0821c0123994d40d4b586a4a5",
+      "fileSize" : 18542
+    },
+    {
+      "path" : "ME/ME-CFS-Canada-kriterier-test.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1776007943,
+      "checksum" : "4ca2a7ecee6d24a34574376f29207bf2",
+      "fileSize" : 22349
+    },
+    {
+      "path" : "Generelt/SCID-kv-skåringsskjema.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1770411616,
+      "checksum" : "15e3a3621aabc4fc4bbaab6a9729cf63",
+      "fileSize" : 56080
+    },
+    {
+      "path" : "Angst/SPRS.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769888404,
+      "checksum" : "dc20e8e2548727e610a8cbb95338764e",
+      "fileSize" : 19470
+    },
+    {
+      "path" : "PTSD/.DS_Store",
+      "mimeType" : "application/octet-stream",
+      "lastUpdated" : 1769884171,
+      "checksum" : "194577a7e20bdcc7afbb718f502c134c",
+      "fileSize" : 6148
+    },
+    {
+      "path" : "PTSD/Russisk/PTSS-10-RU.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1786860586,
+      "checksum" : "3e826b13eb3758ee12ab6382ef809ad4",
+      "fileSize" : 33508
+    },
+    {
+      "path" : "Angst/GADS-R.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769886224,
+      "checksum" : "9b86af15a607af3683ea0efab4fc62aa",
+      "fileSize" : 21143
+    },
+    {
+      "path" : "Angst/SPS.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769888599,
+      "checksum" : "6b8fa6754bf7d4b23b2e8c10dc31325f",
+      "fileSize" : 13161
+    },
+    {
+      "path" : "PTSD/Russisk/DSAS-RU.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1786860535,
+      "checksum" : "07681923314f016c035d203d75f19953",
+      "fileSize" : 59051
+    },
+    {
+      "path" : "Angst/PAS.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769887094,
+      "checksum" : "781e6507c7cc93d26c6d83d8b49af1a6",
+      "fileSize" : 16850
+    },
+    {
+      "path" : "Angst/MI.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769887616,
+      "checksum" : "ea49418f974a384ad02ab8ef14fdc4af",
+      "fileSize" : 15631
+    },
+    {
+      "path" : "Sovn/Sovndagbok.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1787386267,
+      "checksum" : "72d8fbbcfb066fd66216e75828d5b919",
+      "fileSize" : 44360
+    },
+    {
+      "path" : "Personlighet/SCID-5-PF.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1786862430,
+      "checksum" : "f10603b46c5107843851f68f459333ab",
+      "fileSize" : 57332
+    },
+    {
+      "path" : "Angst/PRS.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769887293,
+      "checksum" : "f7c7d17416fe3740c8501a3f5d8defd2",
+      "fileSize" : 20531
+    },
+    {
+      "path" : "PTSD/DSAS.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769884909,
+      "checksum" : "877f4b77f26f0910f607963cef15db27",
+      "fileSize" : 16130
+    },
+    {
+      "path" : "_site.json",
+      "mimeType" : "application/json",
+      "lastUpdated" : 1788726659,
+      "checksum" : "a0fd9d1c05edf0eface1ab44a73bf46a",
+      "fileSize" : 12946
+    },
+    {
+      "path" : "BAL/BipScan.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769877908,
+      "checksum" : "f02d0696130322fd527b1aa3dab9848e",
+      "fileSize" : 20619
+    },
+    {
+      "path" : "ME/Norskfunksjonsskjema-del1.pdf",
+      "mimeType" : "application/pdf",
+      "lastUpdated" : 1776004513,
+      "checksum" : "ba723d6055f02023c8feadfbf57fff73",
+      "fileSize" : 185692
+    },
+    {
+      "path" : "Angst/BSPS.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769887921,
+      "checksum" : "7efd338c2bb1f3a6125309eaf9aac249",
+      "fileSize" : 14838
+    },
+    {
+      "path" : "PTSD/ITQ.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1787114373,
+      "checksum" : "3cbcd9083a2127ab2929d4e46dedc387",
+      "fileSize" : 14663
+    },
+    {
+      "path" : "index.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1787398883,
+      "checksum" : "431952f3aa0f0594588c3b4ac8d6f3e6",
+      "fileSize" : 30128
+    },
+    {
+      "path" : "Generelt/SCID-kv.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769876363,
+      "checksum" : "ef8299d2e4d8e5501032b326afbb71b8",
+      "fileSize" : 30818
+    },
+    {
+      "path" : "PTSD/TRAPS-II.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769637341,
+      "checksum" : "a0d141b8dd4d0e3687883419413303fb",
+      "fileSize" : 42946
+    },
+    {
+      "path" : "BAL/HCL-32.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1768680874,
+      "checksum" : "0191cb7a9cc88e6d6e94e8a989161786",
+      "fileSize" : 31055
+    },
+    {
+      "path" : "ME/Norskfunksjonsskjema-del2.pdf",
+      "mimeType" : "application/pdf",
+      "lastUpdated" : 1776004677,
+      "checksum" : "599492bc4ddeaf014e014a801ca1d667",
+      "fileSize" : 103181
+    },
+    {
+      "path" : "BAL/SCID-1-Affektiv.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769876861,
+      "checksum" : "4ac005605e3fe075ef8882b1a36ca694",
+      "fileSize" : 40534
+    },
+    {
+      "path" : "PTSD/Russisk/TEC-RU.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1786860561,
+      "checksum" : "978bc5c31d8645ef7c55b238c2c9ca89",
+      "fileSize" : 98259
+    },
+    {
+      "path" : "PTSD/Russisk/TRAPS-II-RU.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1786860418,
+      "checksum" : "a4a42a0b7d72687ef648b197f84dfcfb",
+      "fileSize" : 48029
+    },
+    {
+      "path" : "Sovn/apple-touch-icon.png",
+      "mimeType" : "image/png",
+      "lastUpdated" : 1787386076,
+      "checksum" : "b35b0fcbc04e6d20fb161717da55bf8c",
+      "fileSize" : 541
+    },
+    {
+      "path" : "Angst/LSAS.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769888120,
+      "checksum" : "098ee2a14f1803d8ca8738b3e3d1993c",
+      "fileSize" : 15368
+    },
+    {
+      "path" : "Angst/YBOCS.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769885649,
+      "checksum" : "3d554492fa2b1cf5c33c42dd7b4f8ffb",
+      "fileSize" : 24758
+    },
+    {
+      "path" : "PTSD/KBL.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769883815,
+      "checksum" : "13b392473c9b4fa0904fe89c64d8869d",
+      "fileSize" : 19827
+    },
+    {
+      "path" : "BAL/YMRS.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1768688612,
+      "checksum" : "26ff5dfecead482103e9b66ac4fcedd7",
+      "fileSize" : 20333
+    },
+    {
+      "path" : "Spiseforstyrrelse/CIA-3.0.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769896552,
+      "checksum" : "454e320e80babf8b3210f6c93d488f00",
+      "fileSize" : 14632
+    },
+    {
+      "path" : "Dissosiasjon/SCID-D-Oppsummering.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769879833,
+      "checksum" : "b1ea205d59bc454cc23f1560167ba82b",
+      "fileSize" : 20168
+    },
+    {
+      "path" : "ADHD/DIVA-5-Oppsummering.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769022593,
+      "checksum" : "30ae113be35b967cd6d2e19ae5e53e13",
+      "fileSize" : 38644
+    },
+    {
+      "path" : "Dissosiasjon/DES-II.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769884528,
+      "checksum" : "64a317688abb985d4fc4f22394a85c51",
+      "fileSize" : 18611
+    },
+    {
+      "path" : "BAL/MADRS.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1770153580,
+      "checksum" : "41a9fecd880319e70b7a8e387ba127d7",
+      "fileSize" : 44857
+    },
+    {
+      "path" : "BAL/BDI-II-delskalaer.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1768692502,
+      "checksum" : "05d361d4d43854ec0ae65be667a6b3a8",
+      "fileSize" : 19101
+    },
+    {
+      "path" : "Psykose/MCQ-30.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769890020,
+      "checksum" : "8e29f230adf17bc9146fc720fb847cbb",
+      "fileSize" : 13198
+    },
+    {
+      "path" : "BAL/ASRM.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1768688616,
+      "checksum" : "ed1eb99fa5823e5faf96455b40386bb5",
+      "fileSize" : 15428
+    },
+    {
+      "path" : "PTSD/TEC.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769884378,
+      "checksum" : "23098444dc34819ae99d004803e72bbf",
+      "fileSize" : 21532
+    },
+    {
+      "path" : "PTSD/PTSS-10.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769880862,
+      "checksum" : "d22f5de40daf064ba0f8279c29fc7c88",
+      "fileSize" : 16310
+    },
+    {
+      "path" : "Angst/SIAS.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769888681,
+      "checksum" : "3d8bc81dd6215e1f727ac960b600dd1e",
+      "fileSize" : 13567
+    },
+    {
+      "path" : "ADHD/ASRS-eng.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1699427844,
+      "checksum" : "e6571f45232a64f81eff5edf304a7c1f",
+      "fileSize" : 195606
+    },
+    {
+      "path" : "Psykose/EASE.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769889039,
+      "checksum" : "913598d0bec9849b9315cab40395068d",
+      "fileSize" : 21336
+    },
+    {
+      "path" : "ADHD/WURS.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769031261,
+      "checksum" : "f09b654ac8230250d33f1d6cd2a7a585",
+      "fileSize" : 40869
+    },
+    {
+      "path" : "BAL/BDI-II.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769640489,
+      "checksum" : "d5d1e1afcf7264a60824577879a209c1",
+      "fileSize" : 40940
+    },
+    {
+      "path" : "PTSD/Russisk/KBL-RU.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1786860626,
+      "checksum" : "12c7483001b3fa6c258cd3468500712d",
+      "fileSize" : 46037
+    },
+    {
+      "path" : "Spiseforstyrrelse/EDE-Q-6.0.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769896442,
+      "checksum" : "bb03e86cd0633aa9bc07b295ea1cc5c1",
+      "fileSize" : 21031
+    },
+    {
+      "path" : "ME/Egenbehandlingsplan.pdf",
+      "mimeType" : "application/pdf",
+      "lastUpdated" : 1776004780,
+      "checksum" : "b1a3c9a9ddc90437d0b4ccd4b333ab56",
+      "fileSize" : 164412
+    },
+    {
+      "path" : "Psykose/BPRS.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769889353,
+      "checksum" : "a028c75a537be39fb117fdeeb826935d",
+      "fileSize" : 15503
+    },
+    {
+      "path" : "Sovn/.DS_Store",
+      "mimeType" : "application/octet-stream",
+      "lastUpdated" : 1787386315,
+      "checksum" : "b44afd88dc4bcfee2c8bab5beb7ebe24",
+      "fileSize" : 6148
+    },
+    {
+      "path" : "Dissosiasjon/MID-60.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769878815,
+      "checksum" : "153f57785655fa367b63b6f106d0692f",
+      "fileSize" : 23109
+    },
+    {
+      "path" : "BAL/MDQ.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1769025088,
+      "checksum" : "053d7f4abc42b4d69687728c55f5a174",
+      "fileSize" : 17114
+    },
+    {
+      "path" : ".DS_Store",
+      "mimeType" : "application/octet-stream",
+      "lastUpdated" : 1787248381,
+      "checksum" : "6ad275761c007b6c88afb29675138f73",
+      "fileSize" : 8196
+    }
+  ]
+}

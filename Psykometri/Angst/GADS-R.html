@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GADS-R - Generalized Anxiety Disorder Scale (Revised)</title>
+    
+    <!-- PDF & Word Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --bg: #f4f7f6;
+            --paper: #ffffff;
+            --border: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 30px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background-color: var(--paper);
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-radius: 8px;
+        }
+
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-weight: 300; }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .form-group label { display: block; font-size: 12px; font-weight: bold; color: #7f8c8d; margin-bottom: 4px; }
+        .form-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+
+        /* General Question Box */
+        .q-box {
+            margin-bottom: 30px;
+            border: 1px solid #eee;
+            background: #fff;
+            padding: 20px;
+            border-radius: 6px;
+            break-inside: avoid;
+        }
+
+        .q-title { font-weight: bold; margin-bottom: 15px; font-size: 16px; color: var(--primary); }
+
+        /* Scale 0-8 */
+        .scale-0-8 {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+            background: #fdfdfd;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 5px;
+        }
+
+        .scale-opt {
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+            border-right: 1px solid #eee;
+        }
+        .scale-opt:last-child { border-right: none; }
+        
+        .scale-opt:hover { background: #eef; }
+        .scale-opt.selected { background: var(--secondary); color: white; }
+        .scale-opt .val { font-size: 18px; font-weight: bold; }
+
+        .scale-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #777;
+            margin-top: 5px;
+        }
+
+        /* Strategies Grid (Q3) */
+        .strat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .strat-item {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .strat-label { font-weight: 600; font-size: 14px; margin-bottom: 5px; }
+
+        /* Simple 0-8 input for sub-items */
+        .mini-scale {
+            display: flex;
+            gap: 2px;
+        }
+        .mini-opt {
+            flex: 1;
+            text-align: center;
+            border: 1px solid #ddd;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 4px 0;
+        }
+        .mini-opt.selected { background: var(--secondary); color: white; border-color: var(--secondary); }
+
+        /* Q5 Beliefs (0-100) */
+        .belief-grid {
+            display: grid;
+            gap: 15px;
+        }
+        .belief-row {
+            display: grid;
+            grid-template-columns: 2fr 3fr;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid #f9f9f9;
+            padding-bottom: 10px;
+        }
+        
+        .range-wrap { position: relative; padding: 0 10px; }
+        .range-val { 
+            text-align: right; font-weight: bold; color: var(--secondary); 
+            display: inline-block; width: 40px; 
+        }
+
+        /* Results */
+        .results-section {
+            margin-top: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .score-box { background: white; padding: 15px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #ddd; }
+
+        /* Controls */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            transition: transform 0.1s;
+            font-size: 14px;
+        }
+        button:hover { transform: translateY(-2px); }
+        .btn-calc { background-color: var(--secondary); }
+        .btn-word { background-color: #2980b9; }
+        .btn-pdf { background-color: #c0392b; }
+        .btn-reset { background-color: #95a5a6; }
+
+        @media print {
+            .controls { display: none; }
+            .container { box-shadow: none; margin: 0; padding: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="doc-content">
+    <h1>GADS-R</h1>
+    <div class="subtitle">Generalized Anxiety Disorder Scale - Revised</div>
+
+    <div class="meta-grid">
+        <div class="form-group">
+            <label>Navn</label>
+            <input type="text" id="pName" placeholder="Navn...">
+        </div>
+        <div class="form-group">
+            <label>Dato</label>
+            <input type="date" id="pDate">
+        </div>
+    </div>
+
+    <div id="questions-container">
+        <!-- Injected via JS -->
+    </div>
+
+    <div class="results-section" id="results">
+        <h3>Resultater</h3>
+        
+        <div class="score-box">
+            <strong>Generell Bekymring (Spm 1 + 2):</strong>
+            <span id="scoreGen" style="font-size: 20px; margin-left:10px;">-</span> / 16
+        </div>
+
+        <div class="score-box">
+            <strong>Mestringsstrategier (Spm 3 Total):</strong>
+            <span id="scoreStrat" style="font-size: 20px; margin-left:10px;">-</span>
+        </div>
+
+        <div class="score-box">
+            <strong>Unngåelse (Spm 4 Total):</strong>
+            <span id="scoreAvoid" style="font-size: 20px; margin-left:10px;">-</span>
+        </div>
+
+        <div class="score-box">
+            <strong>Metakognitive Antagelser (Spm 5 Gjennomsnitt %):</strong>
+            <span id="scoreMeta" style="font-size: 20px; margin-left:10px;">-</span> %
+        </div>
+
+        <div style="font-size:13px; color:#555; margin-top:10px;">
+            * Høye skårer på spm 1, 2, 4 og 5 indikerer høy grad av generalisert angst og metakognitive feilantagelser.
+        </div>
+    </div>
+
+</div>
+
+<div class="controls">
+    <button class="btn-calc" onclick="calculateScore()">📊 Beregn</button>
+    <button class="btn-word" onclick="exportWord()">💾 Lagre til Word</button>
+    <button class="btn-pdf" onclick="exportPDF()" id="pdfBtn">📄 Lagre til PDF</button>
+    <button class="btn-reset" onclick="resetForm()">🔄 Nullstill</button>
+</div>
+
+<script>
+    document.getElementById('pDate').valueAsDate = new Date();
+
+    const container = document.getElementById('questions-container');
+    container.innerHTML = ''; // Edge fix
+
+    // --- HELPER: Create 0-8 Scale ---
+    function createScale08(name, idPrefix) {
+        let html = `<div class="scale-0-8">`;
+        for(let i=0; i<=8; i++) {
+            html += `<div class="scale-opt" onclick="selectScale('${name}', ${i}, this)">
+                        <div class="val">${i}</div>
+                     </div>`;
+        }
+        html += `</div>
+                 <div class="scale-labels">
+                    <span>0 (Ikke i det hele tatt)</span>
+                    <span>4 (I moderat grad/Halve tiden)</span>
+                    <span>8 (Ekstremt/Hele tiden)</span>
+                 </div>
+                 <input type="hidden" id="${idPrefix}" value="">`;
+        return html;
+    }
+
+    // --- HELPER: Create Mini 0-8 Scale ---
+    function createMiniScale(name, idPrefix) {
+        let html = `<div class="mini-scale">`;
+        for(let i=0; i<=8; i++) {
+            html += `<div class="mini-opt" onclick="selectMini('${name}', ${i}, this)">${i}</div>`;
+        }
+        html += `</div><input type="hidden" id="${idPrefix}" value="0">`;
+        return html;
+    }
+
+    // --- 1. Bekymring ---
+    const q1 = document.createElement('div');
+    q1.className = 'q-box';
+    q1.innerHTML = `
+        <div class="q-title">1) I hvor stor grad har bekymringer uroet deg/nedsatt fungeringen din i løpet av siste uke?</div>
+        ${createScale08('q1', 'ans-q1')}
+    `;
+    container.appendChild(q1);
+
+    // --- 2. Tidsbruk ---
+    const q2 = document.createElement('div');
+    q2.className = 'q-box';
+    q2.innerHTML = `
+        <div class="q-title">2) Hvor mye av tiden i siste uke har du bekymret deg over situasjoner?</div>
+        ${createScale08('q2', 'ans-q2')}
+    `;
+    container.appendChild(q2);
+
+    // --- 3. Mestringsstrategier ---
+    const strategies = [
+        "Prøvd å avlede meg selv", "Prøvd å ikke tenke på ting",
+        "Prøvd å kontrollere mine tanker", "Se etter bevis",
+        "Prøvd å bruke fornuft", "Opptrådt varsomt/vaktsomt",
+        "Be om beroligelse fra andre", "Sjekket at det var trygt rundt meg",
+        "Snakket med meg selv", "Planla hva jeg skulle gjøre dersom mine bekymringer var sanne"
+    ];
+
+    const q3 = document.createElement('div');
+    q3.className = 'q-box';
+    let stratHTML = `<div class="q-title">3) Hvor ofte har du i løpet av siste uke gjort følgende for å håndtere bekymringer? (0-8)</div>
+                     <div class="strat-grid">`;
+    
+    strategies.forEach((strat, i) => {
+        stratHTML += `
+            <div class="strat-item">
+                <div class="strat-label">${strat}</div>
+                ${createMiniScale(`q3_${i}`, `ans-q3-${i}`)}
+            </div>
+        `;
+    });
+    stratHTML += `</div>`;
+    q3.innerHTML = stratHTML;
+    container.appendChild(q3);
+
+    // --- 4. Unngåelse ---
+    const avoidance = [
+        "Nyheter", "Tanker om sykdom",
+        "Sosiale situasjoner", "Tanker om ulykker/tap",
+        "Usikkerhet"
+    ];
+
+    const q4 = document.createElement('div');
+    q4.className = 'q-box';
+    let avoidHTML = `<div class="q-title">4) Hvor ofte i løpet av den siste uken har du unngått følgende? (0-8)</div>
+                     <div class="strat-grid">`;
+    
+    avoidance.forEach((item, i) => {
+        avoidHTML += `
+            <div class="strat-item">
+                <div class="strat-label">${item}</div>
+                ${createMiniScale(`q4_${i}`, `ans-q4-${i}`)}
+            </div>
+        `;
+    });
+    // Add "Other"
+    avoidHTML += `
+            <div class="strat-item">
+                <div class="strat-label">Annet (spesifiser): <input type="text" style="width:100px; padding:2px;" id="q4_other_txt"></div>
+                ${createMiniScale(`q4_other`, `ans-q4-other`)}
+            </div>
+    `;
+    avoidHTML += `</div>`;
+    q4.innerHTML = avoidHTML;
+    container.appendChild(q4);
+
+    // --- 5. Metakognitive Antagelser ---
+    const beliefs = [
+        "Jeg kan bli gal av bekymringer", "Bekymringer hjelper meg til å mestre",
+        "Bekymringer kan skade meg", "Dersom jeg bekymrer meg vil jeg være forberedt",
+        "Bekymringer stresser kroppen min", "Å bekymre seg vil gjøre at jeg er trygg",
+        "Dersom jeg ikke kontrollerer mine bekymringer vil de kontrollere meg", "Bekymringer gjør at jeg får ting gjort",
+        "Mine bekymringer kan ikke kontrolleres", "Noe forferdelig kan skje dersom jeg ikke bekymrer meg",
+        "Dersom jeg bekymrer meg for mye kan jeg miste kontroll", "Å bekymre seg hjelper meg å løse problemer"
+    ];
+
+    const q5 = document.createElement('div');
+    q5.className = 'q-box';
+    let beliefHTML = `<div class="q-title">5) Angi hvor mye du tror på hver av disse oppfatningene (0-100%)</div>
+                      <div class="scale-labels" style="margin-bottom:15px;">
+                        <span>0 (Tror overhodet ikke)</span>
+                        <span>100 (Helt overbevist)</span>
+                      </div>
+                      <div class="belief-grid">`;
+    
+    beliefs.forEach((b, i) => {
+        beliefHTML += `
+            <div class="belief-row">
+                <div>${b}</div>
+                <div class="range-wrap">
+                    <input type="range" min="0" max="100" value="0" style="width:100%" oninput="updateRange(this, 'disp-q5-${i}', 'ans-q5-${i}')">
+                    <span id="disp-q5-${i}" class="range-val">0</span>
+                    <input type="hidden" id="ans-q5-${i}" value="0">
+                </div>
+            </div>
+        `;
+    });
+    beliefHTML += `</div>`;
+    q5.innerHTML = beliefHTML;
+    container.appendChild(q5);
+
+
+    // --- FUNCTIONS ---
+    function selectScale(name, val, el) {
+        // Find sibling inputs
+        const container = el.parentElement;
+        // Deselect all
+        const opts = container.querySelectorAll('.scale-opt');
+        opts.forEach(o => o.classList.remove('selected'));
+        // Select this
+        el.classList.add('selected');
+        // Update hidden input (found via ID structure or traversing DOM)
+        // Here we rely on the specific structure: scale-0-8 div is followed by labels then input
+        // Let's use name to find unique input
+        // Actually, name passed to function is unique per group.
+        // Let's assume createScale08 was used correctly.
+        // Simpler: pass the ID of the hidden input
+    }
+    // Re-write create functions to handle ID properly or use specific selectors
+    // Let's refine the onclick logic:
+    
+    window.selectScale = function(name, val, el) {
+        // Visuals
+        const parent = el.parentElement;
+        parent.querySelectorAll('.scale-opt').forEach(d => d.classList.remove('selected'));
+        el.classList.add('selected');
+        
+        // Find input next to labels
+        // Structure: div.scale-0-8 + div.labels + input
+        const input = parent.nextElementSibling.nextElementSibling;
+        input.value = val;
+    };
+
+    window.selectMini = function(name, val, el) {
+        const parent = el.parentElement;
+        parent.querySelectorAll('.mini-opt').forEach(d => d.classList.remove('selected'));
+        el.classList.add('selected');
+        const input = parent.nextElementSibling;
+        input.value = val;
+    };
+
+    window.updateRange = function(range, dispId, inpId) {
+        document.getElementById(dispId).innerText = range.value;
+        document.getElementById(inpId).value = range.value;
+    };
+
+    function calculateScore() {
+        // Q1 + Q2
+        const v1 = parseInt(document.getElementById('ans-q1').value) || 0;
+        const v2 = parseInt(document.getElementById('ans-q2').value) || 0;
+        document.getElementById('scoreGen').innerText = v1 + v2;
+
+        // Q3 Total
+        let sumStrat = 0;
+        for(let i=0; i<10; i++) sumStrat += parseInt(document.getElementById(`ans-q3-${i}`).value) || 0;
+        document.getElementById('scoreStrat').innerText = sumStrat;
+
+        // Q4 Total
+        let sumAvoid = 0;
+        for(let i=0; i<5; i++) sumAvoid += parseInt(document.getElementById(`ans-q4-${i}`).value) || 0;
+        sumAvoid += parseInt(document.getElementById(`ans-q4-other`).value) || 0;
+        document.getElementById('scoreAvoid').innerText = sumAvoid;
+
+        // Q5 Average
+        let sumMeta = 0;
+        for(let i=0; i<12; i++) sumMeta += parseInt(document.getElementById(`ans-q5-${i}`).value) || 0;
+        document.getElementById('scoreMeta').innerText = (sumMeta / 12).toFixed(1);
+
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        if(confirm("Slette data?")) location.reload();
+    }
+
+    async function exportPDF() {
+        const btn = document.getElementById('pdfBtn');
+        btn.innerText = "Genererer...";
+        btn.disabled = true;
+
+        const element = document.getElementById('doc-content');
+        const name = document.getElementById('pName').value || "Ukjent";
+
+        try {
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            const imgWidth = 190;
+            const pageHeight = 295;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 10;
+
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pageHeight - 20);
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight + 10;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - 20);
+            }
+
+            pdf.save(`GADS-R_${name}.pdf`);
+        } catch(e) {
+            alert("Feil ved PDF");
+        } finally {
+            btn.innerText = "📄 Lagre til PDF";
+            btn.disabled = false;
+        }
+    }
+
+    function exportWord() {
+        const name = document.getElementById('pName').value || "Ukjent";
+        const content = document.getElementById('doc-content').cloneNode(true);
+        
+        // Transform standard inputs
+        content.querySelectorAll('input[type="text"], input[type="date"]').forEach(inp => {
+            const span = document.createElement('span');
+            span.innerHTML = inp.value ? `<b>${inp.value}</b>` : "______";
+            inp.parentNode.replaceChild(span, inp);
+        });
+
+        // 1. Transform 0-8 Scales (Q1, Q2)
+        content.querySelectorAll('.scale-0-8').forEach(scale => {
+            const input = scale.parentNode.querySelector('input[type="hidden"]');
+            const val = input.value || "-";
+            const div = document.createElement('div');
+            div.innerHTML = `<b>Valgt: ${val}</b> (Skala 0-8)`;
+            div.style.color = "#2980b9";
+            scale.parentNode.replaceChild(div, scale);
+        });
+
+        // 2. Transform Mini Scales (Q3, Q4)
+        content.querySelectorAll('.mini-scale').forEach(scale => {
+            const input = scale.nextElementSibling;
+            const val = input.value;
+            const span = document.createElement('span');
+            span.innerHTML = ` <b>[${val}]</b>`;
+            span.style.color = "#c0392b";
+            scale.parentNode.replaceChild(span, scale);
+        });
+
+        // 3. Transform Range Sliders (Q5)
+        content.querySelectorAll('.range-wrap').forEach(wrap => {
+            const input = wrap.querySelector('input[type="hidden"]');
+            const val = input.value;
+            wrap.innerHTML = `<b>${val}%</b>`;
+        });
+
+        const header = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>GADS-R Resultat</title>
+            <style>
+                body { font-family: Arial; }
+                .q-box { border-bottom: 1px solid #ccc; margin-bottom: 10px; padding-bottom: 5px; }
+                .q-title { font-weight: bold; background: #eee; padding: 5px; margin-bottom: 5px; }
+                .strat-item { border-bottom: 1px dotted #ccc; margin-bottom: 2px; }
+                .belief-row { border-bottom: 1px dotted #ccc; margin-bottom: 2px; }
+            </style>
+            </head><body>
+        `;
+        const footer = "</body></html>";
+        const html = header + content.innerHTML + footer;
+
+        const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `GADS-R_${name}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Søvndagbok</title>
+
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" sizes="90x90" href="apple-touch-icon.png">
+
+<meta name="description" content="Elektronisk søvndagbok for kartlegging og oppfølging av søvn (CBT-i).">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Søvndagbok">
+<meta property="og:description" content="Elektronisk søvndagbok for kartlegging og oppfølging av søvn (CBT-i).">
+<meta property="og:image" content="og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Søvndagbok">
+<meta name="twitter:description" content="Elektronisk søvndagbok for kartlegging og oppfølging av søvn (CBT-i).">
+<meta name="twitter:image" content="og-image.png">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+  :root{
+    --ink:#1c2733;
+    --ink-soft:#4b5b6b;
+    --line:#d7dee4;
+    --line-soft:#e8edf1;
+    --bg:#f6f8fa;
+    --panel:#ffffff;
+    --accent:#2f6f6f;
+    --accent-dark:#245757;
+    --accent-soft:#e4f0ef;
+    --warn-bg:#fff7e6;
+    --warn-border:#f0d9a6;
+    --radius:10px;
+    font-size:16px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.45;
+    padding:24px 16px 64px;
+  }
+  .wrap{max-width:1180px;margin:0 auto;}
+  @media (min-width:1400px){
+    .wrap{max-width:1600px;}
+  }
+  header.page-head{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:18px;
+  }
+  h1{
+    font-size:1.5rem;
+    margin:0 0 4px;
+    letter-spacing:-0.01em;
+  }
+  .sub{color:var(--ink-soft);font-size:0.92rem;margin:0;}
+  .id-fields{
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:14px 16px;
+    margin-bottom:16px;
+  }
+  .id-fields label{
+    display:flex;
+    flex-direction:column;
+    font-size:0.82rem;
+    color:var(--ink-soft);
+    gap:4px;
+    flex:1 1 200px;
+  }
+  .id-fields input[type=text]{
+    font-size:0.95rem;
+    padding:7px 9px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    color:var(--ink);
+    background:#fff;
+  }
+  details.help{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:10px 16px;
+    margin-bottom:20px;
+    font-size:0.88rem;
+    color:var(--ink-soft);
+  }
+  details.help summary{
+    cursor:pointer;
+    font-weight:600;
+    color:var(--accent-dark);
+  }
+  details.help .ex-table{
+    margin-top:10px;
+    border-collapse:collapse;
+    width:100%;
+    font-size:0.82rem;
+  }
+  details.help .ex-table td{
+    border:1px solid var(--line-soft);
+    padding:5px 8px;
+    vertical-align:top;
+  }
+  @media (min-width:1400px){
+    .table-scroll{overflow-x:visible;}
+  }
+  .table-scroll{
+    overflow-x:auto;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:2px;
+  }
+  table.diary{
+    border-collapse:collapse;
+    width:100%;
+    min-width:980px;
+  }
+  @media (min-width:1400px){
+    table.diary{min-width:0;table-layout:fixed;}
+    table.diary td.qcell{min-width:260px;position:static;}
+    table.diary td.datacell{min-width:0;}
+  }
+  table.diary th, table.diary td{
+    border:1px solid var(--line-soft);
+    padding:8px;
+    vertical-align:top;
+  }
+  table.diary thead th{
+    background:var(--accent-soft);
+    color:var(--accent-dark);
+    font-size:0.82rem;
+    font-weight:600;
+    text-align:center;
+    position:sticky;
+    top:0;
+  }
+  table.diary td.qcell{
+    background:#fbfcfd;
+    font-size:0.83rem;
+    color:var(--ink);
+    min-width:230px;
+    position:sticky;
+    left:0;
+  }
+  table.diary td.qcell b{font-weight:600;}
+  table.diary td.qcell .scale{
+    display:block;
+    margin-top:4px;
+    color:var(--ink-soft);
+    font-size:0.76rem;
+  }
+  table.diary td.datacell{min-width:118px;}
+  .rowlabel{font-size:0.82rem;font-weight:600;color:var(--ink);}
+  table.diary input, table.diary select{
+    width:100%;
+    font-size:0.86rem;
+    padding:6px 5px;
+    border:1px solid var(--line);
+    border-radius:5px;
+    background:#fff;
+    color:var(--ink);
+  }
+  table.diary input:focus, table.diary select:focus{
+    outline:2px solid var(--accent);
+    outline-offset:1px;
+  }
+  table.diary input[type=text].nap-input{font-size:0.8rem;}
+  .section-row td{
+    background:var(--accent-soft);
+    font-weight:600;
+    color:var(--accent-dark);
+    font-size:0.82rem;
+  }
+  .actions{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin:22px 0 8px;
+  }
+  .actions .left, .actions .right{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  button.btn{
+    border:none;
+    border-radius:8px;
+    padding:11px 18px;
+    font-size:0.92rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:filter .15s ease, transform .05s ease;
+  }
+  button.btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{filter:brightness(1.08);}
+  .btn-secondary{background:#fff;color:var(--accent-dark);border:1px solid var(--accent);}
+  .btn-secondary:hover{background:var(--accent-soft);}
+  .btn-send{background:var(--accent-dark);color:#fff;}
+  .btn-send:hover{filter:brightness(1.1);}
+  #calcMsg{font-size:0.82rem;color:var(--ink-soft);margin-top:4px;min-height:1.1em;}
+  #results{
+    margin-top:18px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:18px 20px;
+  }
+  #results h2{margin-top:0;font-size:1.15rem;}
+  #results .placeholder{color:var(--ink-soft);font-size:0.9rem;}
+  .res-meta{font-size:0.85rem;color:var(--ink-soft);margin-bottom:10px;}
+  table.results-table{width:100%;border-collapse:collapse;font-size:0.9rem;}
+  table.results-table td{padding:9px 10px;border-bottom:1px solid var(--line-soft);}
+  table.results-table td:first-child{color:var(--ink);}
+  table.results-table td:last-child{text-align:right;font-weight:700;color:var(--accent-dark);white-space:nowrap;}
+  tr.se-row td{border-top:2px solid var(--line);font-weight:700;}
+  tr.se-row td:last-child{color:var(--ink);}
+  .note-box{
+    background:var(--warn-bg);
+    border:1px solid var(--warn-border);
+    border-radius:8px;
+    padding:10px 14px;
+    font-size:0.8rem;
+    color:#6b5416;
+    margin-top:14px;
+  }
+  #history{
+    margin-top:24px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:18px 20px;
+  }
+  #history h2{margin-top:0;font-size:1.15rem;}
+  #history .placeholder{color:var(--ink-soft);font-size:0.9rem;}
+  table.history-table{width:100%;border-collapse:collapse;font-size:0.85rem;margin-bottom:18px;}
+  table.history-table th, table.history-table td{
+    border:1px solid var(--line-soft);
+    padding:7px 8px;
+    text-align:center;
+  }
+  table.history-table th{background:var(--accent-soft);color:var(--accent-dark);font-weight:600;}
+  table.history-table td:first-child, table.history-table th:first-child{text-align:left;}
+  table.history-table td.hist-del{cursor:pointer;color:#b3441f;font-weight:600;}
+  #historyChart{width:100%;height:280px;display:block;background:#fff;border:1px solid var(--line-soft);border-radius:8px;}
+  .hist-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:0.8rem;color:var(--ink-soft);margin-top:8px;}
+  .hist-legend span{display:inline-flex;align-items:center;gap:5px;}
+  .hist-legend i{width:12px;height:12px;border-radius:3px;display:inline-block;}
+  .btn-danger{background:#fff;color:#b3441f;border:1px solid #b3441f;}
+  .btn-danger:hover{background:#fdf1ec;}
+  @media print{
+    body{background:#fff;padding:0;}
+    .actions, details.help, #calcMsg{display:none !important;}
+  }
+  #printExportRoot{
+    display:none;
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:9999;
+    width:1040px;
+    padding:24px;
+    background:#fff;
+    color:#1c2733;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  #printExportRoot.showing{display:block;}
+  #printExportRoot .pe-inner{width:100%;}
+  #printExportRoot h1{font-size:20px;margin:0 0 4px;}
+  #printExportRoot .pe-sub{font-size:12px;color:#4b5b6b;margin-bottom:14px;}
+  #printExportRoot table{border-collapse:collapse;width:100%;font-size:11px;margin-bottom:16px;}
+  #printExportRoot table th, #printExportRoot table td{border:1px solid #cfd8de;padding:5px 6px;text-align:left;vertical-align:top;}
+  #printExportRoot tr{page-break-inside:avoid;}
+  #printExportRoot table th{background:#e4f0ef;}
+  #printExportRoot .pe-qcell{font-weight:600;width:190px;}
+  #printExportRoot h2{font-size:15px;margin:18px 0 8px;color:#245757;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page-head">
+    <div>
+      <h1>Søvndagbok</h1>
+      <p class="sub">Fylles ut hver dag – én kolonne per natt/døgn. Klikk «Regn ut» når uken er fylt ut.</p>
+    </div>
+  </header>
+
+  <div class="id-fields">
+    <label>Navn
+      <input type="text" id="patientName" autocomplete="off">
+    </label>
+    <label>Søvndagbok uke (f.eks. dato fra–til)
+      <input type="text" id="weekLabel" autocomplete="off" placeholder="f.eks. 17.08 – 23.08">
+    </label>
+  </div>
+
+  <details class="help">
+    <summary>Se utfylt eksempel og forklaring</summary>
+    <p style="margin:8px 0 0;">Fyll ut spørsmål 1–9 om morgenen (om natten som har vært), og spørsmål 10–11 om kvelden (om dagen som har vært). Bruk 24-timers klokkeslett (f.eks. 22:30).</p>
+    <table class="ex-table">
+      <tr><td>1. Sovemedisin / alkohol</td><td>Imovane 7,5 mg</td></tr>
+      <tr><td>2. Jeg gikk til sengs kl.</td><td>22:30</td></tr>
+      <tr><td>3. Slo av lyset og prøvde å sovne kl.</td><td>23:00</td></tr>
+      <tr><td>4. Sovnet innen (min)</td><td>45</td></tr>
+      <tr><td>5. Antall oppvåkninger</td><td>3</td></tr>
+      <tr><td>6. Jeg lå våken i tilsammen (min)</td><td>125</td></tr>
+      <tr><td>7. Våknet siste gang kl.</td><td>06:15</td></tr>
+      <tr><td>8. Stod opp kl.</td><td>06:40</td></tr>
+      <tr><td>9. Søvnkvalitet (1–5)</td><td>1</td></tr>
+      <tr><td>10. Opplagthet (1–5)</td><td>2</td></tr>
+      <tr><td>11. Blundet på dagtid</td><td>16:00-16:30, 18:15-18:30</td></tr>
+    </table>
+  </details>
+
+  <div class="table-scroll">
+  <table class="diary" id="diaryTable">
+    <thead>
+      <tr>
+        <th style="text-align:left;">Spørsmål</th>
+        <th>Søn–Man</th>
+        <th>Man–Tir</th>
+        <th>Tir–Ons</th>
+        <th>Ons–Tor</th>
+        <th>Tor–Fre</th>
+        <th>Fre–Lør</th>
+        <th>Lør–Søn</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="qcell"><b>Dato</b> <span class="scale">(husk å notere dato hver dag)</span></td>
+        <!--DATE_ROW-->
+      </tr>
+      <tr class="section-row"><td colspan="8">Fylles ut om morgenen – angående natten som har vært</td></tr>
+      <tr>
+        <td class="qcell"><b>1.</b> Sovemedisin (navn og styrke) og/eller alkohol (type, mengde)</td>
+        <!--ROW1-->
+      </tr>
+      <tr>
+        <td class="qcell"><b>2.</b> Jeg gikk til sengs kl.</td>
+        <!--ROW2-->
+      </tr>
+      <tr>
+        <td class="qcell"><b>3.</b> Jeg slo av lyset og prøvde å sovne kl.</td>
+        <!--ROW3-->
+      </tr>
+      <tr>
+        <td class="qcell"><b>4.</b> Etter at lyset var slått av, sovnet jeg innen (ca. antall minutter)</td>
+        <!--ROW4-->
+      </tr>
+      <tr>
+        <td class="qcell"><b>5.</b> Antall oppvåkninger i løpet av natten (før siste oppvåkning)</td>
+        <!--ROW5-->
+      </tr>
+      <tr>
+        <td class="qcell"><b>6.</b> Jeg lå våken i tilsammen (ca. antall minutter)</td>
+        <!--ROW6-->
+      </tr>
+      <tr>
+        <td class="qcell"><b>7.</b> Jeg våknet opp siste gang (før jeg stod opp til ny dag) kl.</td>
+        <!--ROW7-->
+      </tr>
+      <tr>
+        <td class="qcell"><b>8.</b> Jeg stod opp kl.</td>
+        <!--ROW8-->
+      </tr>
+      <tr>
+        <td class="qcell"><b>9.</b> Siste natts søvn totalt sett var:
+          <span class="scale">1=veldig lett, 2=lett, 3=middels, 4=dyp, 5=veldig dyp</span></td>
+        <!--ROW9-->
+      </tr>
+      <tr class="section-row"><td colspan="8">Fylles ut om kvelden – angående dagen som har vært</td></tr>
+      <tr>
+        <td class="qcell"><b>10.</b> Jeg har i løpet av dagen fungert:
+          <span class="scale">1=veldig dårlig, 2=dårlig, 3=hverken eller, 4=bra, 5=veldig bra</span></td>
+        <!--ROW10-->
+      </tr>
+      <tr>
+        <td class="qcell"><b>11.</b> Jeg blundet på dagtid fra kl... til kl... <span class="scale">(klokkeslett for alle blundene, skilt med komma, f.eks. 14:00-14:30, 16:00-16:20)</span></td>
+        <!--ROW11-->
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="actions">
+    <div class="left">
+      <button type="button" class="btn btn-primary" id="calcBtn">Regn ut</button>
+      <button type="button" class="btn btn-secondary" id="saveWeekBtn">Lagre uke og start ny uke</button>
+    </div>
+    <div class="right">
+      <button type="button" class="btn btn-secondary" id="wordBtn">Lagre som Word</button>
+      <button type="button" class="btn btn-secondary" id="pdfBtn">Lagre som PDF</button>
+      <button type="button" class="btn btn-send" id="sendBtn">Send til behandler</button>
+    </div>
+  </div>
+  <div id="calcMsg"></div>
+
+  <div id="results">
+    <h2>Resultater</h2>
+    <p class="placeholder" id="resultsPlaceholder">Fyll ut dagboken og klikk «Regn ut» for å se skåring her.</p>
+  </div>
+
+  <div class="note-box">
+    «Send til behandler» laster ned Word- og PDF-filen til enheten din og åpner deretter en ny e-post. Av sikkerhetsgrunner kan nettlesere ikke legge til vedlegg i en e-post automatisk – du må selv legge de to nedlastede filene ved e-posten før du sender den.
+  </div>
+
+
+  <div id="history">
+    <h2>Utvikling over uker</h2>
+    <p class="placeholder" id="historyPlaceholder">Ingen uker er lagret enda. Klikk «Lagre uke og start ny uke» etter å ha regnet ut en uke, for å legge den til her.</p>
+    <div id="historyContent" style="display:none;">
+      <div style="overflow-x:auto;">
+      <table class="history-table" id="historyTable"></table>
+      </div>
+      <canvas id="historyChart" width="1000" height="280"></canvas>
+      <div class="hist-legend">
+        <span><i style="background:#2f6f6f;"></i>Søvneffektivitet (%)</span>
+        <span><i style="background:#c98a2b;"></i>Søvnkvalitet (1–5, skalert)</span>
+        <span><i style="background:#8a3ab1;"></i>Opplagthet (1–5, skalert)</span>
+      </div>
+      <div class="actions" style="margin-top:14px;">
+        <div class="left">
+          <button type="button" class="btn btn-danger" id="clearHistoryBtn">Tøm historikk</button>
+        </div>
+        <div class="right">
+          <button type="button" class="btn btn-secondary" id="histWordBtn">Lagre som Word</button>
+          <button type="button" class="btn btn-secondary" id="histPdfBtn">Lagre som PDF</button>
+          <button type="button" class="btn btn-send" id="histSendBtn">Send til behandler</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="printExportRoot"></div>
+
+<script>
+const DAYS = 7;
+const DAY_LABELS = ["Søn–Man","Man–Tir","Tir–Ons","Ons–Tor","Tor–Fre","Fre–Lør","Lør–Søn"];
+
+function td(html){ return `<td class="datacell">${html}</td>`; }
+
+function buildRowCells(kind, name){
+  let html = "";
+  for(let i=1;i<=DAYS;i++){
+    if(kind==="date"){
+      html += td(`<input type="date" id="${name}_${i}">`);
+    } else if(kind==="time"){
+      html += td(`<input type="time" id="${name}_${i}">`);
+    } else if(kind==="number"){
+      html += td(`<input type="number" min="0" step="1" id="${name}_${i}">`);
+    } else if(kind==="text"){
+      html += td(`<input type="text" id="${name}_${i}">`);
+    } else if(kind==="nap"){
+      html += td(`<input type="text" class="nap-input" id="${name}_${i}" placeholder="14:00-14:30, 16:00-16:20">`);
+    } else if(kind==="scale5_light"){
+      html += td(`<select id="${name}_${i}">
+        <option value="">–</option>
+        <option value="1">1 (veldig lett)</option>
+        <option value="2">2 (lett)</option>
+        <option value="3">3 (middels)</option>
+        <option value="4">4 (dyp)</option>
+        <option value="5">5 (veldig dyp)</option>
+      </select>`);
+    } else if(kind==="scale5_function"){
+      html += td(`<select id="${name}_${i}">
+        <option value="">–</option>
+        <option value="1">1 (veldig dårlig)</option>
+        <option value="2">2 (dårlig)</option>
+        <option value="3">3 (hverken eller)</option>
+        <option value="4">4 (bra)</option>
+        <option value="5">5 (veldig bra)</option>
+      </select>`);
+    }
+  }
+  return html;
+}
+
+function initTable(){
+  const map = [
+    ["DATE_ROW","date","dato"],
+    ["ROW1","text","medisin"],
+    ["ROW2","time","leggetid"],
+    ["ROW3","time","lysav"],
+    ["ROW4","number","innsov"],
+    ["ROW5","number","oppvak"],
+    ["ROW6","number","varighet"],
+    ["ROW7","time","sisteoppvak"],
+    ["ROW8","time","stodopp"],
+    ["ROW9","scale5_light","kvalitet"],
+    ["ROW10","scale5_function","opplagthet"],
+    ["ROW11","nap","blund"]
+  ];
+  let html = document.getElementById("diaryTable").innerHTML;
+  map.forEach(([placeholder, kind, name])=>{
+    html = html.replace(`<!--${placeholder}-->`, buildRowCells(kind, name));
+  });
+  document.getElementById("diaryTable").innerHTML = html;
+}
+initTable();
+
+// ---------- auto-fill dates: setting any day's date fills the rest of the week ----------
+function setupDateAutoFill(){
+  for(let i=1;i<=DAYS;i++){
+    const el = document.getElementById(`dato_${i}`);
+    if(!el) continue;
+    el.addEventListener('change', function(){
+      const val = this.value;
+      if(!val) return;
+      const base = new Date(val + 'T00:00:00');
+      if(isNaN(base.getTime())) return;
+      for(let j=1;j<=DAYS;j++){
+        if(j===i) continue;
+        const target = document.getElementById(`dato_${j}`);
+        if(!target) continue;
+        const d = new Date(base);
+        d.setDate(d.getDate() + (j - i));
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth()+1).padStart(2,'0');
+        const dd = String(d.getDate()).padStart(2,'0');
+        target.value = `${yyyy}-${mm}-${dd}`;
+      }
+    });
+  }
+}
+setupDateAutoFill();
+
+// ---------- helpers ----------
+function val(name, i){
+  const el = document.getElementById(`${name}_${i}`);
+  return el ? el.value.trim() : "";
+}
+function timeToMin(t){
+  if(!t) return null;
+  const p = t.split(":");
+  if(p.length!==2) return null;
+  const h = parseInt(p[0],10), m = parseInt(p[1],10);
+  if(isNaN(h)||isNaN(m)) return null;
+  return h*60+m;
+}
+function numOrNull(s){
+  if(s===""||s===null||s===undefined) return null;
+  const n = parseFloat(s);
+  return isNaN(n) ? null : n;
+}
+function diffOvernight(startMin, endMin){
+  if(startMin==null||endMin==null) return null;
+  let d = endMin - startMin;
+  if(d<0) d += 1440;
+  return d;
+}
+function parseNapMinutes(str){
+  if(!str) return 0;
+  const cleaned = str.replace(/–|—/g,"-");
+  const segs = cleaned.split(",");
+  let total = 0;
+  segs.forEach(seg=>{
+    seg = seg.trim();
+    if(!seg) return;
+    const parts = seg.split("-");
+    if(parts.length!==2) return;
+    const s = timeToMin(parts[0].trim());
+    const e = timeToMin(parts[1].trim());
+    if(s==null||e==null) return;
+    let d = e - s;
+    if(d<0) d += 1440;
+    total += d;
+  });
+  return total;
+}
+function avg(arr){
+  const v = arr.filter(x=>x!=null && !isNaN(x));
+  if(!v.length) return null;
+  return v.reduce((a,b)=>a+b,0)/v.length;
+}
+function avgEveningTime(arr){
+  const v = arr.filter(x=>x!=null && !isNaN(x));
+  if(!v.length) return null;
+  const norm = v.map(x=> x<720 ? x+1440 : x);
+  const m = norm.reduce((a,b)=>a+b,0)/norm.length;
+  return ((m%1440)+1440)%1440;
+}
+function minToHHMM(min){
+  if(min==null || isNaN(min)) return "–";
+  min = Math.round(min);
+  let h = Math.floor(min/60)%24;
+  let m = min%60;
+  if(h<0) h+=24;
+  return String(h).padStart(2,"0")+":"+String(m).padStart(2,"0");
+}
+function minToDuration(min){
+  if(min==null || isNaN(min)) return "–";
+  min = Math.round(min);
+  const sign = min<0 ? "-" : "";
+  min = Math.abs(min);
+  const h = Math.floor(min/60);
+  const m = min%60;
+  return `${sign}${h} t ${String(m).padStart(2,"0")} min`;
+}
+function fmtNum(n, dec){
+  if(n==null||isNaN(n)) return "–";
+  return n.toFixed(dec);
+}
+
+// ---------- gather + compute ----------
+function computeAll(){
+  const days = [];
+  for(let i=1;i<=DAYS;i++){
+    const dato = val("dato", i);
+    const medisin = val("medisin", i);
+    const leggetid = val("leggetid", i);
+    const lysav = val("lysav", i);
+    const innsov = val("innsov", i);
+    const oppvak = val("oppvak", i);
+    const varighet = val("varighet", i);
+    const sisteoppvak = val("sisteoppvak", i);
+    const stodopp = val("stodopp", i);
+    const kvalitet = val("kvalitet", i);
+    const opplagthet = val("opplagthet", i);
+    const blund = val("blund", i);
+
+    const active = lysav!=="" || stodopp!=="" || dato!=="";
+    if(!active){
+      days.push({active:false});
+      continue;
+    }
+
+    const leggetidMin = timeToMin(leggetid);
+    const lysavMin = timeToMin(lysav);
+    const innsovNum = numOrNull(innsov);
+    const oppvakNum = numOrNull(oppvak);
+    const varighetNum = numOrNull(varighet);
+    const sisteoppvakMin = timeToMin(sisteoppvak);
+    const stodoppMin = timeToMin(stodopp);
+    const kvalitetNum = numOrNull(kvalitet);
+    const opplagthetNum = numOrNull(opplagthet);
+    const napMin = parseNapMinutes(blund);
+
+    let innsovningstidDay = null;
+    if(innsovNum!=null){
+      innsovningstidDay = innsovNum;
+    }
+
+    let lastWakeToRise = null;
+    if(sisteoppvakMin!=null && stodoppMin!=null){
+      lastWakeToRise = diffOvernight(sisteoppvakMin, stodoppMin);
+    }
+
+    let sengetidDay = null;
+    if(lysavMin!=null && stodoppMin!=null){
+      sengetidDay = diffOvernight(lysavMin, stodoppMin) + napMin;
+    }
+
+    let sovntidDay = null;
+    if(sengetidDay!=null && innsovningstidDay!=null && varighetNum!=null && lastWakeToRise!=null){
+      sovntidDay = sengetidDay - innsovningstidDay - varighetNum - lastWakeToRise;
+    }
+
+    days.push({
+      active:true, dato, medisin, leggetid, lysav, innsov, oppvak, varighet, sisteoppvak, stodopp, kvalitet, opplagthet, blund,
+      leggetidMin, lysavMin, innsovNum, oppvakNum, varighetNum, sisteoppvakMin, stodoppMin, kvalitetNum, opplagthetNum, napMin,
+      innsovningstidDay, lastWakeToRise, sengetidDay, sovntidDay
+    });
+  }
+
+  const activeDays = days.filter(d=>d.active);
+  const nDays = activeDays.length;
+
+  const avgNap = avg(activeDays.map(d=> d.blund!=="" ? d.napMin : (d.lysav!=="" || d.stodopp!=="" ? d.napMin : null)));
+  const avgLeggetid = avgEveningTime(activeDays.map(d=>d.leggetidMin));
+  const avgLysav = avgEveningTime(activeDays.map(d=>d.lysavMin));
+  const avgInnsov = avg(activeDays.map(d=>d.innsovningstidDay));
+  const avgOppvak = avg(activeDays.map(d=>d.oppvakNum));
+  const avgVarighet = avg(activeDays.map(d=>d.varighetNum));
+  const avgSisteOppvak = avg(activeDays.map(d=>d.sisteoppvakMin));
+  const avgStodOpp = avg(activeDays.map(d=>d.stodoppMin));
+  const avgKvalitet = avg(activeDays.map(d=>d.kvalitetNum));
+  const avgOpplagthet = avg(activeDays.map(d=>d.opplagthetNum));
+  const avgSengetid = avg(activeDays.map(d=>d.sengetidDay));
+  const avgSovntid = avg(activeDays.map(d=>d.sovntidDay));
+  let se = null;
+  if(avgSengetid!=null && avgSovntid!=null && avgSengetid>0){
+    se = (avgSovntid/avgSengetid)*100;
+  }
+
+  return {
+    days, nDays,
+    avgNap, avgLeggetid, avgLysav, avgInnsov, avgOppvak, avgVarighet, avgSisteOppvak, avgStodOpp,
+    avgKvalitet, avgOpplagthet, avgSengetid, avgSovntid, se
+  };
+}
+
+function renderResults(r){
+  const box = document.getElementById("results");
+  if(r.nDays===0){
+    box.innerHTML = `<h2>Resultater</h2><p class="placeholder">Ingen dager er registrert enda. Fyll ut minst én dag og klikk «Regn ut».</p>`;
+    return;
+  }
+  box.innerHTML = `
+    <h2>Resultater</h2>
+    <p class="res-meta">Basert på ${r.nDays} registrert${r.nDays===1?"":"e"} døgn.</p>
+    <table class="results-table">
+      <tr><td>Søvn på dagtid</td><td>${fmtNum(r.avgNap,0)} min</td></tr>
+      <tr><td>Leggetid</td><td>${minToHHMM(r.avgLeggetid)}</td></tr>
+      <tr><td>Slo av lyset kl.</td><td>${minToHHMM(r.avgLysav)}</td></tr>
+      <tr><td>Innsovningstid</td><td>${fmtNum(r.avgInnsov,0)} min</td></tr>
+      <tr><td>Antall oppvåkninger</td><td>${fmtNum(r.avgOppvak,1)}</td></tr>
+      <tr><td>Varighet av oppvåkningene (totalt)</td><td>${fmtNum(r.avgVarighet,0)} min</td></tr>
+      <tr><td>Siste oppvåkning</td><td>${minToHHMM(r.avgSisteOppvak)}</td></tr>
+      <tr><td>Sto opp</td><td>${minToHHMM(r.avgStodOpp)}</td></tr>
+      <tr><td>Subjektiv søvnkvalitet (1–5)</td><td>${fmtNum(r.avgKvalitet,1)}</td></tr>
+      <tr><td>Subjektiv opplagthet (1–5)</td><td>${fmtNum(r.avgOpplagthet,1)}</td></tr>
+      <tr><td>Sengetid</td><td>${minToDuration(r.avgSengetid)}</td></tr>
+      <tr><td>Søvntid</td><td>${minToDuration(r.avgSovntid)}</td></tr>
+      <tr class="se-row"><td>Søvneffektivitet (SE)</td><td>${r.se==null?"–":fmtNum(r.se,1)+" %"}</td></tr>
+    </table>
+  `;
+}
+
+let lastResults = null;
+function runCalculation(){
+  lastResults = computeAll();
+  renderResults(lastResults);
+  document.getElementById("calcMsg").textContent = "Beregning utført " + new Date().toLocaleString("nb-NO") + ".";
+  return lastResults;
+}
+document.getElementById("calcBtn").addEventListener("click", runCalculation);
+
+// ---------- weekly history: save, list, chart ----------
+const HISTORY_KEY = "sovndagbok_history_v1";
+
+function loadHistory(){
+  try{
+    const raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+function saveHistory(list){
+  try{ localStorage.setItem(HISTORY_KEY, JSON.stringify(list)); }catch(e){}
+}
+
+function clearFormForNewWeek(){
+  for(let i=1;i<=DAYS;i++){
+    ["dato","medisin","leggetid","lysav","innsov","oppvak","varighet","sisteoppvak","stodopp","kvalitet","opplagthet","blund"].forEach(name=>{
+      const el = document.getElementById(`${name}_${i}`);
+      if(el) el.value = "";
+    });
+  }
+  document.getElementById("weekLabel").value = "";
+  lastResults = null;
+  document.getElementById("results").innerHTML = `<h2>Resultater</h2><p class="placeholder" id="resultsPlaceholder">Fyll ut dagboken og klikk «Regn ut» for å se skåring her.</p>`;
+}
+
+function saveCurrentWeek(){
+  const r = lastResults || computeAll();
+  if(r.nDays===0){
+    document.getElementById("calcMsg").textContent = "Kan ikke lagre: ingen dager er registrert denne uken.";
+    return;
+  }
+  function firstDateLabel(){
+    for(let i=1;i<=DAYS;i++){
+      const dv = val("dato", i);
+      if(dv){
+        const d = new Date(dv + "T00:00:00");
+        if(!isNaN(d.getTime())){
+          const dd = String(d.getDate()).padStart(2,"0");
+          const mm = String(d.getMonth()+1).padStart(2,"0");
+          const yy = String(d.getFullYear()).slice(-2);
+          return `Uke fra ${dd}.${mm}.${yy}`;
+        }
+      }
+    }
+    return null;
+  }
+  const week = firstDateLabel() || document.getElementById("weekLabel").value.trim() || ("Uke lagret " + new Date().toLocaleDateString("nb-NO"));
+  const entry = {
+    week,
+    savedAt: new Date().toISOString(),
+    nDays: r.nDays,
+    avgLeggetid: r.avgLeggetid,
+    avgLysav: r.avgLysav,
+    avgInnsov: r.avgInnsov,
+    avgOppvak: r.avgOppvak,
+    avgVarighet: r.avgVarighet,
+    avgSisteOppvak: r.avgSisteOppvak,
+    avgStodOpp: r.avgStodOpp,
+    avgKvalitet: r.avgKvalitet,
+    avgOpplagthet: r.avgOpplagthet,
+    avgSengetid: r.avgSengetid,
+    avgSovntid: r.avgSovntid,
+    se: r.se
+  };
+  const list = loadHistory();
+  list.push(entry);
+  saveHistory(list);
+  renderHistory();
+  clearFormForNewWeek();
+  document.getElementById("calcMsg").textContent = "Uken ble lagret i historikken, og skjemaet er tømt for en ny uke.";
+  document.getElementById("history").scrollIntoView({behavior:"smooth", block:"start"});
+}
+document.getElementById("saveWeekBtn").addEventListener("click", saveCurrentWeek);
+
+function renderHistory(){
+  const list = loadHistory();
+  const placeholder = document.getElementById("historyPlaceholder");
+  const content = document.getElementById("historyContent");
+  if(!list.length){
+    placeholder.style.display = "";
+    content.style.display = "none";
+    return;
+  }
+  placeholder.style.display = "none";
+  content.style.display = "";
+
+  const table = document.getElementById("historyTable");
+  let html = `<thead><tr>
+    <th>Uke</th><th>Leggetid</th><th>Slo av lyset</th><th>Innsovningstid</th><th>Sengetid</th><th>Søvntid</th><th>SE (%)</th><th>Kvalitet</th><th>Opplagthet</th><th></th>
+  </tr></thead><tbody>`;
+  list.forEach((e,idx)=>{
+    html += `<tr>
+      <td>${e.week}</td>
+      <td>${minToHHMM(e.avgLeggetid)}</td>
+      <td>${minToHHMM(e.avgLysav)}</td>
+      <td>${fmtNum(e.avgInnsov,0)} min</td>
+      <td>${minToDuration(e.avgSengetid)}</td>
+      <td>${minToDuration(e.avgSovntid)}</td>
+      <td>${e.se==null?"–":fmtNum(e.se,1)}</td>
+      <td>${fmtNum(e.avgKvalitet,1)}</td>
+      <td>${fmtNum(e.avgOpplagthet,1)}</td>
+      <td class="hist-del" data-idx="${idx}">Fjern</td>
+    </tr>`;
+  });
+  html += `</tbody>`;
+  table.innerHTML = html;
+
+  table.querySelectorAll(".hist-del").forEach(td=>{
+    td.addEventListener("click", function(){
+      const i = parseInt(this.getAttribute("data-idx"),10);
+      const l = loadHistory();
+      l.splice(i,1);
+      saveHistory(l);
+      renderHistory();
+    });
+  });
+
+  drawHistoryChart(list);
+}
+
+function drawHistoryChart(list){
+  const canvas = document.getElementById("historyChart");
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  const padL = 45, padR = 20, padT = 20, padB = 40;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+  const n = list.length;
+
+  ctx.strokeStyle = "#d7dee4";
+  ctx.fillStyle = "#4b5b6b";
+  ctx.font = "11px -apple-system, Arial, sans-serif";
+  ctx.lineWidth = 1;
+
+  for(let gy=0; gy<=5; gy++){
+    const yv = gy*20;
+    const y = padT + plotH - (yv/100)*plotH;
+    ctx.beginPath();
+    ctx.moveTo(padL, y);
+    ctx.lineTo(W-padR, y);
+    ctx.stroke();
+    ctx.textAlign = "right";
+    ctx.fillText(String(yv), padL-6, y+4);
+  }
+
+  const xStep = n>1 ? plotW/(n-1) : 0;
+  ctx.textAlign = "center";
+  list.forEach((e,i)=>{
+    const x = n>1 ? padL + i*xStep : padL + plotW/2;
+    const label = e.week.length>10 ? e.week.slice(0,9)+"…" : e.week;
+    ctx.fillText(label, x, H-padB+16);
+  });
+
+  function plotSeries(getVal, color, scaleMaxTo100){
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    list.forEach((e,i)=>{
+      let v = getVal(e);
+      if(v==null || isNaN(v)) return;
+      if(scaleMaxTo100) v = (v/5)*100;
+      const x = n>1 ? padL + i*xStep : padL + plotW/2;
+      const y = padT + plotH - (Math.max(0,Math.min(100,v))/100)*plotH;
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+    list.forEach((e,i)=>{
+      let v = getVal(e);
+      if(v==null || isNaN(v)) return;
+      if(scaleMaxTo100) v = (v/5)*100;
+      const x = n>1 ? padL + i*xStep : padL + plotW/2;
+      const y = padT + plotH - (Math.max(0,Math.min(100,v))/100)*plotH;
+      ctx.beginPath();
+      ctx.arc(x,y,3,0,Math.PI*2);
+      ctx.fill();
+    });
+  }
+
+  plotSeries(e=>e.se, "#2f6f6f", false);
+  plotSeries(e=>e.avgKvalitet, "#c98a2b", true);
+  plotSeries(e=>e.avgOpplagthet, "#8a3ab1", true);
+}
+
+document.getElementById("clearHistoryBtn").addEventListener("click", function(){
+  if(confirm("Er du sikker på at du vil tømme hele historikken over uker? Dette kan ikke reverseres.")){
+    saveHistory([]);
+    renderHistory();
+  }
+});
+
+// ---------- history export (Word / PDF / send) ----------
+function buildHistoryExportHTML(){
+  const name = document.getElementById("patientName").value.trim() || "–";
+  const list = loadHistory();
+
+  if(!list.length){
+    return `<h1>Søvndagbok – utvikling over uker</h1><p>Ingen uker er lagret enda.</p>`;
+  }
+
+  let rows = "";
+  list.forEach(e=>{
+    rows += `<tr>
+      <td>${e.week}</td>
+      <td>${minToHHMM(e.avgLeggetid)}</td>
+      <td>${minToHHMM(e.avgLysav)}</td>
+      <td>${fmtNum(e.avgInnsov,0)} min</td>
+      <td>${minToDuration(e.avgSengetid)}</td>
+      <td>${minToDuration(e.avgSovntid)}</td>
+      <td>${e.se==null?"–":fmtNum(e.se,1)}</td>
+      <td>${fmtNum(e.avgKvalitet,1)}</td>
+      <td>${fmtNum(e.avgOpplagthet,1)}</td>
+    </tr>`;
+  });
+
+  const canvas = document.getElementById("historyChart");
+  let imgTag = "";
+  try{
+    const dataUrl = canvas.toDataURL("image/png");
+    imgTag = `<img src="${dataUrl}" style="max-width:100%;margin-top:12px;" alt="Graf: utvikling over uker">`;
+  }catch(e){ imgTag = ""; }
+
+  return `
+    <h1>Søvndagbok – utvikling over uker</h1>
+    <div class="pe-sub">Navn: ${name} &nbsp;&nbsp;|&nbsp;&nbsp; Antall lagrede uker: ${list.length}</div>
+    <table>
+      <thead><tr>
+        <th>Uke</th><th>Leggetid</th><th>Slo av lyset</th><th>Innsovningstid</th><th>Sengetid</th><th>Søvntid</th><th>SE (%)</th><th>Kvalitet</th><th>Opplagthet</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <h2>Graf: utvikling over uker</h2>
+    ${imgTag}
+  `;
+}
+
+function nameForHistoryFile(ext){
+  const name = document.getElementById("patientName").value.trim();
+  const safe = name ? name.replace(/[^a-zA-Z0-9æøåÆØÅ_-]+/g,"_") : "Sovndagbok";
+  return `Sovndagbok_utvikling_${safe}.${ext}`;
+}
+
+function buildHistoryWordBlob(){
+  const content = buildHistoryExportHTML();
+  const html = `
+  <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+  <head><meta charset="utf-8">
+  <style>
+    body{font-family:Calibri,Arial,sans-serif;color:#1c2733;}
+    h1{font-size:18pt;margin-bottom:2pt;}
+    h2{font-size:14pt;color:#245757;margin-top:16pt;}
+    .pe-sub{font-size:9pt;color:#4b5b6b;margin-bottom:10pt;}
+    table{border-collapse:collapse;width:100%;font-size:9pt;}
+    th,td{border:1px solid #999;padding:4pt 5pt;text-align:left;}
+    th{background:#e4f0ef;}
+  </style></head>
+  <body>${content}</body></html>`;
+  return new Blob(['﻿', html], { type: 'application/msword' });
+}
+
+document.getElementById("histWordBtn").addEventListener("click", function(){
+  const blob = buildHistoryWordBlob();
+  downloadBlob(blob, nameForHistoryFile("doc"));
+});
+
+function generateHistoryPDF(callback){
+  window.scrollTo(0,0);
+  const root = document.getElementById("printExportRoot");
+  root.innerHTML = `<div class="pe-inner">${buildHistoryExportHTML()}</div>`;
+  root.classList.add("showing");
+  const opt = {
+    margin: 10,
+    filename: nameForHistoryFile("pdf"),
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+    pagebreak: { mode: ['css', 'legacy'] }
+  };
+  function cleanup(){
+    root.classList.remove("showing");
+    root.innerHTML = "";
+  }
+  if(typeof html2pdf === "undefined"){
+    cleanup();
+    document.getElementById("calcMsg").textContent = "PDF-verktøyet kunne ikke lastes (krever internettforbindelse). Bruk utskriftsdialogen (Ctrl/Cmd+P) og velg «Lagre som PDF».";
+    window.print();
+    if(callback) callback(null);
+    return;
+  }
+  html2pdf().set(opt).from(root.querySelector(".pe-inner")).outputPdf('blob').then(function(blob){
+    cleanup();
+    downloadBlob(blob, nameForHistoryFile("pdf"));
+    if(callback) callback(blob);
+  }).catch(function(err){
+    cleanup();
+    document.getElementById("calcMsg").textContent = "Kunne ikke generere PDF automatisk for utviklingen. Bruk utskriftsdialogen (Ctrl/Cmd+P) og velg «Lagre som PDF».";
+    if(callback) callback(null);
+  });
+}
+
+document.getElementById("histPdfBtn").addEventListener("click", function(){
+  generateHistoryPDF();
+});
+
+document.getElementById("histSendBtn").addEventListener("click", function(){
+  const blob = buildHistoryWordBlob();
+  downloadBlob(blob, nameForHistoryFile("doc"));
+  generateHistoryPDF(function(){
+    const name = document.getElementById("patientName").value.trim() || "pasient";
+    const subject = encodeURIComponent(`Søvndagbok – utvikling over uker – ${name}`);
+    const body = encodeURIComponent(
+`Hei,
+
+Vedlagt følger utviklingen i min søvndagbok over flere uker (Word- og PDF-fil).
+
+Viktig: Legg ved de to filene som nettleseren nettopp lastet ned (Sovndagbok_utvikling_...doc og Sovndagbok_utvikling_...pdf, vanligvis i Nedlastinger-mappen din) før du sender denne e-posten – nettlesere kan ikke legge til vedlegg automatisk.
+
+Med vennlig hilsen
+${name}`);
+    document.getElementById("calcMsg").textContent = "Word- og PDF-fil for utviklingen lastet ned. Åpner e-postvindu – husk å legge ved de nedlastede filene manuelt.";
+    setTimeout(()=>{
+      window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    }, 600);
+  });
+});
+
+renderHistory();
+
+// ---------- export ----------
+function buildExportHTML(){
+  const name = document.getElementById("patientName").value.trim() || "–";
+  const week = document.getElementById("weekLabel").value.trim() || "–";
+  const r = lastResults || computeAll();
+
+  let diaryRows = "";
+  const rowsDef = [
+    ["Dato","dato"],
+    ["1. Sovemedisin / alkohol","medisin"],
+    ["2. Gikk til sengs kl.","leggetid"],
+    ["3. Slo av lyset og prøvde å sovne kl.","lysav"],
+    ["4. Sovnet innen (min)","innsov"],
+    ["5. Antall oppvåkninger","oppvak"],
+    ["6. Lå våken i tilsammen (min)","varighet"],
+    ["7. Våknet siste gang kl.","sisteoppvak"],
+    ["8. Stod opp kl.","stodopp"],
+    ["9. Søvnkvalitet (1–5)","kvalitet"],
+    ["10. Opplagthet (1–5)","opplagthet"],
+    ["11. Blundet på dagtid","blund"]
+  ];
+  rowsDef.forEach(([label,name2])=>{
+    let cells = "";
+    for(let i=1;i<=DAYS;i++){
+      const v = val(name2, i) || "–";
+      cells += `<td>${v}</td>`;
+    }
+    diaryRows += `<tr><td class="pe-qcell">${label}</td>${cells}</tr>`;
+  });
+
+  const headCells = DAY_LABELS.map(l=>`<th>${l}</th>`).join("");
+
+  const resultsRows = (r.nDays===0) ? `<tr><td colspan="2">Ingen dager registrert</td></tr>` : `
+      <tr><td>Søvn på dagtid</td><td>${fmtNum(r.avgNap,0)} min</td></tr>
+      <tr><td>Leggetid</td><td>${minToHHMM(r.avgLeggetid)}</td></tr>
+      <tr><td>Slo av lyset kl.</td><td>${minToHHMM(r.avgLysav)}</td></tr>
+      <tr><td>Innsovningstid</td><td>${fmtNum(r.avgInnsov,0)} min</td></tr>
+      <tr><td>Antall oppvåkninger</td><td>${fmtNum(r.avgOppvak,1)}</td></tr>
+      <tr><td>Varighet av oppvåkningene (totalt)</td><td>${fmtNum(r.avgVarighet,0)} min</td></tr>
+      <tr><td>Siste oppvåkning</td><td>${minToHHMM(r.avgSisteOppvak)}</td></tr>
+      <tr><td>Sto opp</td><td>${minToHHMM(r.avgStodOpp)}</td></tr>
+      <tr><td>Subjektiv søvnkvalitet (1–5)</td><td>${fmtNum(r.avgKvalitet,1)}</td></tr>
+      <tr><td>Subjektiv opplagthet (1–5)</td><td>${fmtNum(r.avgOpplagthet,1)}</td></tr>
+      <tr><td>Sengetid</td><td>${minToDuration(r.avgSengetid)}</td></tr>
+      <tr><td>Søvntid</td><td>${minToDuration(r.avgSovntid)}</td></tr>
+      <tr><td><b>Søvneffektivitet (SE)</b></td><td><b>${r.se==null?"–":fmtNum(r.se,1)+" %"}</b></td></tr>
+  `;
+
+  return `
+    <h1>Søvndagbok</h1>
+    <div class="pe-sub">Navn: ${name} &nbsp;&nbsp;|&nbsp;&nbsp; Uke: ${week} &nbsp;&nbsp;|&nbsp;&nbsp; Basert på ${r.nDays} registrerte døgn</div>
+    <table>
+      <thead><tr><th>Spørsmål</th>${headCells}</tr></thead>
+      <tbody>${diaryRows}</tbody>
+    </table>
+    <h2>Resultater</h2>
+    <table>${resultsRows}</table>
+  `;
+}
+
+function downloadBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+}
+
+function buildWordBlob(){
+  const content = buildExportHTML();
+  const html = `
+  <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+  <head><meta charset="utf-8">
+  <style>
+    body{font-family:Calibri,Arial,sans-serif;color:#1c2733;}
+    h1{font-size:18pt;margin-bottom:2pt;}
+    h2{font-size:14pt;color:#245757;margin-top:16pt;}
+    .pe-sub{font-size:9pt;color:#4b5b6b;margin-bottom:10pt;}
+    table{border-collapse:collapse;width:100%;font-size:9pt;}
+    th,td{border:1px solid #999;padding:4pt 5pt;text-align:left;}
+    th{background:#e4f0ef;}
+  </style></head>
+  <body>${content}</body></html>`;
+  return new Blob(['\ufeff', html], { type: 'application/msword' });
+}
+
+function nameForFile(ext){
+  const name = document.getElementById("patientName").value.trim();
+  const safe = name ? name.replace(/[^a-zA-Z0-9æøåÆØÅ_-]+/g,"_") : "Sovndagbok";
+  return `Sovndagbok_${safe}.${ext}`;
+}
+
+document.getElementById("wordBtn").addEventListener("click", function(){
+  if(!lastResults) runCalculation();
+  const blob = buildWordBlob();
+  downloadBlob(blob, nameForFile("doc"));
+});
+
+function generatePDF(callback){
+  if(!lastResults) runCalculation();
+  window.scrollTo(0,0);
+  const root = document.getElementById("printExportRoot");
+  root.innerHTML = `<div class="pe-inner">${buildExportHTML()}</div>`;
+  root.classList.add("showing");
+  const opt = {
+    margin: 10,
+    filename: nameForFile("pdf"),
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+    pagebreak: { mode: ['css', 'legacy'] }
+  };
+  function cleanup(){
+    root.classList.remove("showing");
+    root.innerHTML = "";
+  }
+  if(typeof html2pdf === "undefined"){
+    cleanup();
+    document.getElementById("calcMsg").textContent = "PDF-verktøyet kunne ikke lastes (krever internettforbindelse). Bruk utskriftsdialogen (Ctrl/Cmd+P) og velg «Lagre som PDF».";
+    window.print();
+    if(callback) callback(null);
+    return;
+  }
+  html2pdf().set(opt).from(root.querySelector(".pe-inner")).outputPdf('blob').then(function(blob){
+    cleanup();
+    downloadBlob(blob, nameForFile("pdf"));
+    if(callback) callback(blob);
+  }).catch(function(err){
+    cleanup();
+    document.getElementById("calcMsg").textContent = "Kunne ikke generere PDF automatisk. Bruk utskriftsdialogen (Ctrl/Cmd+P) og velg «Lagre som PDF».";
+    if(callback) callback(null);
+  });
+}
+
+document.getElementById("pdfBtn").addEventListener("click", function(){
+  generatePDF();
+});
+
+document.getElementById("sendBtn").addEventListener("click", function(){
+  if(!lastResults) runCalculation();
+  const blob = buildWordBlob();
+  downloadBlob(blob, nameForFile("doc"));
+  generatePDF(function(){
+    const name = document.getElementById("patientName").value.trim() || "pasient";
+    const week = document.getElementById("weekLabel").value.trim() || "";
+    const subject = encodeURIComponent(`Søvndagbok – ${name}${week ? " ("+week+")" : ""}`);
+    const body = encodeURIComponent(
+`Hei,
+
+Vedlagt følger min utfylte søvndagbok (Word- og PDF-fil).
+
+Viktig: Legg ved de to filene som nettleseren nettopp lastet ned (Sovndagbok_...doc og Sovndagbok_...pdf, vanligvis i Nedlastinger-mappen din) før du sender denne e-posten – nettlesere kan ikke legge til vedlegg automatisk.
+
+Med vennlig hilsen
+${name}`);
+    document.getElementById("calcMsg").textContent = "Word- og PDF-fil lastet ned. Åpner e-postvindu – husk å legge ved de nedlastede filene manuelt.";
+    setTimeout(()=>{
+      window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    }, 600);
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PANSS - Positive and Negative Syndrome Scale</title>
+    
+    <!-- PDF & Word Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --bg: #f4f7f6;
+            --paper: #ffffff;
+            --border: #dcdde1;
+            --header-pos: #27ae60;
+            --header-neg: #e74c3c;
+            --header-gen: #2980b9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 30px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background-color: var(--paper);
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-radius: 8px;
+        }
+
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-weight: 300; }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .form-group label { display: block; font-size: 12px; font-weight: bold; color: #7f8c8d; margin-bottom: 4px; }
+        .form-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+
+        /* Legend */
+        .legend-box {
+            background: #e8f4fd;
+            padding: 15px;
+            border-left: 4px solid var(--secondary);
+            margin-bottom: 30px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        /* Domain Sections */
+        .domain-section {
+            margin-bottom: 40px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .domain-header {
+            color: white;
+            padding: 12px 20px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .header-pos { background-color: var(--header-pos); }
+        .header-neg { background-color: var(--header-neg); }
+        .header-gen { background-color: var(--header-gen); }
+
+        /* Item Rows */
+        .item-row {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: grid;
+            grid-template-columns: 2fr 3fr; /* Content | Scale */
+            gap: 20px;
+            align-items: center;
+        }
+        .item-row:last-child { border-bottom: none; }
+
+        .item-title { font-weight: 700; font-size: 15px; color: #2c3e50; }
+        .item-desc { font-size: 12px; color: #666; font-style: italic; margin-top: 2px; }
+        
+        /* Scale */
+        .scale-container {
+            display: flex;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .scale-opt {
+            flex: 1;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid #ccc;
+            cursor: pointer;
+            font-size: 13px;
+            background: #fff;
+            transition: background 0.1s;
+        }
+        .scale-opt:last-child { border-right: none; }
+        .scale-opt:hover { background-color: #f0f0f0; }
+        
+        /* Coloring for selection */
+        .scale-opt.sel-1 { background-color: #ecf0f1; font-weight: bold; }
+        .scale-opt.sel-2 { background-color: #f1c40f; color: white; }
+        .scale-opt.sel-3 { background-color: #f39c12; color: white; }
+        .scale-opt.sel-4 { background-color: #e67e22; color: white; }
+        .scale-opt.sel-5 { background-color: #d35400; color: white; }
+        .scale-opt.sel-6 { background-color: #c0392b; color: white; }
+        .scale-opt.sel-7 { background-color: #96281b; color: white; font-weight: bold; }
+
+        /* Results */
+        .results-section {
+            margin-top: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            display: none;
+        }
+
+        .res-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .res-table th { text-align: left; border-bottom: 2px solid #ccc; padding: 8px; }
+        .res-table td { border-bottom: 1px solid #eee; padding: 8px; }
+        .res-total { font-weight: bold; font-size: 18px; color: var(--primary); border-top: 2px solid #ccc; }
+
+        /* Controls */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            transition: transform 0.1s;
+            font-size: 14px;
+        }
+        button:hover { transform: translateY(-2px); }
+        .btn-calc { background-color: var(--secondary); }
+        .btn-word { background-color: #2980b9; }
+        .btn-pdf { background-color: #c0392b; }
+        .btn-reset { background-color: #95a5a6; }
+
+        @media print {
+            .controls { display: none; }
+            .container { box-shadow: none; margin: 0; padding: 0; width: 100%; max-width: 100%; }
+            .scale-container { border: none; }
+            .scale-opt { border: 1px solid #ccc; margin-right: 2px; height: 25px; font-size: 11px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="doc-content">
+    <h1>PANSS</h1>
+    <div class="subtitle">Positive and Negative Syndrome Scale (Kay et al., 1987)</div>
+
+    <div class="meta-grid">
+        <div class="form-group">
+            <label>Navn</label>
+            <input type="text" id="pName" placeholder="Navn...">
+        </div>
+        <div class="form-group">
+            <label>Dato</label>
+            <input type="date" id="pDate">
+        </div>
+        <div class="form-group">
+            <label>Intervjuer</label>
+            <input type="text" id="pInterviewer">
+        </div>
+        <div class="form-group">
+            <label>Pasient ID</label>
+            <input type="text" id="pID">
+        </div>
+    </div>
+
+    <div class="legend-box">
+        <strong>Skåringsnøkkel (1-7):</strong><br>
+        1 = Ikke tilstede (Normal)<br>
+        2 = Minimal (Tvilsom)<br>
+        3 = Mild<br>
+        4 = Moderat<br>
+        5 = Moderat alvorlig<br>
+        6 = Alvorlig<br>
+        7 = Ekstrem
+    </div>
+
+    <div id="form-container">
+        <!-- Generated via JS -->
+    </div>
+
+    <div class="results-section" id="results">
+        <h3>Skåringsoversikt</h3>
+        <table class="res-table">
+            <thead>
+                <tr>
+                    <th>Skala</th>
+                    <th>Ledd</th>
+                    <th>Range</th>
+                    <th>Resultat</th>
+                </tr>
+            </thead>
+            <tbody id="res-tbody">
+                <!-- JS fills this -->
+            </tbody>
+            <tfoot>
+                <tr class="res-total">
+                    <td>TOTAL PANSS</td>
+                    <td>30</td>
+                    <td>30 - 210</td>
+                    <td id="total-sum">-</td>
+                </tr>
+            </tfoot>
+        </table>
+        
+        <div style="margin-top:20px; padding:15px; background:#eee; border-radius:4px;">
+            <strong>Komposittskåre (Positiv minus Negativ):</strong> <span id="comp-score">-</span>
+            <div style="font-size:12px; color:#555; margin-top:5px;">(Positiv subtype > +3, Negativ subtype < -3, Blandet -3 til +3)</div>
+        </div>
+    </div>
+
+</div>
+
+<div class="controls">
+    <button class="btn-calc" onclick="calculateScore()">📊 Beregn</button>
+    <button class="btn-word" onclick="exportWord()">💾 Lagre til Word</button>
+    <button class="btn-pdf" onclick="exportPDF()" id="pdfBtn">📄 Lagre til PDF</button>
+    <button class="btn-reset" onclick="resetForm()">🔄 Nullstill</button>
+</div>
+
+<script>
+    document.getElementById('pDate').valueAsDate = new Date();
+
+    const scales = [
+        {
+            id: "P",
+            title: "Positiv skala (P)",
+            class: "header-pos",
+            items: [
+                {id: "P1", name: "Vrangforestillinger"},
+                {id: "P2", name: "Desorganisert tenkning"},
+                {id: "P3", name: "Hallusinasjoner"},
+                {id: "P4", name: "Eksitasjon"},
+                {id: "P5", name: "Grandiositet"},
+                {id: "P6", name: "Mistenksomhet / Forfølgelse"},
+                {id: "P7", name: "Fiendtlighet"}
+            ]
+        },
+        {
+            id: "N",
+            title: "Negativ skala (N)",
+            class: "header-neg",
+            items: [
+                {id: "N1", name: "Avflatet affekt"},
+                {id: "N2", name: "Emosjonell tilbaketrekning"},
+                {id: "N3", name: "Dårlig kontakt"},
+                {id: "N4", name: "Passiv / Apatisk tilbaketrekning"},
+                {id: "N5", name: "Vansker med abstrakt tenkning"},
+                {id: "N6", name: "Mangel på spontanitet og flyt i samtale"},
+                {id: "N7", name: "Stereotyp tenkning"}
+            ]
+        },
+        {
+            id: "G",
+            title: "Generell psykopatologi (G)",
+            class: "header-gen",
+            items: [
+                {id: "G1", name: "Somatisk bekymring"},
+                {id: "G2", name: "Angst"},
+                {id: "G3", name: "Skyldfølelse"},
+                {id: "G4", name: "Spenning"},
+                {id: "G5", name: "Manerisme og kroppsholdning"},
+                {id: "G6", name: "Depresjon"},
+                {id: "G7", name: "Motorisk retardasjon"},
+                {id: "G8", name: "Manglende samarbeid"},
+                {id: "G9", name: "Uvanlig tankeinnhold"},
+                {id: "G10", name: "Desorientering"},
+                {id: "G11", name: "Dårlig oppmerksomhet"},
+                {id: "G12", name: "Manglende dømmekraft og innsikt"},
+                {id: "G13", name: "Viljeforstyrrelse"},
+                {id: "G14", name: "Dårlig impulskontroll"},
+                {id: "G15", name: "Preokkupert"},
+                {id: "G16", name: "Aktiv unnvikelse"}
+            ]
+        }
+    ];
+
+    const container = document.getElementById('form-container');
+
+    // Render Form
+    scales.forEach(s => {
+        const section = document.createElement('div');
+        section.className = 'domain-section';
+        
+        let html = `<div class="domain-header ${s.class}">${s.title}</div>`;
+        
+        s.items.forEach(item => {
+            html += `
+            <div class="item-row" id="row-${item.id}">
+                <div class="item-content">
+                    <div class="item-title">${item.id}. ${item.name}</div>
+                </div>
+                <div class="scale-wrapper">
+                    <div class="scale-container">
+                        <div class="scale-opt" onclick="setScore('${item.id}', 1, this)">1</div>
+                        <div class="scale-opt" onclick="setScore('${item.id}', 2, this)">2</div>
+                        <div class="scale-opt" onclick="setScore('${item.id}', 3, this)">3</div>
+                        <div class="scale-opt" onclick="setScore('${item.id}', 4, this)">4</div>
+                        <div class="scale-opt" onclick="setScore('${item.id}', 5, this)">5</div>
+                        <div class="scale-opt" onclick="setScore('${item.id}', 6, this)">6</div>
+                        <div class="scale-opt" onclick="setScore('${item.id}', 7, this)">7</div>
+                    </div>
+                    <input type="hidden" id="val-${item.id}" value="" data-scale="${s.id}">
+                </div>
+            </div>`;
+        });
+        
+        section.innerHTML = html;
+        container.appendChild(section);
+    });
+
+    // Interaction
+    window.setScore = function(itemId, val, el) {
+        const row = document.getElementById(`row-${itemId}`);
+        const input = document.getElementById(`val-${itemId}`);
+        
+        // Update input
+        input.value = val;
+        
+        // Update visual styles
+        row.querySelectorAll('.scale-opt').forEach(opt => {
+            opt.className = 'scale-opt'; // reset
+        });
+        el.className = `scale-opt sel-${val}`; // set active class
+    };
+
+    function calculateScore() {
+        let pSum = 0, nSum = 0, gSum = 0;
+        let missing = 0;
+
+        // Positive
+        scales[0].items.forEach(i => {
+            const v = document.getElementById(`val-${i.id}`).value;
+            if(v) pSum += parseInt(v); else missing++;
+        });
+
+        // Negative
+        scales[1].items.forEach(i => {
+            const v = document.getElementById(`val-${i.id}`).value;
+            if(v) nSum += parseInt(v); else missing++;
+        });
+
+        // General
+        scales[2].items.forEach(i => {
+            const v = document.getElementById(`val-${i.id}`).value;
+            if(v) gSum += parseInt(v); else missing++;
+        });
+
+        const total = pSum + nSum + gSum;
+        const comp = pSum - nSum;
+
+        // Render Table
+        const tbody = document.getElementById('res-tbody');
+        tbody.innerHTML = `
+            <tr>
+                <td>Positiv skala</td>
+                <td>7</td>
+                <td>7 - 49</td>
+                <td><strong>${pSum || "-"}</strong></td>
+            </tr>
+            <tr>
+                <td>Negativ skala</td>
+                <td>7</td>
+                <td>7 - 49</td>
+                <td><strong>${nSum || "-"}</strong></td>
+            </tr>
+            <tr>
+                <td>Generell psykopatologi</td>
+                <td>16</td>
+                <td>16 - 112</td>
+                <td><strong>${gSum || "-"}</strong></td>
+            </tr>
+        `;
+
+        document.getElementById('total-sum').innerText = total || "-";
+        document.getElementById('comp-score').innerText = (pSum && nSum) ? comp : "-";
+
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+
+        if(missing > 0) alert(`Obs: Du mangler å skåre ${missing} ledd.`);
+    }
+
+    function resetForm() {
+        if(confirm("Slette alle data?")) location.reload();
+    }
+
+    async function exportPDF() {
+        const btn = document.getElementById('pdfBtn');
+        btn.innerText = "Genererer...";
+        btn.disabled = true;
+
+        const element = document.getElementById('doc-content');
+        const name = document.getElementById('pName').value || "Ukjent";
+
+        try {
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            const imgWidth = 190;
+            const pageHeight = 295;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 10;
+
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pageHeight - 20);
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight + 10;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - 20);
+            }
+
+            pdf.save(`PANSS_${name}.pdf`);
+        } catch(e) {
+            alert("Feil ved PDF generering");
+        } finally {
+            btn.innerText = "📄 Lagre til PDF";
+            btn.disabled = false;
+        }
+    }
+
+    function exportWord() {
+        const name = document.getElementById('pName').value || "Ukjent";
+        const content = document.getElementById('doc-content').cloneNode(true);
+        
+        // Fix inputs
+        content.querySelectorAll('input[type="text"], input[type="date"]').forEach(inp => {
+            const span = document.createElement('span');
+            span.innerText = inp.value;
+            span.style.fontWeight = 'bold';
+            inp.parentNode.replaceChild(span, inp);
+        });
+
+        // Fix scales
+        const rows = content.querySelectorAll('.item-row');
+        rows.forEach(row => {
+            const hidden = row.querySelector('input[type="hidden"]');
+            const val = hidden ? hidden.value : "-";
+            const parent = row.querySelector('.scale-wrapper');
+            parent.innerHTML = `<div style="font-weight:bold; font-size:14px; text-align:right;">Skåre: ${val}</div>`;
+        });
+
+        const htmlHead = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>PANSS Resultat</title>
+            <style>
+                body { font-family: Arial; }
+                .domain-header { background: #eee; font-weight: bold; font-size: 16px; padding: 5px; margin-top: 10px; }
+                .item-row { border-bottom: 1px solid #ccc; padding: 5px 0; }
+                .item-title { font-weight: bold; }
+            </style>
+            </head><body>
+        `;
+        const htmlFoot = "</body></html>";
+        const html = htmlHead + content.innerHTML + htmlFoot;
+
+        const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `PANSS_${name}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITQ - International Trauma Questionnaire</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root{--primary:#2c3e50;--secondary:#34495e;--accent:#c0392b;--highlight:#3498db;--bg:#f4f7f6;--paper:#fff;--border:#dcdde1}
+*{box-sizing:border-box} body{font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:#333;margin:0;padding:30px;line-height:1.5}
+.container{max-width:950px;margin:auto;background:var(--paper);padding:40px;box-shadow:0 4px 20px #00000014;border-radius:8px}
+h1{text-align:center;color:var(--primary);margin:0}.subtitle{text-align:center;color:#6f7c7d;margin-bottom:30px}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:30px;padding:20px;background:#fafafa;border:1px solid var(--border);border-radius:6px}
+.form-group.full{grid-column:1/-1}.form-group label{display:block;font-size:12px;font-weight:700;color:#687575;margin-bottom:4px}.form-group input,.form-group select{width:100%;padding:9px;border:1px solid #bbb;border-radius:4px}
+.instructions{background:#eef4ff;padding:12px;font-size:13px;margin-bottom:20px;border-radius:4px}.section-header{background:var(--primary);color:#fff;padding:10px 15px;font-weight:600;margin:30px 0 15px;border-radius:4px}.sub-header{font-weight:700;color:var(--secondary);margin:20px 0 8px;border-bottom:2px solid #eee;padding-bottom:5px}
+.q-row{display:grid;grid-template-columns:3fr 2fr;gap:15px;align-items:center;padding:10px 0;border-bottom:1px dotted #ddd}.q-text{font-size:14px}.scale-container{display:flex;gap:3px}.scale-opt{flex:1;text-align:center;border:1px solid #ccc;cursor:pointer;padding:7px 0;font-size:12px;border-radius:3px;background:#fff}.scale-opt:hover{background:#eee}.scale-opt.selected{background:var(--highlight);color:#fff;border-color:var(--highlight)}
+.results-section{margin-top:40px;padding:25px;background:#f8f9fa;border:2px solid var(--primary);border-radius:8px;display:none}.diagnosis-box{padding:15px;margin-bottom:10px;border-radius:4px;font-weight:700;font-size:16px;text-align:center}.diag-ptsd{background:#fce4ec;border:1px solid #e74c3c;color:#a93226}.diag-cptsd{background:#e8f8f5;border:1px solid #27ae60;color:#1e8449}.diag-none{background:#ecf0f1;border:1px solid #aaa;color:#5d6d7e}.score-detail{font-size:13px;margin-top:15px;border-top:1px solid #ccc;padding-top:10px}.score-row{display:flex;justify-content:space-between;gap:15px;margin:5px 0}.warning{display:none;background:#fff3cd;color:#664d03;border:1px solid #ffecb5;padding:10px;border-radius:4px;margin-top:15px}
+.controls{max-width:950px;margin:20px auto;display:flex;justify-content:center;gap:12px;flex-wrap:wrap}button{padding:12px 20px;border:0;border-radius:4px;cursor:pointer;font-weight:600;color:#fff}.btn-calc{background:var(--secondary)}.btn-word{background:#2980b9}.btn-pdf{background:#c0392b}.btn-reset{background:#7f8c8d}
+@media(max-width:700px){body{padding:8px}.container{padding:18px}.meta-grid,.q-row{grid-template-columns:1fr}.scale-opt{padding:10px 0}}
+@media print{body{padding:0;background:#fff}.controls{display:none}.container{box-shadow:none;padding:0;max-width:none}.scale-opt{font-size:10px}}
+</style>
+</head>
+<body>
+<div class="container" id="doc-content">
+<h1>ITQ</h1><div class="subtitle">International Trauma Questionnaire (Cloitre et al., 2018)</div>
+<div class="meta-grid">
+<div class="form-group"><label for="pName">Navn</label><input id="pName" type="text" placeholder="Navn..."></div>
+<div class="form-group"><label for="pDate">Dato</label><input id="pDate" type="date"></div>
+<div class="form-group full"><label for="traumaDesc">Kort beskrivelse av hendelsen som gir mest plager</label><input id="traumaDesc" type="text" placeholder="Hendelse..."></div>
+<div class="form-group full"><label for="traumaTime">Når skjedde hendelsen?</label><select id="traumaTime"><option value="">Velg...</option><option>Mindre enn 6 måneder siden</option><option>6 til 12 måneder siden</option><option>1 til 5 år siden</option><option>5 til 10 år siden</option><option>10 til 20 år siden</option><option>Mer enn 20 år siden</option></select></div>
+</div>
+<div class="instructions"><strong>Skåring:</strong> Angi hvor mye du har vært plaget av problemet den siste måneden.<br>0 = Ingenting | 1 = Noe | 2 = Moderat | 3 = Mye | 4 = Ekstremt</div>
+<div id="questionnaire"></div>
+<div id="missing-warning" class="warning" role="alert"></div>
+<div class="results-section" id="results">
+<h3>Skåringsresultat</h3><div id="diag-result" class="diagnosis-box diag-none"></div>
+<div class="score-detail"><h4>Diagnostiske kriterier</h4>
+<div class="score-row"><strong>PTSD-kriterier</strong><span id="res-ptsd-crit"></span></div>
+<div class="score-row"><span>Gjenopplevelse (P1–P2)</span><span id="res-re"></span></div><div class="score-row"><span>Unngåelse (P3–P4)</span><span id="res-av"></span></div><div class="score-row"><span>Opplevelse av aktuell trussel (P5–P6)</span><span id="res-th"></span></div><div class="score-row"><span>Funksjonstap PTSD (P7–P9)</span><span id="res-fi-ptsd"></span></div>
+<br><div class="score-row"><strong>DSO-kriterier</strong><span id="res-dso-crit"></span></div>
+<div class="score-row"><span>Affektiv dysregulering (C1–C2)</span><span id="res-ad"></span></div><div class="score-row"><span>Negativ selvoppfattelse (C3–C4)</span><span id="res-nsc"></span></div><div class="score-row"><span>Relasjonsforstyrrelser (C5–C6)</span><span id="res-dr"></span></div><div class="score-row"><span>Funksjonstap DSO (C7–C9)</span><span id="res-fi-dso"></span></div>
+<h4>Dimensjonale summer</h4><div class="score-row"><span>PTSD-symptomer (P1–P6; 0–24)</span><span id="sum-ptsd"></span></div><div class="score-row"><span>DSO-symptomer (C1–C6; 0–24)</span><span id="sum-dso"></span></div><div class="score-row"><span>PTSD-funksjonstap (P7–P9; 0–12)</span><span id="sum-fi-ptsd"></span></div><div class="score-row"><span>DSO-funksjonstap (C7–C9; 0–12)</span><span id="sum-fi-dso"></span></div>
+<p><small>Resultatet er en skåringsindikasjon og må vurderes klinisk. Det er ikke alene en diagnose.</small></p></div></div>
+</div>
+<div class="controls"><button class="btn-calc" onclick="calculateScore()">Beregn</button><button class="btn-word" onclick="exportWord()">Lagre til Word</button><button class="btn-pdf" id="pdfBtn" onclick="exportPDF()">Lagre til PDF</button><button class="btn-reset" onclick="resetForm()">Nullstill</button></div>
+<script>
+'use strict';
+const sections=[
+{title:'Del 1: PTSD-symptomer',groups:[
+{name:'Gjenopplevelse (Re)',items:[['P1','Urovekkende drømmer der deler av hendelsen avspilles igjen og igjen?'],['P2','Sterke bilder eller minner som kommer inn i bevisstheten, der du føler det skjer igjen her-og-nå?']]},
+{name:'Unngåelse (Av)',items:[['P3','Unngår indre påminnelser (tanker, følelser, fornemmelser)?'],['P4','Unngår ytre påminnelser (personer, steder, situasjoner)?']]},
+{name:'Følelse av overhengende fare (Th)',items:[['P5','Er årvåken, på utkikk eller på vakt?'],['P6','Føler deg skvetten eller lettskremt?']]},
+{name:'Funksjonstap PTSD (PTSD-FI)',items:[['P7','Har problemene (P1–P6) påvirket relasjoner eller sosialt liv?'],['P8','Har problemene påvirket jobb eller evne til å arbeide?'],['P9','Har problemene påvirket andre viktige områder (skole, foreldrerolle osv.)?']]}
+]},
+{title:'Del 2: Forstyrrelser i selvorganisering (DSO)',intro:'Svar ut fra hvordan du typisk føler, tenker om deg selv og forholder deg til andre.',groups:[
+{name:'Affektiv dysregulering (AD)',items:[['C1','Når jeg er opprørt, tar det meg lang tid å roe meg ned igjen.'],['C2','Jeg kjenner meg nummen eller følelsesmessig avstengt.']]},
+{name:'Negativ selvoppfattelse (NSC)',items:[['C3','Jeg føler meg mislykket.'],['C4','Jeg føler meg verdiløs.']]},
+{name:'Relasjonsforstyrrelser (DR)',items:[['C5','Jeg føler meg fjern eller avskåret fra andre mennesker.'],['C6','Jeg opplever det vanskelig å være følelsesmessig nær andre.']]},
+{name:'Funksjonstap DSO (DSO-FI)',items:[['C7','Har problemene (C1–C6) skapt vansker i relasjoner eller sosialt liv?'],['C8','Har problemene påvirket jobb eller arbeidsevne?'],['C9','Har problemene påvirket andre viktige områder?']]}
+]}];
+const allIds=sections.flatMap(s=>s.groups.flatMap(g=>g.items.map(i=>i[0])));
+function render(){const root=document.getElementById('questionnaire');root.replaceChildren();sections.forEach(s=>{const h=document.createElement('div');h.className='section-header';h.textContent=s.title;root.append(h);if(s.intro){const p=document.createElement('p');p.innerHTML='<em>'+s.intro+'</em>';root.append(p)}s.groups.forEach(g=>{const gh=document.createElement('div');gh.className='sub-header';gh.textContent=g.name;root.append(gh);g.items.forEach(([id,text])=>{const row=document.createElement('div');row.className='q-row';row.dataset.item=id;const q=document.createElement('div');q.className='q-text';q.innerHTML='<strong>'+id+':</strong> '+text;const wrap=document.createElement('div');const scale=document.createElement('div');scale.className='scale-container';for(let n=0;n<=4;n++){const b=document.createElement('button');b.type='button';b.className='scale-opt';b.textContent=n;b.setAttribute('aria-label',id+' skår '+n);b.onclick=()=>selectOpt(id,n,b);scale.append(b)}const input=document.createElement('input');input.type='hidden';input.id='val-'+id;input.value='';wrap.append(scale,input);row.append(q,wrap);root.append(row)})})})}
+function selectOpt(id,val,el){el.parentElement.querySelectorAll('.scale-opt').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');document.getElementById('val-'+id).value=String(val);document.querySelector('[data-item="'+id+'"]').style.background=''}
+function rawVal(id){return document.getElementById('val-'+id).value} function val(id){return Number(rawVal(id))} function met(ids){return ids.some(id=>val(id)>=2)} function sum(ids){return ids.reduce((a,id)=>a+val(id),0)}
+function calculateScore(){const missing=allIds.filter(id=>rawVal(id)==='');const warn=document.getElementById('missing-warning');document.querySelectorAll('.q-row').forEach(r=>r.style.background='');if(missing.length){warn.textContent='Kan ikke beregne: Besvar alle 18 spørsmål. Mangler: '+missing.join(', ')+'.';warn.style.display='block';missing.forEach(id=>document.querySelector('[data-item="'+id+'"]').style.background='#fff3cd');warn.scrollIntoView({behavior:'smooth',block:'center'});return false}warn.style.display='none';
+const re=met(['P1','P2']),av=met(['P3','P4']),th=met(['P5','P6']),pfi=met(['P7','P8','P9']);const ad=met(['C1','C2']),nsc=met(['C3','C4']),dr=met(['C5','C6']),dfi=met(['C7','C8','C9']);const ptsd=re&&av&&th&&pfi,dso=ad&&nsc&&dr&&dfi,cptsd=ptsd&&dso;let diagnosis='Kriterier for verken PTSD eller kompleks PTSD er oppfylt',cls='diag-none';if(cptsd){diagnosis='Kriterier for kompleks PTSD (KPTSD) er oppfylt';cls='diag-cptsd'}else if(ptsd){diagnosis='Kriterier for PTSD er oppfylt';cls='diag-ptsd'}const box=document.getElementById('diag-result');box.textContent=diagnosis;box.className='diagnosis-box '+cls;const put=(id,x)=>document.getElementById(id).textContent=x;const yn=x=>x?'Oppfylt (minst én skår ≥ 2)':'Ikke oppfylt';put('res-ptsd-crit',ptsd?'Oppfylt':'Ikke oppfylt');put('res-dso-crit',dso?'Oppfylt':'Ikke oppfylt');[['res-re',re],['res-av',av],['res-th',th],['res-fi-ptsd',pfi],['res-ad',ad],['res-nsc',nsc],['res-dr',dr],['res-fi-dso',dfi]].forEach(x=>put(x[0],yn(x[1])));put('sum-ptsd',sum(['P1','P2','P3','P4','P5','P6'])+' / 24');put('sum-dso',sum(['C1','C2','C3','C4','C5','C6'])+' / 24');put('sum-fi-ptsd',sum(['P7','P8','P9'])+' / 12');put('sum-fi-dso',sum(['C7','C8','C9'])+' / 12');document.getElementById('results').style.display='block';document.getElementById('results').scrollIntoView({behavior:'smooth'});return true}
+function resetForm(){if(!confirm('Slette alle registrerte data?'))return;document.querySelectorAll('input').forEach(i=>i.type==='date'?i.valueAsDate=new Date():i.value='');document.getElementById('traumaTime').value='';document.querySelectorAll('.scale-opt').forEach(x=>x.classList.remove('selected'));document.querySelectorAll('.q-row').forEach(x=>x.style.background='');document.getElementById('results').style.display='none';document.getElementById('missing-warning').style.display='none';scrollTo({top:0,behavior:'smooth'})}
+async function exportPDF(){if(!calculateScore())return;const btn=document.getElementById('pdfBtn');btn.disabled=true;btn.textContent='Genererer...';try{const canvas=await html2canvas(document.getElementById('doc-content'),{scale:2,useCORS:true,backgroundColor:'#fff'});const {jsPDF}=window.jspdf,pdf=new jsPDF('p','mm','a4'),w=190,page=277,h=canvas.height*w/canvas.width,img=canvas.toDataURL('image/png');let y=10,left=h;pdf.addImage(img,'PNG',10,y,w,h);left-=page;while(left>0){y=10-(h-left);pdf.addPage();pdf.addImage(img,'PNG',10,y,w,h);left-=page}pdf.save('ITQ_'+safeName()+'.pdf')}catch(e){alert('Kunne ikke lage PDF. Kontroller nettilkoblingen og prøv igjen.')}finally{btn.disabled=false;btn.textContent='Lagre til PDF'}}
+function safeName(){return (document.getElementById('pName').value||'Ukjent').replace(/[^a-zA-Z0-9æøåÆØÅ_-]+/g,'_')}
+function exportWord(){if(!calculateScore())return;const content=document.getElementById('doc-content').cloneNode(true);content.querySelectorAll('.scale-container').forEach(scale=>{const row=scale.closest('.q-row'),id=row.dataset.item,n=document.createElement('strong');n.textContent='Skår: '+rawVal(id);scale.parentElement.replaceChildren(n)});content.querySelectorAll('input:not([type="hidden"]),select').forEach(inp=>{const span=document.createElement('strong');span.textContent=inp.value||'—';inp.replaceWith(span)});const html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>ITQ-resultat</title><style>body{font-family:Arial}.section-header{font-weight:bold;margin-top:20px}.q-row{padding:5px;border-bottom:1px solid #ddd}.diagnosis-box{padding:10px;border:1px solid #333}.score-row{margin:4px}</style></head><body>'+content.innerHTML+'</body></html>';const blob=new Blob(['\ufeff',html],{type:'application/msword'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ITQ_'+safeName()+'.doc';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+render();document.getElementById('pDate').valueAsDate=new Date();
+</script>
+</body></html>
