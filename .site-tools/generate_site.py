@@ -81,6 +81,14 @@ EXCLUDE_FILE_NAMES = {".DS_Store", "index.html", "sitemap.xml", "rss.xml", "sear
 # never as user content - never listed, never searchable, never downloadable.
 EXCLUDE_FILE_EXTS = {".bak", ".lock", ".pyc"}
 
+# Human-friendly labels without renaming physical folders or breaking URLs.
+DISPLAY_NAME_BY_RELPATH = {"Psykometri/BAL": "Stemningslidelser"}
+
+# Keep these assets usable by pages, but hide them from ordinary file lists/search.
+HIDDEN_LISTING_FILES_BY_RELPATH = {
+    "Søvn": {"apple-touch-icon.png", "favicon-32.png", "og-image.png"},
+}
+
 DOC_EXTS = {".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt", ".pages", ".numbers", ".key"}
 IMG_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
 LISTED_EXTS = {".html"} | DOC_EXTS | IMG_EXTS
@@ -282,30 +290,40 @@ document.addEventListener('DOMContentLoaded',function(){initSearch();});
 
 let SEARCH_INDEX = null;
 async function loadSearchIndex(){
-  if (SEARCH_INDEX) return SEARCH_INDEX;
-  try {
-    const res = await fetch('/search-index.json');
-    SEARCH_INDEX = await res.json();
-  } catch(e) { SEARCH_INDEX = []; }
+  if (Array.isArray(SEARCH_INDEX)) return SEARCH_INDEX;
+  const res = await fetch('/search-index.json?v=' + Date.now(), {cache:'no-store'});
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  if (!Array.isArray(data)) throw new Error('Ugyldig søkeindeks');
+  SEARCH_INDEX = data;
   return SEARCH_INDEX;
 }
+function safeText(v){ return v == null ? '' : String(v); }
 function scoreMatch(entry, q){
-  const hay = (entry.name+' '+entry.dir+' '+entry.title+' '+entry.snippet).toLowerCase();
-  return hay.includes(q) ? (entry.name.toLowerCase().includes(q) ? 2 : 1) : 0;
+  const name = safeText(entry.name).toLowerCase();
+  const hay = [entry.name, entry.dir, entry.title, entry.snippet].map(safeText).join(' ').toLowerCase();
+  return hay.includes(q) ? (name.includes(q) ? 2 : 1) : 0;
 }
 async function runSearch(q){
   const box = document.getElementById('searchResults');
   if (!box) return;
   q = q.trim().toLowerCase();
   if (q.length < 2) { box.innerHTML=''; return; }
-  const idx = await loadSearchIndex();
-  const hits = idx.map(e=>({e,s:scoreMatch(e,q)})).filter(x=>x.s>0)
-    .sort((a,b)=>b.s-a.s).slice(0,40);
-  if (!hits.length) { box.innerHTML = '<div class="res">Ingen treff.</div>'; return; }
-  box.innerHTML = hits.map(({e})=>{
-    const snip = e.snippet ? e.snippet.slice(0,140)+'…' : '';
-    return `<a class="res" href="${e.href}"><strong>${e.icon||'📄'} ${e.title}</strong><small>${e.dir}</small>${snip?('<small>'+snip+'</small>'):''}</a>`;
-  }).join('');
+  box.innerHTML = '<div class="res">Søker…</div>';
+  try {
+    const idx = await loadSearchIndex();
+    const hits = idx.map(e=>({e,s:scoreMatch(e,q)})).filter(x=>x.s>0)
+      .sort((a,b)=>b.s-a.s).slice(0,40);
+    if (!hits.length) { box.innerHTML = '<div class="res">Ingen treff.</div>'; return; }
+    box.innerHTML = hits.map(({e})=>{
+      const snip = safeText(e.snippet).slice(0,140);
+      const title = safeText(e.title || e.name);
+      return `<a class="res" href="${e.href}"><strong>${e.icon||'📄'} ${title}</strong><small>${safeText(e.dir)}</small>${snip?('<small>'+snip+'…</small>'):''}</a>`;
+    }).join('');
+  } catch(e) {
+    console.error('Søkefeil:', e);
+    box.innerHTML = '<div class="res">Søket kunne ikke lastes. Oppdater siden og prøv igjen.</div>';
+  }
 }
 function initSearch(){
   const input = document.getElementById('searchInput');
@@ -338,7 +356,8 @@ def render_breadcrumb(rel_parts):
     acc = ""
     for part in rel_parts:
         acc += "/" + part
-        crumbs.append(f'<a href="{acc}/index.html">{html.escape(part)}</a>')
+        path_obj = REPO.joinpath(*Path(acc.lstrip("/")).parts)
+        crumbs.append(f'<a href="{acc}/index.html">{html.escape(display_name(path_obj))}</a>')
     return '<div class="breadcrumb">' + " / ".join(crumbs) + "</div>"
 
 def render_search_box():
@@ -353,6 +372,16 @@ def theme_toggle():
 # Folder tree generation
 # ---------------------------------------------------------------------------
 
+def repo_rel(path: Path) -> str:
+    return "" if path == REPO else path.relative_to(REPO).as_posix()
+
+def display_name(path: Path) -> str:
+    return DISPLAY_NAME_BY_RELPATH.get(repo_rel(path), path.name)
+
+def is_hidden_listing_file(path: Path) -> bool:
+    hidden = HIDDEN_LISTING_FILES_BY_RELPATH.get(repo_rel(path.parent), set())
+    return path.name.casefold() in {name.casefold() for name in hidden}
+
 def list_dir_entries(dir_path: Path):
     files, dirs = [], []
     for p in sorted(dir_path.iterdir(), key=lambda x: x.name.casefold()):
@@ -363,7 +392,9 @@ def list_dir_entries(dir_path: Path):
                 continue
             dirs.append(p)
         else:
-            if p.name.startswith(".") or p.name.startswith("_") or p.suffix.lower() in EXCLUDE_FILE_EXTS:
+            if (p.name.startswith(".") or p.name.startswith("_")
+                    or p.suffix.lower() in EXCLUDE_FILE_EXTS
+                    or is_hidden_listing_file(p)):
                 continue
             files.append(p)
     return files, dirs
@@ -386,7 +417,8 @@ def render_folder_card(d: Path, rel_dir: str):
                 f'<div class="card-meta locked-badge">Passordbeskyttet innhold</div></div>')
     files, subdirs = list_dir_entries(d)
     count_txt = f"{len(files)} fil(er)" + (f", {len(subdirs)} undermappe(r)" if subdirs else "")
-    return (f'<div class="card"><div class="card-title">📁 <a href="{href}">{html.escape(d.name)}</a></div>'
+    label = display_name(d)
+    return (f'<div class="card"><div class="card-title">📁 <a href="{href}">{html.escape(label)}</a></div>'
             f'<div class="card-meta">{count_txt}</div></div>')
 
 def generate_folder_index(repo: Path, dir_path: Path, is_root: bool, recent_html: str = ""):
@@ -398,13 +430,9 @@ def generate_folder_index(repo: Path, dir_path: Path, is_root: bool, recent_html
     if is_root:
         body.append(f'<h1>{html.escape(SITE_TITLE)}</h1>')
     else:
-        body.append(f'<h1>📁 {html.escape(dir_path.name)}</h1>')
+        body.append(f'<h1>📁 {html.escape(display_name(dir_path))}</h1>')
         body.append(render_breadcrumb(list(rel_parts)))
     body.append(render_search_box())
-
-    if is_root and recent_html:
-        body.append("<h3>Nyeste endringer</h3>")
-        body.append(f'<ul class="recent-list">{recent_html}</ul>')
 
     if files:
         body.append("<h3>Filer i denne mappen</h3><ul class=\"filelist\">")
@@ -424,7 +452,7 @@ def generate_folder_index(repo: Path, dir_path: Path, is_root: bool, recent_html
 
     body.append(f'<div class="footer">Sist oppdatert: {time.strftime("%Y-%m-%d %H:%M")}</div>')
 
-    title = SITE_TITLE if is_root else f"{dir_path.name} – {SITE_TITLE}"
+    title = SITE_TITLE if is_root else f"{display_name(dir_path)} – {SITE_TITLE}"
     html_out = page_shell(title, "\n".join(body))
     (dir_path / "index.html").write_text(html_out, encoding="utf-8")
 
@@ -436,14 +464,8 @@ def walk_and_generate(repo: Path):
                 continue
             all_dirs.append(p)
 
-    recent = collect_recent_files(repo, limit=10)
-    recent_html = "".join(
-        f'<li>📅 <a href="{rel_url(rel)}">{html.escape(rel)}</a><span class="date">{ts_str}</span></li>'
-        for rel, ts_str in recent
-    )
-
     for d in all_dirs:
-        generate_folder_index(repo, d, is_root=(d == repo), recent_html=recent_html if d == repo else "")
+        generate_folder_index(repo, d, is_root=(d == repo))
     log(f"Genererte index.html for {len(all_dirs)} mapper.")
 
 def collect_recent_files(repo: Path, limit=10):
@@ -469,12 +491,23 @@ def collect_recent_files(repo: Path, limit=10):
 def build_search_index(repo: Path):
     entries = []
     for p in repo.rglob("*"):
+        rel_parts = p.relative_to(repo).parts
         if p.is_dir():
+            if any(part in EXCLUDE_DIR_NAMES or part.startswith(".") for part in rel_parts):
+                continue
+            label = display_name(p)
+            rel = p.relative_to(repo).as_posix()
+            parent_label = p.parent.relative_to(repo).as_posix() if p.parent != repo else "/"
+            entries.append({"name": label, "dir": parent_label, "title": label,
+                            "snippet": f"Mappe: {label}",
+                            "href": rel_url(rel) + "/index.html", "icon": "📁"})
             continue
         rel_parts = p.relative_to(repo).parts
         if any(part in EXCLUDE_DIR_NAMES or part.startswith(".") for part in rel_parts[:-1]):
             continue
-        if p.name in EXCLUDE_FILE_NAMES or p.name.startswith(".") or p.name.startswith("thumb_") or p.name.startswith("_") or p.suffix.lower() in EXCLUDE_FILE_EXTS:
+        if (p.name in EXCLUDE_FILE_NAMES or p.name.startswith(".")
+                or p.name.startswith("thumb_") or p.name.startswith("_")
+                or p.suffix.lower() in EXCLUDE_FILE_EXTS or is_hidden_listing_file(p)):
             continue
         rel = str(p.relative_to(repo))
         rel_dir = str(Path(rel).parent) if Path(rel).parent != Path(".") else "/"
@@ -1014,15 +1047,21 @@ def main():
         print(f"FEIL: repo-mappen finnes ikke: {REPO}", file=sys.stderr)
         sys.exit(1)
 
+    public_only = os.environ.get("GAMLEULV_PUBLIC_ONLY") == "1"
+
+    # Never delete user assets automatically. Files that should not appear in
+    # listings are filtered by name, while remaining available to web pages.
     repair_legacy_corruption(REPO)
     ensure_support_files(REPO)
-    cleanup_stray_thumbnails(REPO)
 
-    password = load_privat_password()
-    if password:
-        encrypt_privat(REPO, password)
+    if public_only:
+        log("Offentlig-only modus: Privat-mappen blir ikke lest, slettet eller bygget på nytt.")
     else:
-        log(f"Ingen Privat-passord funnet i {PRIVAT_SECRET_FILE} - hopper over kryptering av Privat.")
+        password = load_privat_password()
+        if password:
+            encrypt_privat(REPO, password)
+        else:
+            log(f"Ingen Privat-passord funnet i {PRIVAT_SECRET_FILE} - hopper over kryptering av Privat.")
 
     recent = collect_recent_files(REPO, limit=10)
     walk_and_generate(REPO)

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BAL – gamleulv.github.io</title>
+<title>Stemningslidelser – gamleulv.github.io</title>
 <style>
 :root {
   --bg: #eef2ff; --bg-card: #f8f9ff; --text: #111; --text-muted: #5a5f73;
@@ -31,8 +31,10 @@ a:hover { text-decoration: underline; }
   padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border);
   background: transparent; color: var(--text); cursor: pointer; font-size: 13px;
 }
-.breadcrumb { font-size: 13px; color: var(--text-muted); margin: 6px 0 16px; line-height:1.8; }
+.breadcrumb { font-size: 13px; color: var(--text-muted); margin: 6px 0 16px; line-height:1.8; display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
 .breadcrumb a { margin-right:2px; }
+.breadcrumb .back-link { margin-left:auto; padding:5px 12px; border:1px solid var(--border); border-radius:999px; background:transparent; color:var(--text); text-decoration:none; font-weight:600; cursor:pointer; }
+.breadcrumb .back-link:hover { border-color: var(--primary); color: var(--primary); }
 .search-wrap { margin: 14px 0 20px; position: relative; }
 .search-wrap input {
   width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
@@ -68,8 +70,8 @@ ul.filelist li .name { flex: 1 1 auto; min-width: 140px; }
 <body>
 <div class="container">
 <div class="theme-toggle"><button onclick="toggleTheme()">☀️/🌙</button></div>
-<h1>📁 BAL</h1>
-<div class="breadcrumb"><a href="/index.html">🏠 Hjem</a> / <a href="/Psykometri/index.html">Psykometri</a> / <a href="/Psykometri/BAL/index.html">BAL</a></div>
+<h1>📁 Stemningslidelser</h1>
+<div class="breadcrumb"><a href="/index.html">🏠 Hjem</a> / <a href="/Psykometri/index.html">Psykometri</a> / <a href="/Psykometri/BAL/index.html">Stemningslidelser</a></div>
 <div class="search-wrap"><input id="searchInput" type="text" placeholder="🔎 Søk i hele nettstedet – mappe, fil eller innhold…" autocomplete="off"><div id="searchResults"></div></div>
 <h3>Filer i denne mappen</h3><ul class="filelist">
 <li><span class="name">📄 <a href="/Psykometri/BAL/ASRM.html">Altman selvevalueringsskala for mani (ASRM)</a></span><a class="dl-btn" href="/Psykometri/BAL/ASRM.html" download="ASRM.html">⬇ Last ned</a></li>
@@ -84,7 +86,7 @@ ul.filelist li .name { flex: 1 1 auto; min-width: 140px; }
 <li><span class="name">📄 <a href="/Psykometri/BAL/YMRS.html">Young Mania Rating Scale (YMRS) - Norsk</a></span><a class="dl-btn" href="/Psykometri/BAL/YMRS.html" download="YMRS.html">⬇ Last ned</a></li>
 </ul>
 <p style="margin-top:26px;"><a href="/Psykometri/index.html">⬅ Tilbake</a></p>
-<div class="footer">Sist oppdatert: 2026-09-12 09:19</div>
+<div class="footer">Sist oppdatert: 2026-09-18 13:40</div>
 </div>
 <script>
 function setTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('site-theme',t);}
@@ -96,30 +98,40 @@ document.addEventListener('DOMContentLoaded',function(){initSearch();});
 
 let SEARCH_INDEX = null;
 async function loadSearchIndex(){
-  if (SEARCH_INDEX) return SEARCH_INDEX;
-  try {
-    const res = await fetch('/search-index.json');
-    SEARCH_INDEX = await res.json();
-  } catch(e) { SEARCH_INDEX = []; }
+  if (Array.isArray(SEARCH_INDEX)) return SEARCH_INDEX;
+  const res = await fetch('/search-index.json?v=' + Date.now(), {cache:'no-store'});
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  if (!Array.isArray(data)) throw new Error('Ugyldig søkeindeks');
+  SEARCH_INDEX = data;
   return SEARCH_INDEX;
 }
+function safeText(v){ return v == null ? '' : String(v); }
 function scoreMatch(entry, q){
-  const hay = (entry.name+' '+entry.dir+' '+entry.title+' '+entry.snippet).toLowerCase();
-  return hay.includes(q) ? (entry.name.toLowerCase().includes(q) ? 2 : 1) : 0;
+  const name = safeText(entry.name).toLowerCase();
+  const hay = [entry.name, entry.dir, entry.title, entry.snippet].map(safeText).join(' ').toLowerCase();
+  return hay.includes(q) ? (name.includes(q) ? 2 : 1) : 0;
 }
 async function runSearch(q){
   const box = document.getElementById('searchResults');
   if (!box) return;
   q = q.trim().toLowerCase();
   if (q.length < 2) { box.innerHTML=''; return; }
-  const idx = await loadSearchIndex();
-  const hits = idx.map(e=>({e,s:scoreMatch(e,q)})).filter(x=>x.s>0)
-    .sort((a,b)=>b.s-a.s).slice(0,40);
-  if (!hits.length) { box.innerHTML = '<div class="res">Ingen treff.</div>'; return; }
-  box.innerHTML = hits.map(({e})=>{
-    const snip = e.snippet ? e.snippet.slice(0,140)+'…' : '';
-    return `<a class="res" href="${e.href}"><strong>${e.icon||'📄'} ${e.title}</strong><small>${e.dir}</small>${snip?('<small>'+snip+'</small>'):''}</a>`;
-  }).join('');
+  box.innerHTML = '<div class="res">Søker…</div>';
+  try {
+    const idx = await loadSearchIndex();
+    const hits = idx.map(e=>({e,s:scoreMatch(e,q)})).filter(x=>x.s>0)
+      .sort((a,b)=>b.s-a.s).slice(0,40);
+    if (!hits.length) { box.innerHTML = '<div class="res">Ingen treff.</div>'; return; }
+    box.innerHTML = hits.map(({e})=>{
+      const snip = safeText(e.snippet).slice(0,140);
+      const title = safeText(e.title || e.name);
+      return `<a class="res" href="${e.href}"><strong>${e.icon||'📄'} ${title}</strong><small>${safeText(e.dir)}</small>${snip?('<small>'+snip+'…</small>'):''}</a>`;
+    }).join('');
+  } catch(e) {
+    console.error('Søkefeil:', e);
+    box.innerHTML = '<div class="res">Søket kunne ikke lastes. Oppdater siden og prøv igjen.</div>';
+  }
 }
 function initSearch(){
   const input = document.getElementById('searchInput');
