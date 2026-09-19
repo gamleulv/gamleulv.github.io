@@ -40,12 +40,9 @@ trap 'rm -rf "$LOCK_DIR"' EXIT
   fi
 
   # Stage tracked changes and newly added public files, but never Privat or logs.
-  git add -A -- . \
-    ':(exclude)Privat/**' \
-    ':(exclude).site-tools/publish.log' \
-    ':(exclude).site-tools/watcher.log' \
-    ':(exclude).site-tools/.publish.lock/**' \
-    ':(exclude).site-tools/.paused'
+  # Logs, lock and pause files are already ignored by .gitignore.
+  # Naming ignored files explicitly as negative pathspecs makes git add fail.
+  git add -A -- . ':(exclude)Privat/**'
 
   # Abort on any deletion or rename. Adding/modifying files is allowed.
   if git diff --cached --name-status | grep -Eq '^(D|R)'; then
@@ -60,7 +57,7 @@ trap 'rm -rf "$LOCK_DIR"' EXIT
     while IFS= read -r -d '' file; do
       [ -f "$file" ] || continue
       size=$(stat -f%z "$file" 2>/dev/null || stat -c%s "$file")
-      [ "$size" -gt 104857600 ] && printf '%s (%s bytes)\n' "$file" "$size"
+      [ "$size" -gt 104857600 ] && printf '%s (%s bytes)\n' "$file" "$size" || true
     done)"
   if [ -n "$too_large" ]; then
     echo "STOPPET: En eller flere filer er større enn 100 MiB:"
