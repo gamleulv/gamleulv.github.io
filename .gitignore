@@ -7,3 +7,4 @@
 .site-tools/publish.log
 .site-tools/.publish.lock/
 .site-tools/.paused
+.site-tools/watcher.log
