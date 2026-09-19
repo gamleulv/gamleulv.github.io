@@ -29,7 +29,7 @@ import aes  # local module, same folder
 # Configuration
 # ---------------------------------------------------------------------------
 
-REPO = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("/Users/einar/Documents/GitHub/gamleulv.github.io")
+REPO = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("/Users/einar/GitHub/gamleulv.github.io")
 BASE_URL = "https://gamleulv.github.io"
 SITE_TITLE = "gamleulv.github.io"
 

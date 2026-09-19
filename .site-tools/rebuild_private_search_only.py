@@ -9,7 +9,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-REPO = Path('/Users/einar/Documents/GitHub/gamleulv.github.io')
+REPO = Path('/Users/einar/GitHub/gamleulv.github.io')
 TOOLS = REPO / '.site-tools'
 GENERATOR = TOOLS / 'generate_site.py'
 SOURCE_DIR = Path.home() / 'Documents' / 'Privat-kilde' / 'Solvi-Einar'

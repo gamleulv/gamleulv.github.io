@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-REPO="/Users/einar/Documents/GitHub/gamleulv.github.io"
+REPO="/Users/einar/GitHub/gamleulv.github.io"
 TOOLS="$REPO/.site-tools"
 LOG_FILE="$TOOLS/publish.log"
 LOCK_DIR="$TOOLS/.publish.lock"

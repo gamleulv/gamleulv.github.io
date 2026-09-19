@@ -1,11 +1,11 @@
 #!/bin/zsh
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
-REPO="/Users/einar/Documents/GitHub/gamleulv.github.io"
+REPO="/Users/einar/GitHub/gamleulv.github.io"
 SCRIPT="$REPO/auto-publish.sh"
 
 echo "Starter offentlig overvåking av $REPO"
 
-fswatch -r -o --latency 3 \
+/opt/homebrew/bin/fswatch -r -o --latency 3 \
   --exclude '/\.git/' \
   --exclude '/\.site-tools/' \
   --exclude '/Privat/' \
