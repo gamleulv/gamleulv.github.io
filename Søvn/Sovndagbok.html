@@ -8,7 +8,12 @@
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#2f6f6f">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-<link rel="apple-touch-icon" sizes="90x90" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="app-icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Søvndagbok">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
   :root{
     --ink:#1c2733;
@@ -290,6 +295,9 @@
 
 #conflictBox{position:sticky;top:0;z-index:50;background:#fff4e5;border:2px solid #c98a2b;border-radius:10px;padding:12px 14px;margin:8px auto;max-width:1100px;color:#3b2a08}
 #conflictBox[hidden]{display:none}
+.native-app body{padding-top:env(safe-area-inset-top)}
+.native-app .wrap{padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+#installHint{font-size:.85rem;color:#2f6f6f}
 </style>
 </head>
 <body>
@@ -309,6 +317,7 @@
 
   <section class="local-panel" aria-labelledby="localTitle">
     <h2 id="localTitle" style="font-size:1rem;margin:0 0 6px">Lagring på denne enheten</h2>
+    <p id="nativeInfo" hidden style="font-weight:600"></p>
     <p id="storageStatus" role="status">Åpner lagrede opplysninger …</p>
     <p>Opplysningene sendes ikke til noen server. De er ikke kryptert og kan fjernes hvis nettstedsdata slettes eller hvis du bruker privat surfing. Ikke bruk en delt eller ulåst enhet for helseopplysninger.</p>
     <div class="local-tools">
@@ -316,10 +325,11 @@
       <button type="button" class="btn btn-secondary" id="shareBackupBtn">Lagre i Filer / del</button>
       <button type="button" class="btn btn-secondary" id="restoreBtn">Åpne sikkerhetskopi</button>
       <button type="button" class="btn btn-secondary" id="linkFileBtn" hidden>Koble til filkopi</button>
+      <button type="button" class="btn btn-primary" id="installBtn" hidden>Installer som app</button>
       <button type="button" class="btn btn-secondary" id="unlinkFileBtn" hidden>Koble fra filkopi</button>
     </div>
     <input id="restoreInput" type="file" accept=".json,application/json" hidden>
-    <p id="localNotice" role="status" hidden style="font-weight:600"></p><p id="backupStatus"></p><p id="linkedStatus"></p>
+    <p id="localNotice" role="status" hidden style="font-weight:600"></p><p id="backupStatus"></p><p id="linkedStatus"></p><p id="nativeFileStatus"></p><p id="installHint" hidden></p>
     <details>
       <summary>Slik unngår du å miste data</summary>
       <ul>
@@ -23394,7 +23404,107 @@ $('shareDownloadWord').onclick=()=>{if(prepared)downloadBlob(prepared.files[0],p
 $('closeShareBtn').onclick=()=>{prepareToken++;$('shareDialog').close();};$('shareDialog').addEventListener('cancel',()=>prepareToken++);
 $('sendBtn').onclick=()=>prepareShare();$('histSendBtn').onclick=()=>prepareShare(true);
 
-boot();
+/* ---------- App-modus (iOS/Android via Capacitor) og installerbar web-app (PWA) ---------- */
+const CAP = window.Capacitor;
+const IS_NATIVE = !!(CAP && typeof CAP.isNativePlatform === 'function' && CAP.isNativePlatform());
+const NATIVE_PLATFORM = IS_NATIVE ? CAP.getPlatform() : 'web';
+const NATIVE_FILE = 'Sovndagbok_data.json';
+let nativeTimer = null;
+
+function nativePlugin(name){ return IS_NATIVE && CAP.Plugins ? CAP.Plugins[name] : null; }
+function nativeDataDir(){ return NATIVE_PLATFORM === 'ios' ? 'DOCUMENTS' : 'DATA'; }
+function blobToBase64(blob){
+  return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]||'');r.onerror=()=>reject(r.error);r.readAsDataURL(blob);});
+}
+function safeFileName(name){ return String(name||'fil').replace(/[\/\\:*?"<>|]+/g,'_'); }
+
+/* Deler filer via appens egen delingsmeny (e-post, Filer, Disk osv.) */
+async function nativeShareFiles(files,title){
+  const Filesystem=nativePlugin('Filesystem'),Share=nativePlugin('Share');
+  if(!Filesystem||!Share)throw Error('Delingsfunksjonen i appen er ikke tilgjengelig.');
+  const uris=[];
+  for(const f of files){
+    const data=await blobToBase64(f);
+    const res=await Filesystem.writeFile({path:'deling/'+safeFileName(f.name),data,directory:'CACHE',recursive:true});
+    uris.push(res.uri);
+  }
+  try{ await Share.share({title:title||'Søvndagbok',dialogTitle:title||'Søvndagbok',files:uris}); }
+  catch(e){ const msg=String(e&&(e.message||e)); const err=Error(msg); if(/cancel/i.test(msg))err.name='AbortError'; throw err; }
+}
+
+/* Automatisk kopi av alle data i en fil i appens egen lagring.
+   iOS: Filer › På min iPhone › Søvndagbok. Android: appens private lagring (tas med i Android-sikkerhetskopi). */
+async function writeNativeFile(){
+  const Filesystem=nativePlugin('Filesystem');if(!Filesystem||!lastState)return;
+  const s=lastState;
+  await Filesystem.writeFile({path:NATIVE_FILE,data:JSON.stringify(s,null,1),directory:nativeDataDir(),encoding:'utf8'});
+  const el=$('nativeFileStatus');
+  if(el&&lastState===s)el.textContent='Automatisk filkopi oppdatert kl. '+new Date().toLocaleTimeString('nb-NO',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+'.';
+}
+async function readNativeFile(){
+  const Filesystem=nativePlugin('Filesystem');if(!Filesystem)return null;
+  try{const r=await Filesystem.readFile({path:NATIVE_FILE,directory:nativeDataDir(),encoding:'utf8'});return validateState(JSON.parse(r.data));}
+  catch{return null;}
+}
+
+if(IS_NATIVE){
+  document.documentElement.classList.add('native-app','native-'+NATIVE_PLATFORM);
+  /* Nedlasting fungerer ikke i en app – bruk delingsmenyen i stedet */
+  downloadBlob=function(blob,filename){
+    const f=blob instanceof File?blob:new File([blob],filename,{type:blob.type||'application/octet-stream'});
+    nativeShareFiles([f],filename).then(()=>notify('Filen er overlevert til delingsmenyen. Velg for eksempel «Lagre i Filer» eller e-post.'))
+      .catch(e=>notify(e.name==='AbortError'?'Deling ble avbrutt.':'Kunne ikke dele filen: '+e.message));
+  };
+  /* Web Share-grensesnittet kobles til appens delingsmeny */
+  try{
+    Object.defineProperty(navigator,'canShare',{configurable:true,value:(d)=>!!(d&&Array.isArray(d.files)&&d.files.length)});
+    Object.defineProperty(navigator,'share',{configurable:true,value:(d)=>nativeShareFiles(d.files||[],d.title)});
+  }catch{}
+  /* Hver lagring skriver også en filkopi */
+  const origScheduleExternal=scheduleExternal;
+  scheduleExternal=function(){origScheduleExternal();clearTimeout(nativeTimer);nativeTimer=setTimeout(()=>writeNativeFile().catch(()=>{}),500);};
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){clearTimeout(nativeTimer);writeNativeFile().catch(()=>{});}});
+}
+
+window.nativeBoot=async function(){
+  if(IS_NATIVE){
+    /* Hvis appens filkopi er nyere enn nettleserlagringen (f.eks. etter at WebView-data er tømt), brukes filkopien */
+    const fileState=await readNativeFile();
+    if(fileState){
+      const j=readJournal();
+      if(!j||fileState.revision>j.revision){try{localStorage.setItem(JOURNAL_KEY,JSON.stringify(fileState));}catch{}}
+    }
+    $('linkFileBtn').hidden=true;$('unlinkFileBtn').hidden=true;$('persistBtn').hidden=true;
+    const info=$('nativeInfo');if(info){info.hidden=false;info.innerHTML=NATIVE_PLATFORM==='ios'
+      ?'Du bruker appen. Dataene lagres i appen og i tillegg automatisk i filen «'+NATIVE_FILE+'» under Filer › På min iPhone › Søvndagbok.'
+      :'Du bruker appen. Dataene lagres i appen og i tillegg automatisk i en egen datafil i appens lagring.';}
+    try{nativePlugin('SplashScreen')?.hide();}catch{}
+  }
+  await boot();
+  if(IS_NATIVE&&lastState)writeNativeFile().catch(()=>{});
+};
+
+/* ---------- Installerbar web-app (PWA) ---------- */
+if(!IS_NATIVE&&'serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1')){
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});
+}
+let deferredInstall=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;const b=$('installBtn');if(b)b.hidden=false;});
+window.addEventListener('appinstalled',()=>{deferredInstall=null;const b=$('installBtn');if(b)b.hidden=true;notify('Søvndagboka er installert som app.');});
+(function setupInstall(){
+  const b=$('installBtn');if(!b)return;
+  b.onclick=async()=>{if(!deferredInstall)return;deferredInstall.prompt();try{await deferredInstall.userChoice;}catch{}deferredInstall=null;b.hidden=true;};
+  const standalone=window.matchMedia?.('(display-mode: standalone)').matches||navigator.standalone===true;
+  const hint=$('installHint');
+  if(hint&&!IS_NATIVE&&!standalone){
+    const ios=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+    hint.hidden=false;
+    hint.textContent=ios?'Tips: Legg søvndagboka på Hjem-skjermen (Del-knappen › «Legg til på Hjem-skjerm»). Da åpnes den som en egen app, og lagringen blir mer robust.'
+      :'Tips: Installer søvndagboka som app (knappen «Installer som app», eller nettlesermenyen › «Installer app» / «Legg til på startskjermen»).';
+  }
+})();
+
+nativeBoot();
 </script>
 </body>
 </html>
