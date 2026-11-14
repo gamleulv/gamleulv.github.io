@@ -49,7 +49,7 @@ button.p{background:var(--acc);color:#fff}iframe{width:100%;height:75vh;border:1
 <option value="Georgia, 'Times New Roman', serif">Georgia</option>
 <option value="-apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif">Helvetica</option>
 <option value="Verdana, Geneva, sans-serif">Verdana</option></select></div>
-<div><label>Skriftstørrelse (px)</label><input type="text" id="fs"></div><div><label>Ramme (px)</label><input type="text" id="bw"></div></div>
+<div><label>Skriftstørrelse (px ved 600 px bredde)</label><input type="text" id="fs"></div><div><label>Ramme (px)</label><input type="text" id="bw"></div></div>
 <label>Tekst <small>(tom linje = nytt avsnitt, **fet**, *kursiv*, lenker blir klikkbare)</small></label>
 <textarea id="txt"></textarea>
 <div class="btns" style="margin-top:12px"><button id="reset">Tilbakestill</button></div>
@@ -114,31 +114,39 @@ const info=t=>$("info").textContent=t;
 
 /* ---------- E-post-HTML ---------- */
 const esc0=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-function fmt(t,s){return t.trim().split(/\n\s*\n/).map(p=>{let h=esc(p).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\*(.+?)\*/g,"<i>$1</i>")
+const ENT={"æ":"aelig","ø":"oslash","å":"aring","Æ":"AElig","Ø":"Oslash","Å":"Aring","é":"eacute","è":"egrave","ê":"ecirc","ë":"euml","É":"Eacute","á":"aacute","à":"agrave","â":"acirc","ä":"auml","Ä":"Auml","ö":"ouml","Ö":"Ouml","ó":"oacute","ò":"ograve","ô":"ocirc","ü":"uuml","Ü":"Uuml","ú":"uacute","ñ":"ntilde","ç":"ccedil","ß":"szlig","í":"iacute","«":"laquo","»":"raquo","–":"ndash","—":"mdash","…":"hellip","‘":"lsquo","’":"rsquo","“":"ldquo","”":"rdquo","€":"euro","©":"copy","°":"deg","§":"sect"," ":"nbsp"};
+/* Alle tegn utenom ASCII skrives som HTML-koder (f.eks. ø → &oslash;), så de vises riktig i alle e-postapper */
+const ent=s=>Array.from(String(s)).map(c=>{const n=c.codePointAt(0);return n<128?c:ENT[c]?`&${ENT[c]};`:`&#${n};`}).join("");
+const escE=s=>ent(esc(s));
+function fmt(t,s){const fs=+s.fs||18,ps=t.trim().split(/\n\s*\n/);
+ const font=s.font.replace(/"/g,"'");
+ return ps.map((p,i)=>{let h=esc(p).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\*(.+?)\*/g,"<i>$1</i>")
  .replace(/(https?:\/\/[^\s<]+)/g,`<a href="$1" style="color:${s.fg};text-decoration:underline;">$1</a>`).replace(/\n/g,"<br>");
- return `<p style="margin:0 0 1em 0;font-family:${s.font.replace(/"/g,"'")};color:${s.fg};font-size:${+s.fs||18}px;line-height:1.5;">${h}</p>`}).join("\n")}
+ const mb=i<ps.length-1?"1.5em":"0";
+ return `<p class="text-paragraph" style="margin:0 20px ${mb} 20px;padding:0;font-family:${font};color:${s.fg};font-size:${fs}px;font-size:calc(${fs-6}px + 1vw);line-height:1.5;">${ent(h)}</p>`}).join("\n")}
 function build(s){const bw=+s.bw||0,fs=+s.fs||18,grad=!s.mid&&s.bg!==s.bg2,flat=grad?mix(s.bg,s.bg2):s.bg;
  const img=(u,a,c)=>u?`<tr><td bgcolor="${c}" style="padding:0;background-color:${c};line-height:0;font-size:0;"><img src="${esc(u)}" width="100%" alt="${a}" style="width:100%;max-width:100%;height:auto;display:block;border:0;"></td></tr>`:"";
  const bgcss=s.mid?`background-image:url('${esc(s.mid)}');background-repeat:repeat;`:grad?`background-image:linear-gradient(to bottom, ${s.bg}, ${s.bg2});`:"";
- const vml=s.mid?`<!--[if gte mso 9]><v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="mso-width-percent:1000;"><v:fill type="tile" src="${esc(s.mid)}" color="${flat}"/><v:textbox inset="0,0,0,0"><![endif]-->`:"";
+ const vml=s.mid?`<!--[if gte mso 9]><v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="mso-width-percent:1000;"><v:fill type="tile" src="${esc(s.mid)}" color="${flat}"/><v:textbox inset="0,0,0,0" style="mso-fit-shape-to-text:true;"><![endif]-->`:"";
  const vmlEnd=s.mid?`<!--[if gte mso 9]></v:textbox></v:rect><![endif]-->`:"";
  return `<!DOCTYPE html>
 <html lang="no" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="x-apple-disable-message-reformatting">
-<title>${esc(s.title)}</title><meta property="og:title" content="${esc(s.title)}">${s.top?`<meta property="og:image" content="${esc(s.top)}">`:""}
+<title>${escE(s.title)}</title><meta property="og:title" content="${escE(s.title)}">${s.top?`<meta property="og:image" content="${esc(s.top)}">`:""}
 <!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
+<!--[if mso]><style>.text-paragraph{font-size:${fs}px!important;}</style><![endif]-->
 <style>html,body{margin:0 auto!important;padding:0!important;height:100%!important;width:100%!important;background-color:#ffffff;}
 *{-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%;}table,td{mso-table-lspace:0pt!important;mso-table-rspace:0pt!important;}
 table{border-spacing:0!important;border-collapse:collapse!important;margin:0 auto!important;}img{-ms-interpolation-mode:bicubic;border:0;outline:none;text-decoration:none;}
-@media screen and (min-width:600px){.txt p{font-size:${fs+2}px!important;}}</style></head>
+</style></head>
 <body bgcolor="#ffffff" style="margin:0;padding:0!important;mso-line-height-rule:exactly;background-color:#ffffff;">
 <div style="width:100%;background-color:#ffffff;">
 <table role="presentation" align="center" cellspacing="0" cellpadding="0" border="0" width="100%" bgcolor="#ffffff" style="width:100%;margin:auto;border:${bw}px solid ${s.bc};">
 ${img(s.top,"topp",s.bg)}
 <tr><td class="txt" bgcolor="${flat}" style="background-color:${flat};${bgcss}text-align:left;padding:0;">${vml}
-<div style="padding:24px 20px 8px 20px;">
+
 ${fmt(s.txt,s)}
-</div>${vmlEnd}</td></tr>
+${vmlEnd}</td></tr>
 ${img(s.bot,"bunn",s.bg2)}
 </table></div></body></html>`}
 function render(){$("pv").srcdoc=build(S)}
