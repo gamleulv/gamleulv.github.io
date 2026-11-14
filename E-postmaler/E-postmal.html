@@ -49,7 +49,7 @@ button.p{background:var(--acc);color:#fff}iframe{width:100%;height:75vh;border:1
 <option value="Georgia, 'Times New Roman', serif">Georgia</option>
 <option value="-apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif">Helvetica</option>
 <option value="Verdana, Geneva, sans-serif">Verdana</option></select></div>
-<div><label>Skriftstørrelse (px ved 600 px bredde)</label><input type="text" id="fs"></div><div><label>Ramme (px)</label><input type="text" id="bw"></div></div>
+<div><label>Skriftstørrelse (px, grunnverdi)</label><input type="text" id="fs"></div><div><label>Ramme (px)</label><input type="text" id="bw"></div></div>
 <label>Tekst <small>(tom linje = nytt avsnitt, **fet**, *kursiv*, lenker blir klikkbare)</small></label>
 <textarea id="txt"></textarea>
 <div class="btns" style="margin-top:12px"><button id="reset">Tilbakestill</button></div>
@@ -73,7 +73,7 @@ const MALER=[
 ];
 MALER[0].kat="Standard";
 CRAFT_MALER.forEach(m=>MALER.push(Object.assign({},m,{title:m.navn,bg2:m.bg})));
-const D=Object.assign({mal:"0",bc:"#000000",font:"'Palatino-Roman', Palatino, 'Palatino Linotype', Georgia, 'Times New Roman', serif",fs:"18",bw:"2",auto:true,autoFg:true,
+const D=Object.assign({mal:"0",bc:"#000000",font:"'Palatino-Roman', Palatino, 'Palatino Linotype', Georgia, 'Times New Roman', serif",fs:"16",bw:"2",auto:true,autoFg:true,
  txt:"Kjære deg,\n\nHer kommer innholdet i e-posten.\n\nHilsen meg"},MALER[0]);delete D.navn;
 const K=["mal","title","top","mid","bot","auto","bg","bg2","bc","autoFg","fg","font","fs","bw","txt"],$=id=>document.getElementById(id);
 let S=Object.assign({},D);
@@ -118,13 +118,13 @@ const ENT={"æ":"aelig","ø":"oslash","å":"aring","Æ":"AElig","Ø":"Oslash","�
 /* Alle tegn utenom ASCII skrives som HTML-koder (f.eks. ø → &oslash;), så de vises riktig i alle e-postapper */
 const ent=s=>Array.from(String(s)).map(c=>{const n=c.codePointAt(0);return n<128?c:ENT[c]?`&${ENT[c]};`:`&#${n};`}).join("");
 const escE=s=>ent(esc(s));
-function fmt(t,s){const fs=+s.fs||18,ps=t.trim().split(/\n\s*\n/);
- const font=s.font.replace(/"/g,"'");
- return ps.map((p,i)=>{let h=esc(p).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\*(.+?)\*/g,"<i>$1</i>")
- .replace(/(https?:\/\/[^\s<]+)/g,`<a href="$1" style="color:${s.fg};text-decoration:underline;">$1</a>`).replace(/\n/g,"<br>");
- const mb=i<ps.length-1?"1.5em":"0";
- return `<p class="text-paragraph" style="margin:0 20px ${mb} 20px;padding:0;font-family:${font};color:${s.fg};font-size:${fs}px;font-size:calc(${fs-6}px + 1vw);line-height:1.5;">${ent(h)}</p>`}).join("\n")}
-function build(s){const bw=+s.bw||0,fs=+s.fs||18,grad=!s.mid&&s.bg!==s.bg2,flat=grad?mix(s.bg,s.bg2):s.bg;
+function fmt(t,s){const fs=+s.fs||16,font=s.font.replace(/"/g,"'");
+ /* Hele teksten i ett avsnitt: hvert linjeskift blir <br>, to linjeskift gir en tom linje (nytt avsnitt).
+    Ingen marg over eller under. Størrelse: fast verdi først (Outlook/Gmail), deretter responsiv calc og clamp. */
+ let h=esc(t.replace(/^\s*\n|\n\s*$/g,"").replace(/[ \t]+$/gm,"")).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\*(.+?)\*/g,"<i>$1</i>")
+ .replace(/(https?:\/\/[^\s<]+)/g,`<a href="$1" style="color:${s.fg};text-decoration:underline;">$1</a>`).replace(/\n/g,"<br>\n");
+ return `<p class="text-paragraph" style="margin:0 20px;padding:0;font-family:${font};color:${s.fg};font-size:${fs}px;font-size:calc(${fs-2}px + 0.4vw);font-size:clamp(${fs-1}px, calc(${fs-2}px + 0.4vw), ${fs+4}px);line-height:1.4;mso-line-height-rule:exactly;">${ent(h)}</p>`}
+function build(s){const bw=+s.bw||0,fs=+s.fs||16,grad=!s.mid&&s.bg!==s.bg2,flat=grad?mix(s.bg,s.bg2):s.bg;
  const img=(u,a,c)=>u?`<tr><td bgcolor="${c}" style="padding:0;background-color:${c};line-height:0;font-size:0;"><img src="${esc(u)}" width="100%" alt="${a}" style="width:100%;max-width:100%;height:auto;display:block;border:0;"></td></tr>`:"";
  const bgcss=s.mid?`background-image:url('${esc(s.mid)}');background-repeat:repeat;`:grad?`background-image:linear-gradient(to bottom, ${s.bg}, ${s.bg2});`:"";
  const vml=s.mid?`<!--[if gte mso 9]><v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="mso-width-percent:1000;"><v:fill type="tile" src="${esc(s.mid)}" color="${flat}"/><v:textbox inset="0,0,0,0" style="mso-fit-shape-to-text:true;"><![endif]-->`:"";
@@ -134,7 +134,7 @@ function build(s){const bw=+s.bw||0,fs=+s.fs||18,grad=!s.mid&&s.bg!==s.bg2,flat=
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="x-apple-disable-message-reformatting">
 <title>${escE(s.title)}</title><meta property="og:title" content="${escE(s.title)}">${s.top?`<meta property="og:image" content="${esc(s.top)}">`:""}
 <!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
-<!--[if mso]><style>.text-paragraph{font-size:${fs}px!important;}</style><![endif]-->
+<!--[if mso]><style>.text-paragraph{font-size:${fs}px!important;line-height:${Math.round(fs*1.4)}px!important;}</style><![endif]-->
 <style>html,body{margin:0 auto!important;padding:0!important;height:100%!important;width:100%!important;background-color:#ffffff;}
 *{-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%;}table,td{mso-table-lspace:0pt!important;mso-table-rspace:0pt!important;}
 table{border-spacing:0!important;border-collapse:collapse!important;margin:0 auto!important;}img{-ms-interpolation-mode:bicubic;border:0;outline:none;text-decoration:none;}
