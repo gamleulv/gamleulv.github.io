@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>im_40278_0.jpg</title>
+<style>
+:root {
+  --bg: #eef2ff; --bg-card: #f8f9ff; --text: #111; --text-muted: #5a5f73;
+  --accent: #0044aa; --accent-strong:#00298f; --border: #d7dbee; --radius: 16px;
+}
+[data-theme="dark"] {
+  --bg: #0f172a; --bg-card: #1b2436; --text: #e7e9f0; --text-muted: #98a0b8;
+  --accent: #7fb1ff; --accent-strong:#a9cbff; --border: #2c3752;
+}
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  background: var(--bg); color: var(--text); margin: 0; padding: 16px;
+  line-height: 1.45; -webkit-text-size-adjust: 100%;
+}
+.container { max-width: 1100px; margin: auto; background: var(--bg-card);
+  padding: 20px; border-radius: var(--radius); box-shadow: 0 0 30px rgba(0,0,0,0.10); }
+h1 { font-size: clamp(22px, 5vw, 30px); margin: 6px 0 8px; }
+h3 { font-size: 17px; margin: 22px 0 8px; }
+a { color: var(--accent); text-decoration: none; word-break: break-word; }
+a:hover { text-decoration: underline; }
+.topbar { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom: 6px;}
+.home-link { font-weight:600; font-size:15px; }
+.theme-toggle button, .btn {
+  padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border);
+  background: transparent; color: var(--text); cursor: pointer; font-size: 13px;
+}
+.breadcrumb { font-size: 13px; color: var(--text-muted); margin: 6px 0 16px; line-height:1.8; display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+.breadcrumb a { margin-right:2px; }
+.breadcrumb .back-link { margin-left:auto; padding:5px 12px; border:1px solid var(--border); border-radius:999px; background:transparent; color:var(--text); text-decoration:none; font-weight:600; cursor:pointer; }
+.breadcrumb .back-link:hover { border-color: var(--primary); color: var(--primary); }
+.search-wrap { margin: 14px 0 20px; position: relative; }
+.search-wrap input {
+  width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
+  font-size: 16px; background: var(--bg); color: var(--text);
+}
+#searchResults { margin-top: 8px; border-radius: 12px; overflow: hidden; }
+#searchResults .res { display:block; padding: 10px 12px; border-bottom: 1px solid var(--border); background: var(--bg); }
+#searchResults .res small { display:block; color: var(--text-muted); }
+ul.filelist { list-style: none; padding: 0; margin: 6px 0 0; }
+ul.filelist li { display:flex; align-items:center; gap:8px; padding: 9px 4px; border-bottom: 1px solid var(--border); flex-wrap: wrap;}
+ul.filelist li .name { flex: 1 1 auto; min-width: 140px; }
+.dl-btn { flex: 0 0 auto; font-size: 12px; padding: 5px 10px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); }
+.dl-btn:hover { color: var(--accent); border-color: var(--accent); text-decoration:none; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; margin-top: 14px; }
+.card { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
+.card-title { font-size: 17px; font-weight: 600; margin-bottom: 4px; display:flex; align-items:center; gap:6px;}
+.card-meta { font-size: 12px; color: var(--text-muted); }
+.recent-list { list-style:none; padding:0; margin: 8px 0 0; }
+.recent-list li { padding: 8px 0; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;}
+.recent-list .date { color: var(--text-muted); font-size: 13px; }
+.footer { margin-top: 26px; font-size: 12px; color: var(--text-muted); text-align:center; }
+.locked-badge { font-size:12px; color:var(--text-muted); }
+@media (max-width: 600px) {
+  body { padding: 8px; }
+  .container { padding: 14px; border-radius: 12px; }
+  ul.filelist li { font-size: 15px; }
+  .grid { grid-template-columns: 1fr; }
+}
+
+.gate-box{max-width:380px;margin:60px auto;text-align:center;}
+.gate-box input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);font-size:16px;margin-bottom:10px;background:var(--bg);color:var(--text);}
+.gate-box button{width:100%;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:15px;cursor:pointer;}
+.gate-err{color:#c0392b;font-size:13px;margin-top:8px;min-height:18px;}
+#gateContent{display:none;}
+iframe.gate-frame{width:100%;height:80vh;border:0;border-radius:12px;background:#fff;}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="theme-toggle"><button onclick="toggleTheme()">☀️/🌙</button></div>
+<div id="gateBox" class="gate-box">
+  <h1>🔒 Beskyttet innhold</h1>
+  <p style="color:var(--text-muted);font-size:14px;">Denne mappen krever passord.</p>
+  <input type="password" id="gatePw" placeholder="Passord" autofocus>
+  <button id="gateGo">Lås opp</button>
+  <div class="gate-err" id="gateErr"></div>
+</div>
+<div id="gateContent"></div>
+</div>
+<script>
+const PAYLOAD = {"salt": "PD0EQcUTN/xKqZA082UUZw==", "iv": "hjD25USoHeXuLwpXmAwJkQ==", "iterations": 210000, "ciphertext": "1NT50FdGuI7ymBs+ayL0UlNveH66BAwGqqTxHd0jI2AgimwgIhtmTOd8qJoZjQfNBILk/WxC22bsCSkhhJf+iqooUjwOeK+oAH8otu5YKW0dWAIS4uoHnoptwBGIklYJp52DZyvSlKDeExvCobaN9YNhtoHBdJWH1mJ6+hPSFqPVYiLOuER+MgS2FRSlVUtdkOWSgb8W9ghYQ2HhMTO6XnY3ea0OPp7Q5D130oT48O7oOXBEE3kIHZ5p8bZYzdWJv01pZdktW4CQuV4CjUdCO/gratEmkgEmcyCqwuO+NCI/0wpVqOXmz+Fbw5JihCQIav5LS3EqtC8vudUMoLuRXB6+Ye3LfMcKRmPYdTq5lkQL6PqTmA/nVDmqxVRwHVm8FOe8H/fRDz5x62aAyqKTn8H7ovbgx29UwAUNY0pOkVXRP4rEHQib22kyt8WP6JEBsHkf7XYyPN+f4gSjfOih9sXnAGOlWXsrnLxl+DvcY4aeRX91/NgD4Qsg1KzT6yBskJU8WTbdTjdwzbhBcA5SbVLIwdCqC6/PzzrHbakv25BEL/uf9FnnyHuM01dBM2xhx5Ku22IhByZX6Ih6kbzhuSkq3xNaj6aawT74XPhUPCrrSkiIkQYlwh1Q0bC4ldtPNjzRCwjA+52W95DIzaGoRmnpBBQDGr6Ih0adNxspJoVYKrEGg7qj3DLCYuyPt27E84douR//So0wdpvMiWlcrB2ffG53w6T5O7jv/4u5n06aoMDtLnZsAdUwpjuctvkn6N+8YY7mq8D8nmtr3lnWd8hSbHKTSrtxTwh+TiwlKGLZm/5bMmten6WjYv7RIJErinGwNPMmMeGp9uf87EiCtN/h0c/fzGzYpODAQQIot0bFTyiuPq+8d5e+hy6Ux7PU/pXPM/003GUFlOil9Rf3d8V5QfJzNVdRML1NRnNTijDijz/4rlyqf4o+/VRHC62GHmKzvhRHR1e/Nsl1ArW7Na0VTxOWmsAGmZmZw69hc2wJa+jvSPXi8CklijXA2Kszukq0xhmLzRsVv4R9yvzfoR9mqcc/pZWhJ3AToORvfV9XdobDB1kspBiebJeaqe1bUhB130AGszbPYLxzSSlkSLKFFjv1aNM2KBJeie9Hw9GJd7dwMhGuqvGaFzxnqBkwm0zcb/BoXN8H8levpyH4Tq72HAWWgFQuGgBFi982oJ/dUD4KvMotIY0AVlR5HNlMkZSzTiwGmD8V5skCStAfdJlkL6bWY8hqd795vTwjqodS8/F1FO9UTtPA8kU4gztxS4WOUT7m93KVJ+w9WWP62XgVvZk3bjnA2zNs6LXwb0hFN33a3j7sg1X4Yj3/kcm/b2YkVsS1oiAUZGPknJ4srA2ldUapoSA1yp9xi2TxFrscLc6vScBWSqbPAwwjGp39hsPNce/0H4uHV9l4aYl0zChAU48o3ghTss5vd7CaiF3gUSmgWXrHWc2/2oPwCAWAR6l/My5eFPhWLiNsd4ZK38qNpPtU8x1ACZli/iVn0bn8KkW38qpDLdxP8qWeNr64sI4/H+OByyqjAayBRq7LcMoutISF3vZoeK7y0Ym0QseVhX5EFtpOBUNppNfOY/x27vTU2RKWHC6xpRAMaNsjSk4n+t//MJHDFD52J5idnSMbrrRigRmcM1dH64+3uSaunDltsMuJQjpmoADBGTMm40GnOCAq+xLPwQwHa1rfokEc/rf/ydn3f1BEllgaEkJgV/8V7xSUzcsbqO9vM62E/DBKsX5kCKv5d7SRonfUmht0eUI/XMf8RLFyO557Uthm4oZ3/F4nCq7PqOB9S0rclVofM/HAUv9n8Jrx2YJqoGN090VoaP60RrRnejBrWTy8C05XLkQte6hp4JRzXOaObuX3K+55sYed1tMQf/sQ7MMjHSIR5P6w8Hw5tgUwXxmL/HGFWWNyojs1c1wZK0WjCHoFC1U2WH4c2e61A+O3uY13vnWdOSJl1JsHx8U0d9ohj0SjksbbwFo5pObl3O3T+SfN20o8EsPFmaFvWiiZMBngcieXrIiy2UfsA/j3Oy/VySctZzNrtwU8U3hIMFQUSKXmOdVYgg7xfHuDHJ2sseW2ngjhgAPA5pxH6fXuVgTGPQDDkfZoBMUrULX9fNBSj/o7COG8zgGOliBXzn8kt3YkuWHZ5TI2uet7XlA977a/zgB7iqzSuF447KFQ+f0JJnNGQhWMyGRUjBtW0ZYzaaG3/bu5/lkfDZMPDBltlQq7/IkFB5kQTPTL9WyDfgsPtTNUrEur2NlfgLqaB4OyFF4Gzs1qw5kqpYJ3aovmowRgwtSB1F7sG2CfPzK0p0UupvdJSQgrPZWWfy+kqVU3fSEqyQOzzEzNevcmCbl42Xigbt0aBKuQg7wAr7oord83PkNyhPv0TPWi0QTWPMHaAU88lg9+uHETM53T6Rkmeck6DAfi/gxAUIalibWo0Yhz5JGDicyKobERLZfksJzDWgd1TOfzhzzOrK9jx/Cz7lVUc4PRwbw2BWU8E+RiPKns5uHZrSU5KS1r/F3BxwEzynWE1YK6Agd3zX5WH2Qb3zkdImfV27M+rpdBtbkdjXaV+CcRHcsztcyFYWcbKVyQYkL5tTKiFl8X5IgHExjAwpua"};
+const META = {"filename": "im_40278_0.jpg", "mime": "application/octet-stream"};
+
+function setTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('site-theme',t);}
+function toggleTheme(){const c=document.documentElement.getAttribute('data-theme')||'light';setTheme(c==='light'?'dark':'light');}
+function readStoredTheme(){return localStorage.getItem('site-theme')||'light';}
+document.addEventListener('DOMContentLoaded',function(){setTheme(readStoredTheme());});
+
+function b64ToBytes(b64){const bin=atob(b64);const a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a;}
+async function derivePrivatKey(pw, saltB64, iterations){
+  const salt = b64ToBytes(saltB64);
+  const enc = new TextEncoder();
+  const baseKey = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations, hash:'SHA-256'}, baseKey, {name:'AES-CBC', length:256}, false, ['decrypt']);
+}
+async function decryptPrivatPayload(payload, pw){
+  const key = await derivePrivatKey(pw, payload.salt, payload.iterations);
+  const iv = b64ToBytes(payload.iv);
+  const ct = b64ToBytes(payload.ciphertext);
+  const buf = await crypto.subtle.decrypt({name:'AES-CBC', iv}, key, ct);
+  return new Uint8Array(buf);
+}
+function pwStorageKey(){ return 'privatPw'; }
+async function attemptUnlock(pw, onSuccess, onError){
+  try{
+    const bytes = await decryptPrivatPayload(PAYLOAD, pw);
+    sessionStorage.setItem(pwStorageKey(), pw);
+    onSuccess(bytes, pw);
+  }catch(e){ onError(); }
+}
+document.addEventListener('DOMContentLoaded', function(){
+  const saved = sessionStorage.getItem(pwStorageKey());
+  const goBtn = document.getElementById('gateGo');
+  const pwInput = document.getElementById('gatePw');
+  const err = document.getElementById('gateErr');
+  function tryWith(pw){
+    attemptUnlock(pw, renderUnlocked, function(){
+      if (err) err.textContent = 'Feil passord.';
+      sessionStorage.removeItem(pwStorageKey());
+    });
+  }
+  if (saved) tryWith(saved);
+  if (goBtn) goBtn.addEventListener('click', ()=> tryWith(pwInput.value));
+  if (pwInput) pwInput.addEventListener('keydown', e=>{ if(e.key==='Enter') tryWith(pwInput.value); });
+});
+
+
+function renderUnlocked(bytes){
+  document.getElementById('gateBox').style.display='none';
+  const c = document.getElementById('gateContent');
+  c.style.display='block';
+  const blob = new Blob([bytes], {type: META.mime || 'application/octet-stream'});
+  const url = URL.createObjectURL(blob);
+  c.innerHTML = '<p style="text-align:center;padding:40px 0;">✅ Opplåst.<br><a class="btn" style="display:inline-block;margin-top:14px;" href="'+url+'" download="'+META.filename+'">⬇ Last ned '+META.filename+'</a></p>';
+}
+
+</script>
+</body>
+</html>
