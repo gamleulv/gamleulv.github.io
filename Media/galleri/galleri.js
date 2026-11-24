@@ -43,8 +43,8 @@ $('nei').onclick = () => {
   }
   $('statstatus').textContent = 'Statistikk er av.';
 };
-async function read(path) {
-  const response = await fetch(path, {referrerPolicy:'no-referrer'});
+async function read(path, options = {}) {
+  const response = await fetch(path, {referrerPolicy:'no-referrer', ...options});
   if (!response.ok) throw Error('Kunne ikke hente filen');
   return new Uint8Array(await response.arrayBuffer());
 }
@@ -98,7 +98,7 @@ async function show(index) {
       event('gallery_image_open',{image_id:'bilde_'+String(n+1).padStart(2,'0')});
     }
   } catch {
-    if (current===n && dialog.open) $('bildetekst').textContent='Bildet kunne ikke lastes';
+    if (current===n && dialog.open) $('bildetekst').textContent='Bildet kunne ikke lastes. Lukk visningen og trykk på bildet for å prøve igjen.';
   }
 }
 $('forrige').onclick=()=>show(current-1);
@@ -116,13 +116,35 @@ $('form').addEventListener('submit',async e=>{
   const submit=e.target.querySelector('button'), pass=$('passord');
   if (submit.disabled) return;
   submit.disabled=true;
-  $('status').textContent='Åpner galleriet …';
+  const status=$('status');
+  status.textContent='Åpner galleriet …';
   try {
-    const data=await read(sealUrl);
-    const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pass.value),'PBKDF2',false,['deriveKey']);
-    key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:data.slice(0,16),iterations:600000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);
-    items=JSON.parse(new TextDecoder().decode(await decrypt(data.slice(16),key,'manifest-v1')));
+    let data;
+    // Manifestet kan endre seg ved passordbytte selv om filnavnet er det samme.
+    try {
+      data=await read(`${sealUrl}?fresh=${Date.now()}`, {cache:'no-store'});
+      if (data.length<45) throw Error('Ufullstendig manifest');
+    } catch {
+      status.textContent='Kunne ikke hente galleriet. Sjekk nettforbindelsen og prøv igjen.';
+      return;
+    }
+    if (!crypto.subtle) {
+      status.textContent='Nettleseren støtter ikke sikker åpning her. Prøv gallerilenken direkte i Safari eller Comet.';
+      return;
+    }
+    const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pass.value.trim()),'PBKDF2',false,['deriveKey']);
+    const candidate=await crypto.subtle.deriveKey({name:'PBKDF2',salt:data.slice(0,16),iterations:600000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);
+    let manifest;
+    try {
+      manifest=await decrypt(data.slice(16),candidate,'manifest-v1');
+    } catch (error) {
+      if (error.name!=='OperationError') throw error;
+      status.textContent='Passordet ble ikke godtatt. Sjekk at du bruker det nyeste passordet, og prøv igjen.';
+      return;
+    }
+    items=JSON.parse(new TextDecoder().decode(manifest));
     if (!Array.isArray(items)||!items.length||!items.every(x=>/^[a-f0-9]{24}$/.test(x.id))) throw Error('Galleri');
+    key=candidate;
     render();
     pass.value='';
     $('laas').hidden=true;
@@ -130,6 +152,6 @@ $('form').addEventListener('submit',async e=>{
     $('valg').hidden=!/^G-[A-Z0-9]+$/.test(gaId);
     $('antall').tabIndex=-1;
     $('antall').focus();
-  } catch { $('status').textContent='Kunne ikke åpne galleriet. Kontroller passordet og prøv igjen.'; }
+  } catch { status.textContent='Galleriet kunne ikke åpnes. Last inn siden på nytt og prøv igjen.'; }
   finally { submit.disabled=false; }
 });
