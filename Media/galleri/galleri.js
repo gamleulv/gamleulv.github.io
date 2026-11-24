@@ -1,5 +1,5 @@
-/* Statistikk er deaktivert inntil en egen GA4-strøm er konfigurert. */
-const gaId = '';
+/* Egen datastrøm for Media-galleriet. Lastes bare etter aktivt samtykke. */
+const gaId = 'G-QCW1FZ2T7Q';
 const $ = id => document.getElementById(id);
 const dialog = $('visning');
 let key, items, current = 0, sw, measuring = false, counted = false, started = false;
@@ -23,7 +23,7 @@ function startAnalytics() {
     gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});
     gtag('js',new Date());
     gtag('consent','update',{analytics_storage:'granted'});
-    gtag('config',gaId,{send_page_view:false,allow_google_signals:false,allow_ad_personalization_signals:false,
+    gtag('config',gaId,{send_page_view:false,allow_google_signals:false,allow_ad_personalization_signals:false,cookie_prefix:'media_galleri',
       page_location:location.origin+'/Media/galleri/',page_referrer:'',page_title:'Bildegalleri'});
     const tag = document.createElement('script');
     tag.async = true;
@@ -93,11 +93,13 @@ async function show(index) {
   if (!dialog.open) dialog.showModal();
   try {
     const url=await picture(n);
-    if (current===n && dialog.open) $('stort').src=url;
+    if (current===n && dialog.open) {
+      $('stort').src=url;
+      event('gallery_image_open',{image_id:'bilde_'+String(n+1).padStart(2,'0')});
+    }
   } catch {
     if (current===n && dialog.open) $('bildetekst').textContent='Bildet kunne ikke lastes';
   }
-  event('gallery_image_open',{image_id:item.id});
 }
 $('forrige').onclick=()=>show(current-1);
 $('neste').onclick=()=>show(current+1);
