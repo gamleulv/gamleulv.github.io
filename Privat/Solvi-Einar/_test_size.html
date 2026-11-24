@@ -71,6 +71,12 @@ ul.filelist li .name { flex: 1 1 auto; min-width: 140px; }
 .gate-err{color:#c0392b;font-size:13px;margin-top:8px;min-height:18px;}
 #gateContent{display:none;}
 iframe.gate-frame{width:100%;height:80vh;border:0;border-radius:12px;background:#fff;}
+
+/* Sølvi-arkivet: når siden er låst opp, fyller innholdet hele skjermen (bedre på mobil) */
+body:has(#gateContent[style*="block"]){padding:0;overflow:hidden}
+.container:has(#gateContent[style*="block"]){max-width:none;margin:0;padding:0;background:transparent;box-shadow:none;border-radius:0}
+.container:has(#gateContent[style*="block"]) .theme-toggle{display:none}
+#gateContent[style*="block"] iframe.gate-frame{position:fixed;top:0;left:0;width:100%;height:100vh;height:100dvh;border-radius:0;z-index:5}
 </style>
 </head>
 <body>
