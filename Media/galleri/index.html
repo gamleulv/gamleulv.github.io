@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="nb">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Bildegalleri</title>
+<link rel="stylesheet" href="../stil.css">
+<main>
+  <p class="merke"><a href="../">Media</a></p>
+  <h1>Bildegalleri: Sølvi og Einar</h1>
+  <section id="laas">
+    <p>Et bildegalleri for inviterte. Bruk passordet du har fått av den som delte galleriet.</p>
+    <form id="form">
+      <label for="passord">Passord</label><input type="password" id="passord" required autocomplete="off">
+      <button>Åpne galleriet</button>
+      <p id="status" role="status"></p>
+    </form>
+  </section>
+  <section id="innhold" hidden>
+    <p id="antall" class="hjelp"></p>
+    <div id="valg" hidden>
+      <p class="hjelp">Valgfri besøksstatistikk med Google Analytics. Hvis du velger ja, telles åpning av galleriet og av enkeltbilder. Du kan se alle bildene uten å godta.</p>
+      <div class="knapper"><button id="ja">Tillat statistikk</button><button id="nei">Fortsett uten statistikk</button></div>
+      <p id="statstatus" role="status"></p>
+    </div>
+    <div class="grid" id="bilder"></div>
+  </section>
+</main>
+<dialog id="visning" aria-label="Stor bildevisning">
+  <div class="knapper"><button id="forrige" aria-label="Forrige bilde">‹ Forrige</button><button id="lukk">Lukk</button><button id="neste" aria-label="Neste bilde">Neste ›</button></div>
+  <img id="stort" alt="">
+  <p id="bildetekst" class="hjelp" aria-live="polite"></p>
+</dialog>
+<script src="galleri.js" defer></script>
+</html>

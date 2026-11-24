@@ -1,0 +1,30 @@
+:root{color-scheme:light;--bak:oklch(.972 .012 90);--papir:oklch(.995 .005 90);--tekst:oklch(.26 .023 75);--dempet:oklch(.45 .025 75);--kant:oklch(.87 .021 85);--aksent:oklch(.42 .068 186);--tittel:clamp(1.75rem,1.2rem + 2.2vw,3rem);--liten:.875rem}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bak);color:var(--tekst);font:1rem/1.55 ui-sans-serif,system-ui,sans-serif}
+main{max-width:74rem;margin:auto;padding:clamp(1.25rem,5vw,4rem) clamp(1rem,4vw,3rem)}
+.smal{max-width:44rem}
+h1{font:600 var(--tittel)/1.1 ui-serif,serif;margin:.5rem 0 1rem;text-wrap:balance}
+p{margin:.5rem 0 1rem}
+.merke{letter-spacing:.15em;text-transform:uppercase;font-weight:700;font-size:var(--liten);color:var(--aksent)}
+a{color:var(--aksent)}
+.lenker{list-style:none;padding:0;margin:2rem 0}
+.lenker a{display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem;padding:1rem 1.2rem;background:var(--papir);border:1px solid var(--kant);border-radius:.75rem;font-weight:650}
+.lenker span,.hjelp,figcaption{font-size:var(--liten);color:var(--dempet);font-weight:400}
+form{display:grid;gap:.75rem;max-width:26rem;margin-top:1.5rem}
+button,input{font:inherit;border:1px solid var(--kant);border-radius:.5rem;padding:.55rem .9rem}
+button{cursor:pointer;color:var(--tekst);background:var(--papir)}
+form button{background:var(--aksent);color:white}
+:focus-visible{outline:3px solid var(--aksent);outline-offset:3px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem;margin-top:1.5rem}
+@media(max-width:900px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem}}
+figure{margin:0}
+.bilde{width:100%;padding:0;overflow:hidden;text-align:left}
+.bilde img{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:var(--kant)}
+figcaption{padding:.4rem .65rem;min-height:2rem}
+dialog{max-width:min(97vw,74rem);max-height:96dvh;inset:0;border:1px solid var(--kant);border-radius:1rem;background:var(--papir);padding:.75rem;text-align:center}
+dialog::backdrop{background:#111c}
+dialog img{display:block;max-width:100%;max-height:74dvh;margin:.7rem auto;object-fit:contain;touch-action:pan-y}
+.knapper{display:flex;justify-content:center;gap:.5rem;flex-wrap:wrap}
+#valg{padding:.75rem 1rem;border:1px solid var(--kant);border-radius:.75rem;background:var(--papir)}
+[hidden]{display:none!important}

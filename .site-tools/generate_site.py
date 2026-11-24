@@ -73,7 +73,8 @@ HIDDEN_DIR_NAMES = {".git", ".site-tools", "node_modules"}
 # be walked, indexed, or listed as "recent" - Privat is rendered exclusively
 # through its own encrypted gate pages (see encrypt_privat), never through the
 # ordinary folder-index / search-index / recent-files code paths.
-SKIP_CONTENT_DIR_NAMES = HIDDEN_DIR_NAMES | {PRIVAT_DIR_NAME}
+# Media has its own pages and password-encrypted gallery payloads.
+SKIP_CONTENT_DIR_NAMES = HIDDEN_DIR_NAMES | {PRIVAT_DIR_NAME, "Media"}
 # Back-compat alias used by a couple of content-scanning helpers below.
 EXCLUDE_DIR_NAMES = SKIP_CONTENT_DIR_NAMES
 EXCLUDE_FILE_NAMES = {".DS_Store", "index.html", "sitemap.xml", "rss.xml", "search-index.json", ".nojekyll", "README.md", "auto-publish.sh", "auto-publish-watcher.sh", ".gitignore", "publish.log", ".paused"}
