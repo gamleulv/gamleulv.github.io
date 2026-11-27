@@ -337,6 +337,7 @@ async function renderUnlocked(bytes, pw){
 
 </script>
 <!-- Cloudflare Web Analytics: telles bare etter vellykket opplåsing; slå av for én nettleser med #ikke-tell, på igjen med #tell -->
+<!-- Varsel til iPhone (ntfy): sendes én gang per økt etter opplåsing; kanalnavnet avledes av passordet. Test med #test-varsel -->
 <script>
 (function(){
   var K='gamleulv-ikke-tell', sendt=false;
@@ -346,23 +347,49 @@ async function renderUnlocked(bytes, pw){
     d.style.cssText='position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:2147483647;max-width:90vw;padding:10px 18px;border-radius:999px;background:#1f2a44;color:#fff;font:15px/1.35 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.25);text-align:center';
     document.body.appendChild(d); setTimeout(function(){ d.remove(); }, 7000);
   }
-  var h=location.hash;
-  if(h==='#ikke-tell'||h==='#tell'){
-    try{ if(h==='#ikke-tell') localStorage.setItem(K,'1'); else localStorage.removeItem(K); }catch(e){}
+  var h=location.hash, test=false;
+  if(h==='#ikke-tell'||h==='#tell'||h==='#test-varsel'){
+    if(h==='#test-varsel') test=true;
+    else { try{ if(h==='#ikke-tell') localStorage.setItem(K,'1'); else localStorage.removeItem(K); }catch(e){} }
     try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
-    melding(h==='#ikke-tell'?'Besøk fra denne nettleseren telles ikke lenger.':'Besøk fra denne nettleseren telles igjen.');
+    if(!test) melding(h==='#ikke-tell'?'Besøk fra denne nettleseren telles ikke lenger.':'Besøk fra denne nettleseren telles igjen.');
   }
-  function tell(){
+  function enhet(){
+    var u=navigator.userAgent||'', d, n;
+    d=/iPhone/.test(u)?'iPhone':/iPad/.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1)?'iPad':/Android/.test(u)?'Android':/Macintosh/.test(u)?'Mac':/Windows/.test(u)?'Windows':/Linux/.test(u)?'Linux':'ukjent enhet';
+    n=/Edg\//.test(u)?'Edge':/Firefox\/|FxiOS/.test(u)?'Firefox':/CriOS|Chrome\//.test(u)?'Chrome':/Safari\//.test(u)?'Safari':'';
+    return n?d+', '+n:d;
+  }
+  function side(){
+    var f=location.pathname.split('/').pop()||'index.html', t=(document.title||'').replace(/^Sølvi Mikkelsen og Einar · /,'');
+    var a={'index.html':'Forsiden','analyse.html':'Copilot-analyse 1','analyse-02.html':'Copilot-analyse 2','analyse-03.html':'Copilot til Einar'};
+    return a[f]||(t&&t!=='Beskyttet dokument'?t:f);
+  }
+  async function varsle(pw){
+    var k='gamleulv-varslet';
+    try{ if(!test&&sessionStorage.getItem(k)) return; sessionStorage.setItem(k,'1'); }catch(e){}
+    var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('gamleulv-varsel:'+pw));
+    var kanal='sa-'+Array.from(new Uint8Array(b)).slice(0,12).map(function(x){return x.toString(16).padStart(2,'0');}).join('');
+    var tid=new Date().toLocaleString('nb-NO',{timeZone:'Europe/Oslo',weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    await fetch('https://ntfy.sh/',{method:'POST',keepalive:true,body:JSON.stringify({
+      topic:kanal, title:test?'Testvarsel fra Sølvi-arkivet':'Noen har åpnet Sølvi-arkivet',
+      message:side()+' · '+enhet()+' · '+tid, tags:[test?'test_tube':'eyes'],
+      click:location.origin+location.pathname})});
+    if(test) melding('Testvarsel er sendt.');
+  }
+  function tell(pw){
+    if(test){ try{ varsle(pw).catch(function(){ melding('Testvarselet kunne ikke sendes.'); }); }catch(e){} }
     if(sendt||av()) return; sendt=true;
     var s=document.createElement('script'); s.type='module'; s.defer=true;
     s.src='https://static.cloudflareinsights.com/beacon.min.js';
     s.setAttribute('data-cf-beacon','{"token": "97263fb6fa0d4ebaa961f94237e9db7b"}');
     document.body.appendChild(s);
+    try{ varsle(pw).catch(function(){}); }catch(e){}
   }
   if(typeof attemptUnlock==='function'){
     var opprinnelig=attemptUnlock;
     attemptUnlock=function(pw,ok,feil){
-      return opprinnelig(pw,function(b,p){ try{ tell(); }catch(e){} return ok(b,p); },feil);
+      return opprinnelig(pw,function(b,p){ try{ tell(p||pw); }catch(e){} return ok(b,p); },feil);
     };
   }
 })();
